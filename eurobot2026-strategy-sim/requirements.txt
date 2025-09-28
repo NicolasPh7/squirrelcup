@@ -1,0 +1,5 @@
+chess_game/
+│
+├── chessboard_view.py
+├── ai_demo.py
+└── README.md
