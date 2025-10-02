@@ -34,6 +34,27 @@
                 </box>
             </geometry>
         </collision>
+
+		<sensor name="camera_sensor" type="camera">
+		<pose>0.1 0 0.05 0 0 0</pose> 
+	    <camera>
+	      <image>
+	        <width>640</width>
+	        <height>480</height>
+	        <format>R8G8B8</format>
+	      </image>
+	      <clip>
+	        <near>0.1</near>
+	        <far>100</far>
+	      </clip>
+	      <horizontal_fov>1.047</horizontal_fov>
+	    </camera>
+	    <always_on>1</always_on>
+	    <update_rate>10</update_rate>
+	    <visualize>true</visualize>
+		<topic>camera</topic>
+	  </sensor>
+
     </link>
 		<link name='left_wheel'>
 			<pose relative_to="chassis">-0.05 0.06 0 -1.5707 0 0</pose>
@@ -179,5 +200,10 @@
 			<odom_publish_frequency>1</odom_publish_frequency>
 			<topic>cmd_vel</topic>
 		</plugin>
+		<plugin
+    	  filename="ignition-gazebo-sensors-system"
+    	  name="ignition::gazebo::systems::Sensors">
+    	  <render_engine>ogre</render_engine>
+    	</plugin>
 	</model>
 </sdf>

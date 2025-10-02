@@ -11,6 +11,13 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
+find_package(OpenCV REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
@@ -30,6 +37,16 @@ include_directories(include)
 add_executable(cpp_test src/cpp_test.cpp)
 ament_target_dependencies(cpp_test rclcpp geometry_msgs)
 install(TARGETS cpp_test DESTINATION lib/${PROJECT_NAME})
+
+add_executable(color_follower src/color_follower.cpp)
+target_link_libraries(color_follower ${OpenCV_LIBS} )
+ament_target_dependencies(color_follower rclcpp sensor_msgs geometry_msgs cv_bridge OpenCV)
+install(TARGETS color_follower DESTINATION lib/${PROJECT_NAME})
+
+add_executable(teleop src/teleop.cpp)
+ament_target_dependencies(teleop rclcpp geometry_msgs)
+install(TARGETS teleop DESTINATION lib/${PROJECT_NAME})
+
 
 # Install launch files
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})

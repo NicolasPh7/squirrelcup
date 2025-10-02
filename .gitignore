@@ -1,0 +1,70 @@
+# ROS build and development files
+build/
+devel/
+install/
+log/
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.swp
+*.swo
+
+# Catkin tools
+.catkin_tools/
+.catkin_workspace
+
+# ROS2 colcon build
+colcon_ws/build/
+colcon_ws/install/
+colcon_ws/log/
+
+# ROS launch and config
+*.launch.*
+*.test
+*.bag
+*.db3
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Python virtual environments
+venv/
+env/
+ENV/
+.venv/
+.python-version
+
+# Visual Studio Code
+.vscode/
+.history/
+*.code-workspace
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Qt Creator
+*.user
+*.user.*
+
+# CLion
+.idea/
+cmake-build-*/
+
+# Misc
+*.orig
+*.rej
+*.bak
+*.tmp
+*.log
+*.out
+*.~*
+
+# ROS message/service/action generated files
+msg_gen/
+srv_gen/
+action_gen/

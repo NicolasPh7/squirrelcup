@@ -4,10 +4,11 @@ set -e
 
 # setup ros2 environment
 source /opt/ros/"$ROS_DISTRO"/setup.bash --
-source ~/eurobot_2026_ws/install/setup.bash --
+# source ~/eurobot_2026_ws/install/setup.bash --
 export ROS_DOMAIN_ID=0
 export ROS_LOCALHOST_ONLY=1
 export LIBGL_ALWAYS_SOFTWARE=1
+export RMW_FASTRTPS_USE_SHM=0
 
 # add sourcing to .bashrc
 echo "source '/opt/ros/$ROS_DISTRO/setup.bash'" >> ~/.bashrc

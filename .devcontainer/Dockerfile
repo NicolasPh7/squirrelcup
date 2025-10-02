@@ -1,7 +1,7 @@
 FROM ros:humble-ros-base
 
-ARG USERNAME=USERNAME
-ARG UID=UID
+ARG USERNAME=rosdev
+ARG UID=1000
 ARG GID=$UID
 
 # Install some dependencies packages
@@ -24,6 +24,10 @@ USER $USERNAME
 RUN sudo apt update && \
     sudo apt-get install -y ros-${ROS_DISTRO}-ros-gz
 
+# Install Tools    
+RUN sudo apt update && sudo apt install -y tmux 
+RUN sudo apt update && sudo apt install -y ros-humble-gazebo-ros-pkgs
+
 # Create workspace so that user own this directory
 RUN mkdir -p /home/$USERNAME/eurobot_2026_ws/src
 WORKDIR /home/$USERNAME/eurobot_2026_ws
@@ -37,5 +41,6 @@ RUN echo 'export LIBGL_ALWAYS_SOFTWARE=1' >> ~/.bashrc
 
 # Setup entrypoint
 COPY ./ros_entrypoint.sh /
+RUN sudo chmod + /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]

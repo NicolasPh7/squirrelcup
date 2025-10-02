@@ -15,7 +15,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument("world", default_value=PathJoinSubstitution([pkg_path, 'worlds', 'arena_world.sdf'])),
         ExecuteProcess(
-            cmd=["ign", "gazebo", "-r", LaunchConfiguration("world")],
+            cmd=["ign", "gazebo", "-r", LaunchConfiguration("world"),"-v", "4"],
             output="screen"
         ),
         ExecuteProcess(
@@ -43,6 +43,13 @@ def generate_launch_description():
             output='screen',
             arguments=['/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist']
         ),
+
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            arguments=['/camera@sensor_msgs/msg/Image@gz.msgs.Image'],
+        ),
+
         Node(
             package='rviz2',
             executable='rviz2',
