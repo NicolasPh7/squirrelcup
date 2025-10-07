@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ dev, main,  ci_workflow]
+  pull_request:
+    branches: [ dev, main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build devcontainer image
+        run: |
+          # build using .devcontainer as build context so Dockerfile can COPY local files
+          docker build -t mam-eurobot-ci -f .devcontainer/Dockerfile .devcontainer
+
+      - name: Run tests inside container
+        run: |
+          mkdir -p /tmp/ci_artifacts
+          # mount repository into the container (read-write) so colcon can build
+          docker run --rm --network host \
+            -v "$PWD":/home/rosdev/eurobot_2026_ws:rw \
+            -v /tmp/ci_artifacts:/tmp/ci_artifacts \
+            mam-eurobot-ci /bin/bash -lc "cd /home/rosdev/eurobot_2026_ws && sudo rosdep update && sudo rosdep install -y --from-paths src --ignore-src || true && sudo chown -R $(whoami) /home/rosdev/eurobot_2026_ws && colcon build --symlink-install && . install/setup.bash && /home/rosdev/eurobot_2026_ws/src/mam_eurobot_2026/tools/run_tests_in_container.sh"
+
+      - name: Upload test logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifacts
+          path: /tmp/ci_artifacts/
