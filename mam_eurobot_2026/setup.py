@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-package_name = 'mam_eurobot_2026*'
+package_name = 'mam_eurobot_2026'
 
 setup(
     name=package_name,
@@ -15,7 +15,10 @@ setup(
     zip_safe=True,
     maintainer='Freddy Liendo',
     maintainer_email='liendomf@univ-smb.fr',
-    description='This is a template package for the Master Advanced Mechatronics teams preparing for the Eurobot 2026',
+    description=(
+        'This is a template package for the Master Advanced Mechatronics '
+        'teams preparing for the Eurobot 2026'
+    ),
     license='Apache License 2.0',
     entry_points={
         'console_scripts': [

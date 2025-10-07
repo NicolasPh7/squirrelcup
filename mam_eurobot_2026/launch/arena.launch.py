@@ -7,16 +7,22 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
-    
     return LaunchDescription([
         SetEnvironmentVariable(
             'GZ_SIM_RESOURCE_PATH',
             pkg_path
         ),
-        DeclareLaunchArgument("world", default_value=PathJoinSubstitution([pkg_path, 'worlds', 'arena_world.sdf'])),
+        DeclareLaunchArgument(
+            'world',
+            default_value=PathJoinSubstitution([
+                pkg_path, 'worlds', 'arena_world.sdf'
+            ])
+        ),
         ExecuteProcess(
-            cmd=["ign", "gazebo", "-r", LaunchConfiguration("world"),"-v", "4"],
-            output="screen"
+            cmd=[
+                'ign', 'gazebo', '-r', LaunchConfiguration('world'), '-v', '4'
+            ],
+            output='screen'
         ),
         ExecuteProcess(
             cmd=[
@@ -32,7 +38,7 @@ def generate_launch_description():
                 "ros2", "run", "ros_gz_sim", "create",
                 "-file", "file://models/simple_robot",
                 "-name", "simple_robot",
-                "-x", "0.05", "-y", "0", "-z", "0.05", "-Y", "3.1415"
+                "-x", "0.78", "-y", "1.20", "-z", "0.00", "-Y", "-2.64"
             ],
             output="screen"
         ),
@@ -54,6 +60,12 @@ def generate_launch_description():
             package='rviz2',
             executable='rviz2',
             name='rviz2',
+            output='screen',
+        ),
+        Node(
+            package='mam_eurobot_2026',
+            executable='inertial_odometry',
+            name='inertial_odometry',
             output='screen',
         )
     ])

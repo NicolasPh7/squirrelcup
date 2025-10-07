@@ -5,18 +5,21 @@
 #include <iostream>
 #include <thread>
 
-class Teleop : public rclcpp::Node {
+class Teleop : public rclcpp::Node
+{
 public:
-    Teleop() : Node("teleop") {
+    Teleop()
+    : Node("teleop")
+    {
         pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
         configureTerminal();
         std::cout << R"(
 Control Your Robot!
 ---------------------------
 Moving around:
-        w
-   a    s    d
-        x
+                w
+     a    s    d
+                x
 
 w/x : increase/decrease linear velocity
 a/d : increase/decrease angular velocity
@@ -25,14 +28,15 @@ q/z : linear speed +/-
 e/c : angular speed +/-
 CTRL-C to quit
 )" << std::endl;
-    teleop_thread_ = std::thread(&Teleop::run, this);
+        teleop_thread_ = std::thread(&Teleop::run, this);
     }
 
-    ~Teleop() {
+    ~Teleop()
+    {
         if (teleop_thread_.joinable()) {
             teleop_thread_.join();
         }
-    }   
+    }
 
 private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
@@ -42,14 +46,16 @@ private:
     const double LIN_STEP = 0.01, ANG_STEP = 0.1;
     const double MAX_LIN = 0.26, MAX_ANG = 2.84;
 
-    void configureTerminal() {
+    void configureTerminal()
+    {
         termios raw;
         tcgetattr(STDIN_FILENO, &raw);
         raw.c_lflag &= ~(ICANON | ECHO);
         tcsetattr(STDIN_FILENO, TCSANOW, &raw);
     }
 
-    void run() {
+    void run()
+    {
         char c;
         while (rclcpp::ok()) {
             c = getchar();
@@ -74,7 +80,8 @@ private:
             target_angular_ = std::clamp(target_angular_, -MAX_ANG, MAX_ANG);
 
             if (target_linear_ != prev_linear || target_angular_ != prev_angular) {
-                RCLCPP_INFO(this->get_logger(),
+                RCLCPP_INFO(
+                    this->get_logger(),
                     "Target velocity updated → linear: %.2f m/s, angular: %.2f rad/s",
                     target_linear_, target_angular_);
             }
@@ -88,10 +95,10 @@ private:
             pub_->publish(twist);
         }
     }
-
 };
 
-int main(int argc, char * argv[]) {
+int main(int argc, char * argv[])
+{
     rclcpp::init(argc, argv);
     auto node = std::make_shared<Teleop>();
     rclcpp::spin(node);
