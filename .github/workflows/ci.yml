@@ -29,6 +29,8 @@ jobs:
           mkdir -p /tmp/ci_artifacts
           # mount repository into the container (read-write) so colcon can build
           docker run --rm --network host \
+          -e DISPLAY=$DISPLAY \
+          -v /tmp/.X11-unix:/tmp/.X11-unix \
           -v "$PWD":/home/rosdev/eurobot_2026_ws:rw \
           -v /tmp/ci_artifacts:/tmp/ci_artifacts \
           mam-eurobot-ci /bin/bash -lc "

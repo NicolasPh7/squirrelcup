@@ -25,8 +25,9 @@ RUN sudo apt update && \
     sudo apt-get install -y ros-${ROS_DISTRO}-ros-gz
 
 # Install Tools    
-RUN sudo apt update && sudo apt install -y tmux 
-RUN sudo apt update && sudo apt install -y ros-humble-gazebo-ros-pkgs
+RUN sudo apt update && sudo apt install -y tmux xvfb ros-humble-gazebo-ros-pkgs
+RUN sudo apt-get install libxcb-xinerama0 libxcb-xinerama0-dev
+
 
 # Create workspace so that user own this directory
 RUN mkdir -p /home/$USERNAME/eurobot_2026_ws/src
