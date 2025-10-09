@@ -24,7 +24,7 @@ fi
 
 echo "Running integration test (headless)" | tee "$LOGFILE"
 # Run the single pytest with verbose output and write to logfile
-$XVFB python3 -m pytest src/mam_eurobot_2026/test/test_integration_odometry.py -q --maxfail=1 2>&1 | tee -a "$LOGFILE"
+$XVFB python3 -m pytest mam_eurobot_2026/test/test_integration_odometry.py -q --maxfail=1 2>&1 | tee -a "$LOGFILE"
 
 # copy any generated ros2 test output (colcon pytest style)
 if [ -d build/mam_eurobot_2026/test_results ]; then
