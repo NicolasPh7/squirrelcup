@@ -48,8 +48,3 @@ jobs:
           name: ci-artifacts
           path: /tmp/ci_artifacts/
       
-      - name: Upload simualtion videos
-        uses: actions/upload-artifact@v4
-        with:
-          name: ci-artifacts
-          path: ~/.gazebo/videos/

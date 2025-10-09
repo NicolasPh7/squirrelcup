@@ -5,7 +5,6 @@ import rclpy
 from nav_msgs.msg import Odometry
 
 
-
 def get_install_share(package_name):
     return os.path.join(
         os.getcwd(), 'install', package_name, 'share', package_name
@@ -28,21 +27,12 @@ def test_robot_reaches_crate():
     # Launch arena.launch.py via ros2 launch in background using subprocess
     import subprocess
 
-    launch_cmd = ['ros2', 'launch', 'mam_eurobot_2026', 'arena.launch.py']
+    launch_file = 'ci_arena.launch.py' if os.getenv('CI') == 'true' else 'arena.launch.py'
+    launch_cmd = ['ros2', 'launch', 'mam_eurobot_2026', launch_file]
     proc = subprocess.Popen(launch_cmd)
 
     time.sleep(2.0)
-    # Start Gazebo recording
-    try:
-        subprocess.run([
-            'ros2', 'service', 'call',
-            '/gazebo/start_recording',
-            'gazebo_msgs/srv/StartRecording',
-            '{}'
-        ], check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to start recording: {e}")
-
+    
     try:
         # delay launching color_follower by 3s - start it separately so the
         # test controls the delay
@@ -82,18 +72,6 @@ def test_robot_reaches_crate():
 
         assert reached, "Robot did not reach crate position within 10s"
     finally:
-        # Stop Gazebo recording
-        try:
-            subprocess.run([
-                'ros2', 'service', 'call',
-                '/gazebo/stop_recording',
-                'gazebo_msgs/srv/StopRecording',
-                '{}'
-            ], check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to stop recording: {e}")
-
-        time.sleep(2.0)
 
         try:
             if 'color_proc' in locals():
