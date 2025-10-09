@@ -41,6 +41,6 @@ RUN echo 'export LIBGL_ALWAYS_SOFTWARE=1' >> ~/.bashrc
 
 # Setup entrypoint
 COPY ./ros_entrypoint.sh /
-RUN sudo chmod + /ros_entrypoint.sh
+RUN sudo chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]

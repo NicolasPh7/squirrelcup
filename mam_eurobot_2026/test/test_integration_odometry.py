@@ -31,6 +31,18 @@ def test_robot_reaches_crate():
     launch_cmd = ['ros2', 'launch', 'mam_eurobot_2026', 'arena.launch.py']
     proc = subprocess.Popen(launch_cmd)
 
+    time.sleep(2.0)
+    # Start Gazebo recording
+    try:
+        subprocess.run([
+            'ros2', 'service', 'call',
+            '/gazebo/start_recording',
+            'gazebo_msgs/srv/StartRecording',
+            '{}'
+        ], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to start recording: {e}")
+
     try:
         # delay launching color_follower by 3s - start it separately so the
         # test controls the delay
@@ -70,6 +82,19 @@ def test_robot_reaches_crate():
 
         assert reached, "Robot did not reach crate position within 10s"
     finally:
+        # Stop Gazebo recording
+        try:
+            subprocess.run([
+                'ros2', 'service', 'call',
+                '/gazebo/stop_recording',
+                'gazebo_msgs/srv/StopRecording',
+                '{}'
+            ], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to stop recording: {e}")
+
+        time.sleep(2.0)
+
         try:
             if 'color_proc' in locals():
                 color_proc.terminate()
