@@ -29,9 +29,19 @@ jobs:
           mkdir -p /tmp/ci_artifacts
           # mount repository into the container (read-write) so colcon can build
           docker run --rm --network host \
-            -v "$PWD":/home/rosdev/eurobot_2026_ws:rw \
-            -v /tmp/ci_artifacts:/tmp/ci_artifacts \
-            mam-eurobot-ci /bin/bash -lc "cd /home/rosdev/eurobot_2026_ws && sudo rosdep update && sudo rosdep install -y --from-paths src --ignore-src || true && sudo chown -R rosdev /home/rosdev/eurobot_2026_ws && colcon build --symlink-install && . install/setup.bash && sudo chmod +x /home/rosdev/eurobot_2026_ws/tools/run_tests_in_container.sh && /home/rosdev/eurobot_2026_ws/tools/run_tests_in_container.sh"
+          -v "$PWD":/home/rosdev/eurobot_2026_ws:rw \
+          -v /tmp/ci_artifacts:/tmp/ci_artifacts \
+          mam-eurobot-ci /bin/bash -lc "
+            cd /home/rosdev/eurobot_2026_ws && \
+            export AMENT_TRACE_SETUP_FILES='' && \
+            sudo rosdep fix-permissions && \
+            rosdep update && \
+            rosdep install -y --from-paths src --ignore-src || true && \
+            sudo chown -R rosdev /home/rosdev/eurobot_2026_ws && \
+            colcon build --symlink-install && \
+            source install/setup.bash && \
+            source tools/run_tests_in_container.sh
+          "
 
       - name: Upload test logs
         uses: actions/upload-artifact@v4
