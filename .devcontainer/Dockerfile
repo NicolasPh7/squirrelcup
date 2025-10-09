@@ -26,7 +26,7 @@ RUN sudo apt update && \
 
 # Install Tools    
 RUN sudo apt update && sudo apt install -y tmux xvfb ros-humble-gazebo-ros-pkgs
-RUN sudo apt-get install libxcb-xinerama0 libxcb-xinerama0-dev
+RUN sudo apt-get install -y libxcb-xinerama0 libxcb-xinerama0-dev
 
 
 # Create workspace so that user own this directory

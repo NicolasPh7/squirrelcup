@@ -74,8 +74,8 @@ private:
             RCLCPP_DEBUG(this->get_logger(),
                 "Contour %zu: area=%.2f, approxPoly=%d", i, area, (int)approx.size());
 
-            // if (area > max_area && approx.size() <= 12) { 
-            if (area > max_area) { 
+            if (area > max_area && approx.size() >= 2 && approx.size() <= 12) { 
+            // if (area > max_area) { 
                 max_area = area;
                 best_index = i;
                 RCLCPP_INFO(this->get_logger(),
