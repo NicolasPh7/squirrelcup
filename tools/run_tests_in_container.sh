@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
+
 ARTIFACT_DIR=/tmp/ci_artifacts
 mkdir -p "$ARTIFACT_DIR"
 LOGFILE="$ARTIFACT_DIR/test_run.log"
+
+sudo chown -R rosdev /tmp/ci_artifacts
 
 # Ensure ROS environment is available
 source /opt/ros/$ROS_DISTRO/setup.bash
