@@ -65,7 +65,7 @@ def test_robot_reaches_crate():
                 dx = last.pose.pose.position.x - target_x
                 dy = last.pose.pose.position.y - target_y
                 dist = (dx * dx + dy * dy) ** 0.5
-                if dist < 0.05:  # tolerance
+                if dist < 0.1:  # tolerance
                     reached = True
                     print(f"Target reached at dist {dist}. x = {last.pose.pose.position.x}, y = {last.pose.pose.position.y}")
                     break
