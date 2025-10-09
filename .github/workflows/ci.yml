@@ -31,7 +31,7 @@ jobs:
           docker run --rm --network host \
             -v "$PWD":/home/rosdev/eurobot_2026_ws:rw \
             -v /tmp/ci_artifacts:/tmp/ci_artifacts \
-            mam-eurobot-ci /bin/bash -lc "cd /home/rosdev/eurobot_2026_ws && sudo rosdep update && sudo rosdep install -y --from-paths src --ignore-src || true && colcon build --symlink-install && . install/setup.bash && /home/rosdev/eurobot_2026_ws/src/mam_eurobot_2026/tools/run_tests_in_container.sh"
+            mam-eurobot-ci /bin/bash -lc "cd /home/rosdev/eurobot_2026_ws && sudo rosdep update && sudo rosdep install -y --from-paths src --ignore-src || true && sudo chown -R rosdev /home/rosdev/eurobot_2026_ws && colcon build --symlink-install && . install/setup.bash && /home/rosdev/eurobot_2026_ws/src/mam_eurobot_2026/tools/run_tests_in_container.sh"
 
       - name: Upload test logs
         uses: actions/upload-artifact@v4
