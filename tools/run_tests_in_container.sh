@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 ARTIFACT_DIR=/tmp/ci_artifacts
 mkdir -p "$ARTIFACT_DIR"

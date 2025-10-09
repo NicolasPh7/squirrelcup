@@ -33,7 +33,6 @@ jobs:
           -v /tmp/ci_artifacts:/tmp/ci_artifacts \
           mam-eurobot-ci /bin/bash -lc "
             cd /home/rosdev/eurobot_2026_ws && \
-            export AMENT_TRACE_SETUP_FILES='' && \
             sudo rosdep fix-permissions && \
             rosdep update && \
             rosdep install -y --from-paths src --ignore-src || true && \
