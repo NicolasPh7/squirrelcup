@@ -32,37 +32,79 @@ private:
             return;
         }
 
-        cv::Mat hsv, mask;
+        cv::Mat gray;
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+        cv::Mat laplacian, sharp_edges;
+        cv::Laplacian(gray, laplacian, CV_16S, 3);
+        cv::convertScaleAbs(laplacian, sharp_edges);
+
+        cv::Mat edge_mask;
+        cv::threshold(sharp_edges, edge_mask, 10, 255, cv::THRESH_BINARY);
+        int edge_pixels = cv::countNonZero(edge_mask);
+                RCLCPP_INFO(this->get_logger(), "Sharp edge pixel count: %d", edge_pixels);
+
+        cv::Mat hsv;
         cv::cvtColor(frame, hsv, cv::COLOR_BGR2HSV);
 
-        // Blue filter
         cv::Scalar lower_blue(100, 150, 50);
         cv::Scalar upper_blue(140, 255, 255);
-        cv::inRange(hsv, lower_blue, upper_blue, mask);
+        cv::Mat color_mask;
+        cv::inRange(hsv, lower_blue, upper_blue, color_mask);
+        int blue_pixels = cv::countNonZero(color_mask);
+                RCLCPP_INFO(this->get_logger(), "Blue mask pixel count: %d", blue_pixels);
 
-        cv::Moments m = cv::moments(mask, true);
+        cv::Mat combined_mask;
+        cv::bitwise_and(edge_mask, color_mask, combined_mask);
+
+
+        std::vector<std::vector<cv::Point>> contours;
+        cv::findContours(combined_mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        RCLCPP_INFO(this->get_logger(), "Found %zu contours.", contours.size());
+
+        int best_index = -1;
+        double max_area = 400;
+
+        for (size_t i = 0; i < contours.size(); ++i) {
+            double area = cv::contourArea(contours[i]);
+
+            std::vector<cv::Point> approx;
+            cv::approxPolyDP(contours[i], approx, 5.0, true);
+
+            RCLCPP_DEBUG(this->get_logger(),
+                "Contour %zu: area=%.2f, approxPoly=%d", i, area, (int)approx.size());
+
+            if (area > max_area && approx.size() >= 2 && approx.size() <= 14) { 
+            // if (area > max_area) { 
+                max_area = area;
+                best_index = i;
+                RCLCPP_INFO(this->get_logger(),
+                    "Contour %zu selected as best candidate.", i);
+            }
+        }
+
         geometry_msgs::msg::Twist cmd;
 
-        if (m.m00 > 0) {
+        if (best_index != -1) {
+            cv::Moments m = cv::moments(contours[best_index]);
             int cx = m.m10 / m.m00;
-            int width = frame.cols;
-            int error = cx - width / 2;
+            int error = cx - frame.cols / 2;
 
-            cmd.linear.x = 0.2;
+            cmd.linear.x = 0.5;
             cmd.angular.z = -error / 100.0;
 
-            RCLCPP_INFO(
-                this->get_logger(),
+            RCLCPP_INFO(this->get_logger(),
                 "Target detected at x=%d (error=%d). Sending cmd_vel: linear=%.2f angular=%.2f",
                 cx, error, cmd.linear.x, cmd.angular.z);
         } else {
-            RCLCPP_WARN(this->get_logger(), "No target detected. Robot will stop.");
             cmd.linear.x = 0.0;
             cmd.angular.z = 0.0;
+            RCLCPP_WARN(this->get_logger(), "No valid target detected. Robot will stop.");
         }
 
         cmd_pub_->publish(cmd);
     }
+
 
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
