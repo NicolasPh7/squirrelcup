@@ -43,6 +43,7 @@ jobs:
             source install/setup.bash && \
             source tools/run_tests_in_container.sh
           "
+          echo "Finished"
 
       - name: Upload test logs
         uses: actions/upload-artifact@v4

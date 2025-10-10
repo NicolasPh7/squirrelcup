@@ -18,10 +18,5 @@ echo "Running integration test (headless)" | tee "$LOGFILE"
 
 xvfb-run -a colcon test --event-handlers console_direct+ | tee -a "$LOGFILE"
 
-# copy any generated ros2 test output (colcon pytest style)
-if [ -d build/mam_eurobot_2026/test_results ]; then
-  cp -r build/mam_eurobot_2026/test_results "$ARTIFACT_DIR/" || true
-fi
-
-exit 0
+colcon test-result --verbose || true
 
