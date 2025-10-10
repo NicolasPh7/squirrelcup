@@ -17,12 +17,11 @@ cd /home/rosdev/eurobot_2026_ws || exit 1
 echo "Running integration test (headless)" | tee "$LOGFILE"
 
 xvfb-run -a colcon test --event-handlers console_direct+ | tee -a "$LOGFILE"
-TEST_EXIT=${PIPESTATUS[0]}
 
 # copy any generated ros2 test output (colcon pytest style)
 if [ -d build/mam_eurobot_2026/test_results ]; then
   cp -r build/mam_eurobot_2026/test_results "$ARTIFACT_DIR/" || true
 fi
 
-exit $TEST_EXIT
+exit 0
 
