@@ -40,7 +40,7 @@ private:
         cv::convertScaleAbs(laplacian, sharp_edges);
 
         cv::Mat edge_mask;
-        cv::threshold(sharp_edges, edge_mask, 25, 255, cv::THRESH_BINARY);
+        cv::threshold(sharp_edges, edge_mask, 10, 255, cv::THRESH_BINARY);
         int edge_pixels = cv::countNonZero(edge_mask);
                 RCLCPP_INFO(this->get_logger(), "Sharp edge pixel count: %d", edge_pixels);
 
@@ -63,7 +63,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "Found %zu contours.", contours.size());
 
         int best_index = -1;
-        double max_area = 0;
+        double max_area = 400;
 
         for (size_t i = 0; i < contours.size(); ++i) {
             double area = cv::contourArea(contours[i]);
@@ -74,7 +74,7 @@ private:
             RCLCPP_DEBUG(this->get_logger(),
                 "Contour %zu: area=%.2f, approxPoly=%d", i, area, (int)approx.size());
 
-            if (area > max_area && approx.size() >= 2 && approx.size() <= 12) { 
+            if (area > max_area && approx.size() >= 2 && approx.size() <= 14) { 
             // if (area > max_area) { 
                 max_area = area;
                 best_index = i;
