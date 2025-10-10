@@ -25,10 +25,10 @@ def get_install_share(package_name):
 
 
 @pytest.mark.timeout(15)
-def test_robot_reaches_crate():
+def test_robot_goes_cirlc_and_odometry_doesnt_drift():
     # Start rclpy for subscribing
     rclpy.init()
-    node = rclpy.create_node('test_integration_node')
+    node = rclpy.create_node('test_odometry_node')
 
     odom_msgs = []
 
@@ -49,55 +49,46 @@ def test_robot_reaches_crate():
     color_proc = None
 
     try:
-        # delay launching nut_identifier by 3s - start it separately so the
+
+        # delay launching cpp_test by 3s - start it separately so the
         # test controls the delay
         time.sleep(3.0)
+
+
+
         color_proc = subprocess.Popen(
-            ['ros2', 'run', 'mam_eurobot_2026', 'nut_identifier']
+            ['ros2', 'run', 'mam_eurobot_2026', 'cpp_test']
         )
 
-        # record start pose
-        start_pose = None
         t0 = time.time()
         while time.time() - t0 < 2.0 and not odom_msgs:
             rclpy.spin_once(node, timeout_sec=0.1)
 
-    # Now wait up to 10s total for robot to reach crate position. The crate
-    # position is known from models/simple_robot/model.sdf; we assume the
-    # crate is at x=-0.2, y=0
-        target_x = -0.20
-        target_y = 0.0
 
-        start_x = 0.78
-        start_y = 1.20
+        # record start pose
+        start_pose = odom_msgs[-1]
+        last_pose = odom_msgs[-1]
 
-        ddx = target_x - start_x
-        ddy = target_y - start_y
-        target_dist = (ddx * ddx + ddy * ddy) ** 0.5
-        
-        reached = False
-        deadline = time.time() + 15.0
-        dist = target_dist
+        sx = start_pose.pose.pose.position.x
+        sy = start_pose.pose.pose.position.y
+
+        deadline = time.time() + 10.0
         while time.time() < deadline:
             rclpy.spin_once(node, timeout_sec=0.1)
             if odom_msgs:
-                last = odom_msgs[-1]
-                lx = last.pose.pose.position.x
-                ly = last.pose.pose.position.y
+                last_pose = odom_msgs[-1]
 
-                dist = (lx * lx + ly * ly) ** 0.5
-                dist = target_dist - dist
-                print(f"last_x = {lx}, last_y = {ly}, relative_dist to target = {dist}\n")
-                if dist < 0.05:  # tolerance
-                    reached = True
-                    print(f"Target reached at relative dist {dist}. x = {lx}, y = {ly}")
-                    break
+        lx = last_pose.pose.pose.position.x
+        ly = last_pose.pose.pose.position.y
+        dx = lx - sx
+        dy = ly - sy
+        dist = (dx * dx + dy * dy) ** 0.5
+        print(f"last_x = {lx}, last_y = {ly}, relative_dist to target = {dist}\n")
 
-        assert reached, f"Robot did not reach crate position within timeout. dist = {dist}"
+        assert dist < 0.05, f"To much drift between start and end dist= {dist}. x = {lx}, y = {ly}"
     finally:
         if color_proc is not None:
             terminate_process_tree(color_proc.pid)
         terminate_process_tree(proc.pid)
         node.destroy_node()
         rclpy.shutdown()
-

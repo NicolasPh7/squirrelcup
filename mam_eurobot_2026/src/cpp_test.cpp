@@ -23,9 +23,9 @@ private:
     {
         geometry_msgs::msg::Twist msg;
         bool flag_ = false;
-        if (count_ < 10) {              // Publish Twist for 5 seconds
+        if (count_ < 8) {              // Publish Twist for 5 seconds. 
             msg.linear.x = 0.50;                   // forward velocity
-            msg.angular.z = 1.57;                  // angular velocity
+            msg.angular.z = 1.5707963267949;                  // angular velocity
             RCLCPP_INFO(this->get_logger(), "Moving in a circle...");
         } else {
             msg.linear.x = 0.0;

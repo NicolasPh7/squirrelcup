@@ -4,19 +4,22 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 
-class ColorFollower : public rclcpp::Node
+class Nut_Identifier : public rclcpp::Node
 {
 public:
-    ColorFollower()
-    : Node("color_follower")
+    Nut_Identifier()
+    : Node("nut_identifier")
     {
-        RCLCPP_INFO(this->get_logger(), "ColorFollower node started.");
+        RCLCPP_INFO(this->get_logger(), "Nut_Identifier node started.");
 
         image_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
             "/camera", 10,
-            std::bind(&ColorFollower::image_callback, this, std::placeholders::_1));
+            std::bind(&Nut_Identifier::image_callback, this, std::placeholders::_1));
 
         cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+        
+        debug_image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("/debug/contours_image", 10);
+
     }
 
 private:
@@ -32,6 +35,8 @@ private:
             return;
         }
 
+        cv::Mat debug_image = frame.clone();
+
         cv::Mat gray;
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
@@ -40,7 +45,7 @@ private:
         cv::convertScaleAbs(laplacian, sharp_edges);
 
         cv::Mat edge_mask;
-        cv::threshold(sharp_edges, edge_mask, 10, 255, cv::THRESH_BINARY);
+        cv::threshold(sharp_edges, edge_mask, 5, 255, cv::THRESH_BINARY);
         int edge_pixels = cv::countNonZero(edge_mask);
                 RCLCPP_INFO(this->get_logger(), "Sharp edge pixel count: %d", edge_pixels);
 
@@ -63,7 +68,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "Found %zu contours.", contours.size());
 
         int best_index = -1;
-        double max_area = 400;
+        double max_area = 100;
 
         for (size_t i = 0; i < contours.size(); ++i) {
             double area = cv::contourArea(contours[i]);
@@ -74,14 +79,28 @@ private:
             RCLCPP_DEBUG(this->get_logger(),
                 "Contour %zu: area=%.2f, approxPoly=%d", i, area, (int)approx.size());
 
-            if (area > max_area && approx.size() >= 2 && approx.size() <= 14) { 
+            if (area > max_area && approx.size() >= 2 && approx.size() <= 20) { 
             // if (area > max_area) { 
                 max_area = area;
                 best_index = i;
                 RCLCPP_INFO(this->get_logger(),
                     "Contour %zu selected as best candidate.", i);
+
+                cv::drawContours(debug_image, contours, i, cv::Scalar(0, 0, 255), 3);  // Rot für besten
+
             }
         }
+
+        std_msgs::msg::Header header;
+        header.stamp = msg->header.stamp;
+        header.frame_id = msg->header.frame_id;
+
+        sensor_msgs::msg::Image::SharedPtr debug_msg =
+            cv_bridge::CvImage(header, "bgr8", debug_image).toImageMsg();
+
+        debug_image_pub_->publish(*debug_msg);
+
+
 
         geometry_msgs::msg::Twist cmd;
 
@@ -108,12 +127,14 @@ private:
 
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr debug_image_pub_;
+
 };
 
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<ColorFollower>();
+    auto node = std::make_shared<Nut_Identifier>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

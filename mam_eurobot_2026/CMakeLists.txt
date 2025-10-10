@@ -41,16 +41,16 @@ add_executable(cpp_test src/cpp_test.cpp)
 ament_target_dependencies(cpp_test rclcpp geometry_msgs)
 install(TARGETS cpp_test DESTINATION lib/${PROJECT_NAME})
 
-add_executable(color_follower src/color_follower.cpp)
-target_link_libraries(color_follower ${OpenCV_LIBS})
+add_executable(nut_identifier src/nut_identifier.cpp)
+target_link_libraries(nut_identifier ${OpenCV_LIBS})
 ament_target_dependencies(
-  color_follower
+  nut_identifier
   rclcpp
   sensor_msgs
   geometry_msgs
   cv_bridge
   OpenCV)
-install(TARGETS color_follower DESTINATION lib/${PROJECT_NAME})
+install(TARGETS nut_identifier DESTINATION lib/${PROJECT_NAME})
 
 add_executable(teleop src/teleop.cpp)
 ament_target_dependencies(teleop rclcpp geometry_msgs)
@@ -83,4 +83,5 @@ ament_package()
 if(BUILD_TESTING)
   # Register pytest tests
   ament_add_pytest_test(test_integration test/test_integration_odometry.py)
+  ament_add_pytest_test(test_odometry test/test_odometry.py)
 endif()

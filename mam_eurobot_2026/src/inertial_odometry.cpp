@@ -12,7 +12,7 @@ class InertialOdometry : public rclcpp::Node
 {
 public:
   InertialOdometry()
-  : Node("inertial_odometry"), publish_frequency_(5.0)
+  : Node("inertial_odometry"), publish_frequency_(200)
   {
     this->declare_parameter("publish_frequency", publish_frequency_);
     this->get_parameter("publish_frequency", publish_frequency_);
@@ -48,26 +48,28 @@ private:
 
   void timerCallback()
   {
-    rclcpp::Time now = this->now();
+    rclcpp::Clock clock(RCL_ROS_TIME);
+    rclcpp::Time now = clock.now();
     double dt = (now - last_time_).seconds();
     last_time_ = now;
 
-    double local_vx = 0.0, local_vy = 0.0, local_omega = 0.0;
+    double local_vx = 0.0, local_omega = 0.0;
     {
       std::lock_guard<std::mutex> lock(mutex_);
       local_vx = vx_;
-      local_vy = vy_;
       local_omega = omega_;
     }
 
-    // Integrate pose
-    double dx = (local_vx * std::cos(yaw_) - local_vy * std::sin(yaw_)) * dt;
-    double dy = (local_vx * std::sin(yaw_) + local_vy * std::cos(yaw_)) * dt;
+    // Runge-Kutta 2. Ordnung
+    double mid_yaw = yaw_ + 0.5 * local_omega * dt;
+    double dx = local_vx * std::cos(mid_yaw) * dt;
+    double dy = local_vx * std::sin(mid_yaw) * dt;
     double dyaw = local_omega * dt;
 
     x_ += dx;
     y_ += dy;
     yaw_ += dyaw;
+    yaw_ = std::atan2(std::sin(yaw_), std::cos(yaw_));  
 
     // publish odometry
     nav_msgs::msg::Odometry odom;
@@ -84,7 +86,6 @@ private:
     odom.pose.pose.orientation.z = q.z();
     odom.pose.pose.orientation.w = q.w();
     odom.twist.twist.linear.x = local_vx;
-    odom.twist.twist.linear.y = local_vy;
     odom.twist.twist.angular.z = local_omega;
     pub_->publish(odom);
 
@@ -104,6 +105,7 @@ private:
     t.transform.rotation.w = qt.w();
     tf_broadcaster_->sendTransform(t);
   }
+
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_;
