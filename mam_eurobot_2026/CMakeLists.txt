@@ -9,10 +9,12 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
@@ -42,14 +44,20 @@ ament_target_dependencies(cpp_test rclcpp geometry_msgs)
 install(TARGETS cpp_test DESTINATION lib/${PROJECT_NAME})
 
 add_executable(nut_identifier src/nut_identifier.cpp)
-target_link_libraries(nut_identifier ${OpenCV_LIBS})
+target_link_libraries(nut_identifier ${OpenCV_LIBS} ${tf2_LIBRARIES})
 ament_target_dependencies(
   nut_identifier
   rclcpp
   sensor_msgs
   geometry_msgs
+  nav_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
   cv_bridge
-  OpenCV)
+  OpenCV
+  visualization_msgs
+)
 install(TARGETS nut_identifier DESTINATION lib/${PROJECT_NAME})
 
 add_executable(teleop src/teleop.cpp)
@@ -57,9 +65,8 @@ ament_target_dependencies(teleop rclcpp geometry_msgs)
 install(TARGETS teleop DESTINATION lib/${PROJECT_NAME})
 
 add_executable(inertial_odometry src/inertial_odometry.cpp)
-ament_target_dependencies(inertial_odometry rclcpp geometry_msgs nav_msgs)
+ament_target_dependencies(inertial_odometry rclcpp geometry_msgs nav_msgs tf2 tf2_ros)
 target_link_libraries(inertial_odometry ${tf2_LIBRARIES})
-ament_target_dependencies(inertial_odometry tf2 tf2_ros)
 install(TARGETS inertial_odometry DESTINATION lib/${PROJECT_NAME})
 
 

@@ -1,12 +1,14 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, SetEnvironmentVariable
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Command
 from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
+    # urdf_path = PathJoinSubstitution([pkg_path, 'models', 'simple_robot.urdf'])
+
     return LaunchDescription([
         SetEnvironmentVariable(
             'GZ_SIM_RESOURCE_PATH',
@@ -38,7 +40,7 @@ def generate_launch_description():
                 "ros2", "run", "ros_gz_sim", "create",
                 "-file", "file://models/simple_robot",
                 "-name", "simple_robot",
-                "-x", "0.78", "-y", "1.20", "-z", "0.00", "-Y", "-2.64"
+                "-x", "0.80", "-y", "-1.15", "-z", "0.00", "-Y", "3.14"
             ],
             output="screen"
         ),
@@ -55,6 +57,21 @@ def generate_launch_description():
             executable='parameter_bridge',
             arguments=['/camera@sensor_msgs/msg/Image@gz.msgs.Image'],
         ),
+        
+        # Node(
+        #     package='robot_state_publisher',
+        #     executable='robot_state_publisher',
+        #     name='robot_state_publisher',
+        #     parameters=[{
+        #         'robot_description': Command(['cat', urdf_path])
+        #     }]
+        # ),
+
+        # Node(
+        #     package='joint_state_publisher_gui',
+        #     executable='joint_state_publisher_gui',
+        #     name='joint_state_publisher_gui'
+        # ),
 
         Node(
             package='rviz2',
@@ -66,6 +83,12 @@ def generate_launch_description():
             package='mam_eurobot_2026',
             executable='inertial_odometry',
             name='inertial_odometry',
+            output='screen',
+        ),
+        Node(
+            package='mam_eurobot_2026',
+            executable='nut_identifier',
+            name='nut_identifier',
             output='screen',
         ),
         Node(
