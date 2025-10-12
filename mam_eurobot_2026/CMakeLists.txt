@@ -69,6 +69,16 @@ ament_target_dependencies(inertial_odometry rclcpp geometry_msgs nav_msgs tf2 tf
 target_link_libraries(inertial_odometry ${tf2_LIBRARIES})
 install(TARGETS inertial_odometry DESTINATION lib/${PROJECT_NAME})
 
+add_executable(robot_controller src/robot_controller.cpp)
+ament_target_dependencies(robot_controller rclcpp geometry_msgs nav_msgs visualization_msgs tf2 tf2_geometry_msgs)
+target_link_libraries(robot_controller ${tf2_LIBRARIES})
+install(TARGETS robot_controller DESTINATION lib/${PROJECT_NAME})
+
+add_executable(trajectory_planner src/trajectory_planner.cpp)
+ament_target_dependencies(trajectory_planner rclcpp geometry_msgs nav_msgs visualization_msgs tf2 tf2_geometry_msgs)
+target_link_libraries(trajectory_planner ${tf2_LIBRARIES})
+install(TARGETS trajectory_planner DESTINATION lib/${PROJECT_NAME})
+
 
 # Install launch files
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
@@ -78,6 +88,8 @@ install(DIRECTORY worlds DESTINATION share/${PROJECT_NAME})
 
 # Install models files
 install(DIRECTORY models DESTINATION share/${PROJECT_NAME})
+
+install(DIRECTORY resource DESTINATION share/${PROJECT_NAME})
 
 # Install Python modules
 ament_python_install_package(${PROJECT_NAME})

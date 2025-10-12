@@ -20,6 +20,12 @@ def generate_launch_description():
                 pkg_path, 'worlds', 'arena_world.sdf'
             ])
         ),
+        DeclareLaunchArgument(
+            'rviz_config_path',
+            default_value=PathJoinSubstitution([
+                pkg_path, 'resource', 'simu.rviz'
+            ]),
+        ),
         ExecuteProcess(
             cmd=[
                 'ign', 'gazebo', '-r', LaunchConfiguration('world'), '-v', '4'
@@ -78,6 +84,7 @@ def generate_launch_description():
             executable='rviz2',
             name='rviz2',
             output='screen',
+            arguments=['-d', LaunchConfiguration('rviz_config_path')],
         ),
         Node(
             package='mam_eurobot_2026',
@@ -89,6 +96,12 @@ def generate_launch_description():
             package='mam_eurobot_2026',
             executable='nut_identifier',
             name='nut_identifier',
+            output='screen',
+        ),
+        Node(
+            package='mam_eurobot_2026',
+            executable='trajectory_planner',
+            name='trajectory_planner',
             output='screen',
         ),
         Node(

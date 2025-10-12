@@ -26,7 +26,7 @@ public:
         odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
             "/odom", 10, std::bind(&Nut_Identifier::odom_callback, this, std::placeholders::_1));
 
-        marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/nut_markers", 10);
+        marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/nut_markers", 5);
 
 
     }
@@ -76,14 +76,20 @@ private:
             std::vector<cv::Point> approx;
             cv::approxPolyDP(contours[i], approx, 15.0, true);
 
-            if (area > max_area && approx.size() >= 4 && approx.size() <= 20) { 
+            if (area > max_area && approx.size() >= 4 && approx.size() <= 14) { 
                 max_area = area;
                 
                 float distance_m, angle_rad, angle_to_camera_rad;
-                bool isNut = estimatePosition(frame, contours[i], distance_m, angle_rad, angle_to_camera_rad);
+                bool isNut = estimatePoseFromContour(frame, contours[i], distance_m, angle_rad, angle_to_camera_rad);
                 
                 if (isNut) {
                     cv::drawContours(debug_image, contours, i, cv::Scalar(0, 0, 255), 4);  // Red
+
+                    char label[100];
+                    snprintf(label, sizeof(label), "nut id: %d, dist=%.2f", (int)i, distance_m);
+                    cv::Point text_pos = contours[i][0];
+                    cv::putText(debug_image, label, text_pos, cv::FONT_HERSHEY_SIMPLEX, 0.5,
+                    cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
 
                     RCLCPP_INFO(this->get_logger(),
                         "Nut detected: dist=%.2f m, angle=%.2f rad, tilt=%.2f rad",
@@ -107,25 +113,24 @@ private:
 
     }
 
-    bool estimatePosition(cv::Mat& frame, std::vector<cv::Point>& contours, float& distance, float& angle, float& tilt) {
-        cv::Moments m = cv::moments(contours);
-        int cx = m.m10 / m.m00;
-        //int error = cx - frame.cols / 2;
+    bool estimatePoseFromContour(const cv::Mat& frame, const std::vector<cv::Point>& contour, float& distance, float& angle, float& tilt) {
+        cv::Moments m = cv::moments(contour);
+        if (m.m00 == 0) return false;  
+        int cx = static_cast<int>(m.m10 / m.m00);
 
-        // angle to camera
         // formula: focal_py = width / (2 * tan(horizontal_fov * 2))
-        float focal_px = 554.0f;
-        float angle_rad = std::atan2(cx - frame.cols / 2.0f, focal_px);
-
-        //tilt of nut
-        cv::Rect bbox = cv::boundingRect(contours);
+        float focal_px = 554.0f;  
         float nut_length_mm = 150.0f;
         float nut_depth_mm = 50.0f;
+
+        float angle_rad = std::atan2(cx - frame.cols / 2.0f, focal_px);
+
+        cv::Rect bbox = cv::boundingRect(contour);
         float projected_length_px = static_cast<float>(bbox.width);
         float projected_length_mm = (projected_length_px * nut_length_mm) / focal_px;
+
         float angle_to_camera_rad = std::acos(std::clamp(projected_length_mm / nut_length_mm, -1.0f, 1.0f));
-    
-        //distance approx
+
         float visible_mm = nut_length_mm * std::cos(angle_to_camera_rad) + nut_depth_mm * std::sin(angle_to_camera_rad);
         float distance_mm = (visible_mm * focal_px) / projected_length_px;
         float distance_m = distance_mm / 1000.0f;
@@ -134,8 +139,9 @@ private:
         angle = angle_rad;
         tilt = angle_to_camera_rad;
 
-        return projected_length_mm >= 30.0f && projected_length_mm <=180.0f;
+        return projected_length_mm >= 10.0f && projected_length_mm <= 250.0f;
     }
+
 
     void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
         robot_current_pose_ = msg->pose.pose;
@@ -170,7 +176,7 @@ private:
 
         // Orientierung aus Tilt-Winkel
         tf2::Quaternion q;
-        q.setRPY(0, 0, tilt + M_PI_2 );  // Roll=0, Pitch=Tilt, Yaw=angle
+        q.setRPY(0, 0, tilt);  // Roll=0, Pitch=Tilt, Yaw=angle
         marker.pose.orientation = tf2::toMsg(q);
 
         // Größe und Farbe
@@ -209,6 +215,62 @@ private:
         clear_array.markers.push_back(delete_marker);
         marker_pub_->publish(clear_array);       
     }
+
+    // bool estimatePoseFromContour(const std::vector<cv::Point>& contour, const cv::Size& frame_size,
+    //                              float& distance_m, float& angle_rad, float& tilt_rad,
+    //                              float nut_length_mm = 150.0f, float nut_depth_mm = 30.0f, float focal_px = 554.0f) {
+    //     std::vector<cv::Point3f> object_points = {
+    //         {0, 0, 0},
+    //         {nut_length_mm, 0, 0},
+    //         {nut_length_mm, nut_depth_mm, 0},
+    //         {0, nut_depth_mm, 0}
+    //     };
+
+    //     // 2D-image points aus minAreaRect
+    //     cv::RotatedRect rect = cv::minAreaRect(contour);
+    //     cv::Point2f box_points[4];
+    //     rect.points(box_points);
+    //     std::vector<cv::Point2f> image_points(box_points, box_points + 4);
+
+    //     // camera matrix
+    //     float cx = frame_size.width / 2.0f;
+    //     float cy = frame_size.height / 2.0f;
+    //     cv::Mat camera_matrix = (cv::Mat_<float>(3, 3) <<
+    //         focal_px, 0, cx,
+    //         0, focal_px, cy,
+    //         0, 0, 1);
+    //     cv::Mat dist_coeffs = cv::Mat::zeros(4, 1, CV_32F); // keine Verzerrung
+
+    //     // Pose estimation
+    //     cv::Mat rvec, tvec;
+    //     bool success = cv::solvePnP(object_points, image_points, camera_matrix, dist_coeffs, rvec, tvec);
+    //     if (!success) {
+    //         std::cerr << "Pose could not be estimate." << std::endl;
+    //         return false;
+    //     }
+
+    //     // Rotation → Matrix
+    //     cv::Mat R;
+    //     cv::Rodrigues(rvec, R);
+
+    //     // Tilt angle
+    //     cv::Mat nut_normal = (cv::Mat_<double>(3, 1) << 0, 0, 1);
+    //     cv::Mat camera_view = R * nut_normal;
+    //     float z_component = camera_view.at<float>(2, 0);
+    //     float norm = cv::norm(camera_view);
+    //     tilt_rad = std::acos(std::clamp(z_component / norm, -1.0f, 1.0f));
+
+    //     // distance = translation
+    //     float distance_mm = cv::norm(tvec);
+    //     distance_m = distance_mm / 1000.0f;
+
+    //     // horizontal angle
+    //     cv::Moments m = cv::moments(contour);
+    //     int cx_contour = static_cast<int>(m.m10 / m.m00);
+    //     angle_rad = std::atan2(cx_contour - cx, focal_px);
+
+    //     return true;
+    // }
 
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr debug_image_pub_;
