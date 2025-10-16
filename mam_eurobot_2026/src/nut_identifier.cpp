@@ -34,7 +34,7 @@ public:
 private:
     void image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
     {
-        RCLCPP_INFO(this->get_logger(), "Received image frame.");
+        // RCLCPP_INFO(this->get_logger(), "Received image frame.");
 
         cv::Mat frame;
         try {
@@ -63,7 +63,7 @@ private:
 
         std::vector<std::vector<cv::Point>> contours;
         cv::findContours(combined_mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-        RCLCPP_INFO(this->get_logger(), "Found %zu contours.", contours.size());
+        // RCLCPP_INFO(this->get_logger(), "Found %zu contours.", contours.size());
 
         double max_area = 100;
 
@@ -91,9 +91,9 @@ private:
                     cv::putText(debug_image, label, text_pos, cv::FONT_HERSHEY_SIMPLEX, 0.5,
                     cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
 
-                    RCLCPP_INFO(this->get_logger(),
-                        "Nut detected: dist=%.2f m, angle=%.2f rad, tilt=%.2f rad",
-                    distance_m, angle_rad, angle_to_camera_rad);
+                    // RCLCPP_INFO(this->get_logger(),
+                    //     "Nut detected: dist=%.2f m, angle=%.2f rad, tilt=%.2f rad",
+                    // distance_m, angle_rad, angle_to_camera_rad);
     
                     prepareMarker(marker_array, i, distance_m, angle_rad, angle_to_camera_rad, 0.0f, 0.0f, 1.0f);
                 }
@@ -188,18 +188,18 @@ private:
         marker.color.b = b;
         marker.color.a = 1.0;
 
-        RCLCPP_INFO(this->get_logger(),
-            "Marker[%d] @ world: x=%.2f, y=%.2f, z=%.2f | local dx=%.2f, dy=%.2f | yaw=%.2f rad | tilt=%.2f rad | angle=%.2f rad",
-            id,
-            marker.pose.position.x,
-            marker.pose.position.y,
-            marker.pose.position.z,
-            dx_local,
-            dy_local,
-            yaw,
-            tilt,
-            angle
-        );
+        // RCLCPP_INFO(this->get_logger(),
+        //     "Marker[%d] @ world: x=%.2f, y=%.2f, z=%.2f | local dx=%.2f, dy=%.2f | yaw=%.2f rad | tilt=%.2f rad | angle=%.2f rad",
+        //     id,
+        //     marker.pose.position.x,
+        //     marker.pose.position.y,
+        //     marker.pose.position.z,
+        //     dx_local,
+        //     dy_local,
+        //     yaw,
+        //     tilt,
+        //     angle
+        // );
         
 
         marker_array.markers.push_back(marker);

@@ -50,6 +50,7 @@ def generate_launch_description():
             ],
             output="screen"
         ),
+
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
@@ -58,12 +59,44 @@ def generate_launch_description():
             arguments=['/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist']
         ),
 
+        # Node(
+        #     package='ros_gz_bridge',
+        #     executable='parameter_bridge',
+        #     name='odom_bridge',
+        #     output='screen',
+        #     arguments=['/model/simple_robot/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
+        # ),
+
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
             arguments=['/camera@sensor_msgs/msg/Image@gz.msgs.Image'],
         ),
-        
+
+        # Node(
+        #     package='ros_gz_bridge',
+        #     executable='parameter_bridge',
+        #     name='lidar_3d_bridge',
+        #     output='screen',
+        #     arguments=['/lidar_3d@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan']
+        # ),
+
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='lidar_3d_pc_bridge',
+            output='screen',
+            arguments=['/lidar_3d/points@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked']
+        ),
+
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='lidar_tf',
+            arguments=['0', '0', '0', '0', '0', '0', 'base_link', 'simple_robot/chassis/lidar_3d'],
+            output='screen'
+        ),
+
         # Node(
         #     package='robot_state_publisher',
         #     executable='robot_state_publisher',
@@ -111,4 +144,5 @@ def generate_launch_description():
             arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom'],
             output='screen'
         )
+
     ])
