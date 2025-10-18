@@ -56,7 +56,7 @@
 	  </sensor>
 
 	  <sensor name="lidar_3d" type="gpu_lidar">
-	  <pose>0.1 0 0.06 0 -0.1 0</pose> 
+	  <pose>0.1 0 0.08 0 0.0 0</pose> 
 	  <lidar>
 	    <scan>
 	      <horizontal>
@@ -66,14 +66,14 @@
 	        <max_angle>1.5708</max_angle>
 	      </horizontal>
 	      <vertical>
-	        <samples>60</samples>
+	        <samples>180</samples>
 	        <resolution>1</resolution>
 	        <min_angle>-0.5236</min_angle>
 	        <max_angle>0.5236</max_angle>
 	      </vertical>
 	    </scan>
 	    <range>
-	      <min>0.1</min>
+	      <min>0.02</min>
 	      <max>20.0</max>
 	      <resolution>0.01</resolution>
 	    </range>
@@ -229,6 +229,8 @@
 			<wheel_separation>0.12</wheel_separation>
 			<wheel_radius>0.04</wheel_radius>
 			<odom_publish_frequency>1</odom_publish_frequency>
+			<publish_odom>true</publish_odom>
+			<odom_topic>/odometry</odom_topic>
 			<topic>cmd_vel</topic>
 		</plugin>
 		<plugin

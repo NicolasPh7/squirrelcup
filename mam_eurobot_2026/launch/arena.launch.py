@@ -59,13 +59,14 @@ def generate_launch_description():
             arguments=['/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist']
         ),
 
-        # Node(
-        #     package='ros_gz_bridge',
-        #     executable='parameter_bridge',
-        #     name='odom_bridge',
-        #     output='screen',
-        #     arguments=['/model/simple_robot/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
-        # ),
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='odom_bridge',
+            output='screen',
+            arguments=['/model/simple_robot/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
+        ),
+
 
         Node(
             package='ros_gz_bridge',
@@ -93,7 +94,7 @@ def generate_launch_description():
             package='tf2_ros',
             executable='static_transform_publisher',
             name='lidar_tf',
-            arguments=['0', '0', '0', '0', '0', '0', 'base_link', 'simple_robot/chassis/lidar_3d'],
+            arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'simple_robot/chassis/lidar_3d'],
             output='screen'
         ),
 
@@ -129,6 +130,12 @@ def generate_launch_description():
             package='mam_eurobot_2026',
             executable='nut_identifier',
             name='nut_identifier',
+            output='screen',
+        ),
+        Node(
+            package='mam_eurobot_2026',
+            executable='object_detector',
+            name='object_detector',
             output='screen',
         ),
         Node(

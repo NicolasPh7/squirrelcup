@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -18,7 +19,10 @@ find_package(tf2_geometry_msgs REQUIRED)
 
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
-find_package(sensor_msgs REQUIRED)
+
+find_package(PCL REQUIRED COMPONENTS common filters segmentation search)
+find_package(pcl_conversions REQUIRED)
+find_package(pcl_msgs REQUIRED)
 
 
 if(BUILD_TESTING)
@@ -37,6 +41,9 @@ endif()
 
 # Include Cpp "include" directory
 include_directories(include)
+
+include_directories(${PCL_INCLUDE_DIRS})
+include_directories(${pcl_conversions_INCLUDE_DIRS})
 
 # Create and install Cpp executable
 add_executable(cpp_test src/cpp_test.cpp)
@@ -78,6 +85,11 @@ add_executable(trajectory_planner src/trajectory_planner.cpp)
 ament_target_dependencies(trajectory_planner rclcpp geometry_msgs nav_msgs visualization_msgs tf2 tf2_geometry_msgs)
 target_link_libraries(trajectory_planner ${tf2_LIBRARIES})
 install(TARGETS trajectory_planner DESTINATION lib/${PROJECT_NAME})
+
+add_executable(object_detector src/object_detector.cpp)
+ament_target_dependencies(object_detector rclcpp sensor_msgs geometry_msgs visualization_msgs tf2 tf2_geometry_msgs)
+target_link_libraries(object_detector ${PCL_LIBRARIES})
+install(TARGETS object_detector DESTINATION lib/${PROJECT_NAME})
 
 
 # Install launch files
