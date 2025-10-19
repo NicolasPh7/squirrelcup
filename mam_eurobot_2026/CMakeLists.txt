@@ -87,7 +87,7 @@ target_link_libraries(trajectory_planner ${tf2_LIBRARIES})
 install(TARGETS trajectory_planner DESTINATION lib/${PROJECT_NAME})
 
 add_executable(object_detector src/object_detector.cpp)
-ament_target_dependencies(object_detector rclcpp sensor_msgs geometry_msgs visualization_msgs tf2 tf2_geometry_msgs)
+ament_target_dependencies(object_detector rclcpp sensor_msgs geometry_msgs visualization_msgs tf2 tf2_geometry_msgs cv_bridge OpenCV)
 target_link_libraries(object_detector ${PCL_LIBRARIES})
 install(TARGETS object_detector DESTINATION lib/${PROJECT_NAME})
 
