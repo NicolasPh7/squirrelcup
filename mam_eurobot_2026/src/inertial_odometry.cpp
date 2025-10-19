@@ -12,7 +12,7 @@ class InertialOdometry : public rclcpp::Node
 {
 public:
   InertialOdometry()
-  : Node("inertial_odometry"), publish_frequency_(200)
+  : Node("inertial_odometry"), publish_frequency_(1000)
   {
     this->declare_parameter("publish_frequency", publish_frequency_);
     this->get_parameter("publish_frequency", publish_frequency_);

@@ -3,6 +3,10 @@
 #include "visualization_msgs/msg/marker.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/point.hpp"
+
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
 #include <vector>
 #include <cmath>
 
@@ -137,18 +141,29 @@ private:
                     const geometry_msgs::msg::Pose& start,
                     const geometry_msgs::msg::Pose& end) {
     int num_poses = 10;
+
+    // Konvertiere Start- und Endorientierung zu tf2::Quaternion
+    tf2::Quaternion q_start, q_end;
+    tf2::fromMsg(start.orientation, q_start);
+    tf2::fromMsg(end.orientation, q_end);
+
     for (int i = 1; i <= num_poses; ++i) {
       double ratio = static_cast<double>(i) / num_poses;
+
       geometry_msgs::msg::Pose intermediate;
       intermediate.position.x = start.position.x + ratio * (end.position.x - start.position.x);
       intermediate.position.y = start.position.y + ratio * (end.position.y - start.position.y);
+      intermediate.position.z = start.position.z + ratio * (end.position.z - start.position.z);
 
       if (isNearMarker(intermediate)) continue;
+
+      // Interpoliere die Orientierung mit SLERP
+      tf2::Quaternion q_interp = q_start.slerp(q_end, ratio);
+      intermediate.orientation = tf2::toMsg(q_interp);
 
       geometry_msgs::msg::PoseStamped pose;
       pose.header = path_msg.header;
       pose.pose = intermediate;
-      pose.pose.orientation.w = end.orientation.w;
       path_msg.poses.push_back(pose);
     }
   }

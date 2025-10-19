@@ -29,7 +29,7 @@ public:
 
     cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
-    timer_ = this->create_wall_timer(200ms, std::bind(&RobotController::controlLoop, this));
+    timer_ = this->create_wall_timer(50ms, std::bind(&RobotController::controlLoop, this));
 
     RCLCPP_INFO(this->get_logger(), "RobotController node initialized.");
   }
@@ -72,7 +72,7 @@ private:
 
         if (reached) {
           stopRobot();
-          collect_start_time_ = this->now();
+          wait_time_ = this->now();
           state_ = State::COLLECTING;
         } else {
           followPath();
@@ -81,8 +81,7 @@ private:
 
       case State::COLLECTING:
         RCLCPP_INFO(this->get_logger(), "[COLLECTING] Waiting...");
-        if ((this->now() - collect_start_time_).seconds() > 2.0) {
-          path_ = planner_->planWayHome();
+        if ((this->now() - wait_time_).seconds() > 2.0) {
           state_ = State::RETURNING;
         }
         break;
@@ -93,11 +92,32 @@ private:
           path_ = planner_->planWayHome();
           if (reachedHome()) {
             stopRobot();
+            wait_time_ = this->now();
+            state_ = State::PLACING;
+          } else {
+            followPath();
+          }
+        break;
+
+      case State::PLACING:
+        RCLCPP_INFO(this->get_logger(), "[PLACE] Waiting...");
+        if ((this->now() - wait_time_).seconds() > 2.0) {
+          state_ = State::PREPARE;
+        }
+        break;
+      
+      case State::PREPARE:
+        RCLCPP_INFO(this->get_logger(), "[PREPARE] Preparing...");
+          planner_->setHomePosition(invertPose(current_pose_));
+          path_ = planner_->planWayHome();
+          if (inPreparedPosition()) {
+            stopRobot();
             state_ = State::SEARCHING;
           } else {
             followPath();
           }
         break;
+        
     }
   }
 
@@ -167,12 +187,26 @@ private:
   geometry_msgs::msg::Pose invertPose(const geometry_msgs::msg::Pose& pose) {
     tf2::Transform tf_pose;
     tf2::fromMsg(pose, tf_pose);
-    
+
+    // Invertiere die gesamte Pose (Translation + Rotation)
     tf2::Transform tf_inverse = tf_pose.inverse();
-    
-    geometry_msgs::msg::Pose inverse_pose;
-    tf2::toMsg(tf_inverse, inverse_pose);
-    return inverse_pose;
+
+    geometry_msgs::msg::Pose inverted_pose;
+    tf2::toMsg(tf_inverse, inverted_pose);
+
+    tf2::Quaternion original_q;
+    tf2::fromMsg(pose.orientation, original_q);
+
+    tf2::Quaternion rotation_180;
+    rotation_180.setRPY(0, 0, M_PI);  // Roll=0, Pitch=0, Yaw=180°
+
+    // Kombiniere die Rotationen: neue Orientierung = 180° * original
+    tf2::Quaternion new_q = rotation_180 * original_q;
+    new_q.normalize();
+
+    inverted_pose.orientation = tf2::toMsg(new_q);
+
+    return inverted_pose;
   }
 
 
@@ -191,7 +225,11 @@ private:
     return dist < threshold;
   }
 
-  enum class State { SEARCHING, APPROACHING, COLLECTING, RETURNING };
+  bool inPreparedPosition() {
+    return current_pose_.orientation.z >= -0.05 && current_pose_.orientation.z <= 0.05 ;
+  }
+
+  enum class State { SEARCHING, APPROACHING, COLLECTING, RETURNING, PLACING, PREPARE};
   State state_;
 
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr marker_sub_;
@@ -206,7 +244,7 @@ private:
   geometry_msgs::msg::Pose current_goal_pose_;
   std::vector<geometry_msgs::msg::PoseStamped> path_;
   size_t current_index_;
-  rclcpp::Time collect_start_time_;
+  rclcpp::Time wait_time_;
 };
 
 int main(int argc, char** argv) {

@@ -191,12 +191,12 @@ private:
 
                 // Höhe berechnen (wie bisher)
                 auto height = std::abs(max_pt_OBB.z - floor_offset_);
-                if (height < 0.01) continue;
+                if (height < 0.01 || height > 0.3) continue;
 
                 // Länge und Breite aus OBB
                 float length = std::abs(max_pt_OBB.x - min_pt_OBB.x);
                 float width  = std::abs(max_pt_OBB.y - min_pt_OBB.y);
-                if (length > 1.5 || width > 1.5) continue; // recognize nut, robots
+                if (length > 0.3 || width > 0.3) continue; // recognize nut, robots
 
                 // Quaternion aus Rotationsmatrix
                 Eigen::Quaternionf quat(rotational_matrix);
