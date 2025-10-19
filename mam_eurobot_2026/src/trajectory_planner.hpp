@@ -53,16 +53,19 @@ public:
         if (existing.color.b == 1.0 && existing.color.g == 0.0) {
           marker = existing;
           has_goal_ = true;
+          RCLCPP_INFO(node_->get_logger(), "[Planner] Setting a blue nut as target");
           break;
        }
         if (existing.color.b == 0.0 && existing.color.g == 1.0 && existing.color.r == 1.0) {
           marker = existing;
           has_goal_ = true;
+          RCLCPP_INFO(node_->get_logger(), "[Planner] Setting a yellow nut as target");
           break;
         }
         if (existing.color.b == 0.5) {
           marker = existing;
           has_goal_ = true;
+          RCLCPP_INFO(node_->get_logger(), "[Planner] Setting an unknow object as target");
           break;
         }
     }    
@@ -82,11 +85,10 @@ public:
 
     geometry_msgs::msg::PoseStamped start_pose;
     start_pose.header = path_msg.header;
-    start_pose.pose = current_position_;
     path_msg.poses.push_back(start_pose);
 
     geometry_msgs::msg::Pose target = goal_pose_;
-    generatePath(path_msg, current_position_, target);
+    generatePath(path_msg, start_pose.pose, target);
 
     path_pub_->publish(path_msg);
     RCLCPP_INFO(node_->get_logger(), "Published path to goal.");
@@ -102,7 +104,6 @@ public:
     if (has_home_ && has_position_) {
       geometry_msgs::msg::PoseStamped start_pose;
       start_pose.header = return_path.header;
-      start_pose.pose = current_position_;
       return_path.poses.push_back(start_pose);
       generatePath(return_path, start_pose.pose, home_position_);
       path_pub_->publish(return_path);

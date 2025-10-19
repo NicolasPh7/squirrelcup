@@ -29,7 +29,7 @@ public:
 
     cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
-    timer_ = this->create_wall_timer(1s, std::bind(&RobotController::controlLoop, this));
+    timer_ = this->create_wall_timer(200ms, std::bind(&RobotController::controlLoop, this));
 
     RCLCPP_INFO(this->get_logger(), "RobotController node initialized.");
   }
@@ -40,6 +40,7 @@ public:
 
 private:
   void markerCallback(const visualization_msgs::msg::MarkerArray::SharedPtr msg) {
+    planner_->clearMarkers();
     for (const auto& marker : msg->markers) {
       planner_->addMarker(marker);
     }
@@ -47,9 +48,7 @@ private:
 
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
     current_pose_ = msg->pose.pose;
-    if (state_ == State::SEARCHING && start_pose_.position.x == 0.0 && start_pose_.position.y == 0.0) {
-      start_pose_ = current_pose_;
-    }
+    planner_->updateCurrentPosition(current_pose_);
     
   }
 
@@ -68,6 +67,7 @@ private:
 
       case State::APPROACHING:
         RCLCPP_INFO(this->get_logger(), "[APPROACHING] Driving to target...");
+        planner_->setGoal();
         path_ = planner_->planTrajectory(reached);
 
         if (reached) {
@@ -82,7 +82,6 @@ private:
       case State::COLLECTING:
         RCLCPP_INFO(this->get_logger(), "[COLLECTING] Waiting...");
         if ((this->now() - collect_start_time_).seconds() > 2.0) {
-          planner_->setHomePosition(start_pose_);
           path_ = planner_->planWayHome();
           state_ = State::RETURNING;
         }
@@ -90,13 +89,14 @@ private:
 
       case State::RETURNING:
         RCLCPP_INFO(this->get_logger(), "[RETURNING] Driving to nest...");
-        if (reachedTarget(start_pose_)) {
-          stopRobot();
-          state_ = State::SEARCHING;
-        } else {
+          planner_->setHomePosition(invertPose(current_pose_));
           path_ = planner_->planWayHome();
-          followPath();
-        }
+          if (reachedHome()) {
+            stopRobot();
+            state_ = State::SEARCHING;
+          } else {
+            followPath();
+          }
         break;
     }
   }
@@ -116,7 +116,7 @@ private:
 
   void discorver() {
     geometry_msgs::msg::Twist cmd;
-    cmd.linear.x = 0.3;
+    cmd.linear.x = 0.5;
     cmd.angular.z = 0.2;
     cmd_pub_->publish(cmd);
 
@@ -128,29 +128,53 @@ private:
       current_index_ = 0;
       return;
     }
-
+  
     const auto& target_pose = path_[current_index_].pose;
-    double dx = target_pose.position.x - current_pose_.position.x;
-    double dy = target_pose.position.y - current_pose_.position.y;
+    double dx = target_pose.position.x;
+    double dy = target_pose.position.y;
     double distance = std::sqrt(dx * dx + dy * dy);
-
+  
+    // Ziel erreicht?
     if (distance < 0.01) {
       current_index_++;
       return;
     }
-
+  
+    // Yaw-Berechnung
     double target_yaw = std::atan2(dy, dx);
-    double robot_yaw = getYawFromQuaternion(current_pose_.orientation);
-    double yaw_error = target_yaw - robot_yaw;
-
-    while (yaw_error > M_PI) yaw_error -= 2 * M_PI;
-    while (yaw_error < -M_PI) yaw_error += 2 * M_PI;
-
+    double yaw_error = target_yaw;
+  
+    // Normalisiere Yaw-Fehler auf [-π, π]
+    yaw_error = std::atan2(std::sin(yaw_error), std::cos(yaw_error));
+  
+    // Regelparameter
+    const double max_linear_speed = 0.3;
+    // const double max_angular_speed = 1.2;
+    // const double linear_kp = 0.8;
+    // const double angular_kp = 2.0;
+    // const double angular_deadband = 0.05;
+  
+    // Berechne Steuerbefehle
+    double linear_speed = max_linear_speed;
+    double angular_speed = yaw_error;
+  
     geometry_msgs::msg::Twist cmd;
-    cmd.linear.x = std::min(0.5, 0.5 * distance);
-    cmd.angular.z = std::min(0.5, 1.0 * yaw_error);
+    cmd.linear.x = linear_speed;
+    cmd.angular.z = angular_speed;
     cmd_pub_->publish(cmd);
   }
+  
+  geometry_msgs::msg::Pose invertPose(const geometry_msgs::msg::Pose& pose) {
+    tf2::Transform tf_pose;
+    tf2::fromMsg(pose, tf_pose);
+    
+    tf2::Transform tf_inverse = tf_pose.inverse();
+    
+    geometry_msgs::msg::Pose inverse_pose;
+    tf2::toMsg(tf_inverse, inverse_pose);
+    return inverse_pose;
+  }
+
 
   double getYawFromQuaternion(const geometry_msgs::msg::Quaternion& q) {
     tf2::Quaternion quat(q.x, q.y, q.z, q.w);
@@ -160,9 +184,9 @@ private:
     return yaw;
   }
 
-  bool reachedTarget(const geometry_msgs::msg::Pose& target_pose, double threshold = 0.01) {
-    double dx = target_pose.position.x - current_pose_.position.x;
-    double dy = target_pose.position.y - current_pose_.position.y;
+  bool reachedHome(double threshold = 0.1) {
+    double dx = current_pose_.position.x;
+    double dy = current_pose_.position.y;
     double dist = std::sqrt(dx * dx + dy * dy);
     return dist < threshold;
   }
