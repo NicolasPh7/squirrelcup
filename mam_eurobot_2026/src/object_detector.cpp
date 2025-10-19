@@ -16,6 +16,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/search/kdtree.h>
+#include <pcl/features/moment_of_inertia_estimation.h>
 
 class ObjectDetector : public rclcpp::Node {
 public:
@@ -72,12 +73,6 @@ private:
         pose_array.header = msg->header;
 
         // Clear all markers once
-        visualization_msgs::msg::Marker clear_marker;
-        clear_marker.header = msg->header;
-        clear_marker.ns = "box_on_ground";
-        clear_marker.id = 0;
-        clear_marker.action = visualization_msgs::msg::Marker::DELETEALL;
-        marker_array.markers.push_back(clear_marker);
 
         int marker_id = 0;
 
@@ -94,55 +89,63 @@ private:
             ec.setInputCloud(filtered);
             ec.extract(cluster_indices);
 
+            visualization_msgs::msg::Marker clear_marker;
+            clear_marker.header = msg->header;
+            clear_marker.ns = "box_" + params.name;
+            clear_marker.id = marker_id++;
+            clear_marker.action = visualization_msgs::msg::Marker::DELETEALL;
+            marker_array.markers.push_back(clear_marker);
+
+
             for (const auto& indices : cluster_indices) {
                 pcl::PointCloud<pcl::PointXYZ>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZ>);
-                float x_min = std::numeric_limits<float>::max();
-                float y_min = std::numeric_limits<float>::max();
-                float x_sum = 0.0f;
-                float y_sum = 0.0f;
-
                 for (int idx : indices.indices) {
                     const auto& pt = filtered->points[idx];
                     clustered->points.push_back(pt);
                     cluster->points.push_back(pt);
-                    x_min = std::min(x_min, pt.x);
-                    y_min = std::min(y_min, pt.y);
-                    x_sum += pt.x;
-                    y_sum += pt.y;
                 }
 
-                pcl::PointXYZ min_pt, max_pt;
-                pcl::getMinMax3D(*cluster, min_pt, max_pt);
-                auto height = std::abs(floor_offset_ - max_pt.z);
+                // OBB berechnen
+                pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
+                feature_extractor.setInputCloud(cluster);
+                feature_extractor.compute();
+
+                pcl::PointXYZ min_pt_OBB, max_pt_OBB, position;
+                Eigen::Matrix3f rotational_matrix;
+                feature_extractor.getOBB(min_pt_OBB, max_pt_OBB, position, rotational_matrix);
+
+                // Höhe berechnen (wie bisher)
+                auto height = std::abs(max_pt_OBB.z - floor_offset_);
                 if (height < 0.01) continue;
-                if (max_pt.x - min_pt.x > 0.3 || max_pt.y - min_pt.y > 0.3 ) continue;
 
-                size_t n = cluster->points.size();
-                float x_avg = x_sum / n;
-                float y_avg = y_sum / n;
+                // Länge und Breite aus OBB
+                float length = std::abs(max_pt_OBB.x - min_pt_OBB.x);
+                float width  = std::abs(max_pt_OBB.y - min_pt_OBB.y);
+                if (length > 1.5 || width > 1.5) continue; // recognize nut, robots
 
-                pcl::PointXYZ p1(x_min, y_avg, 0.0);
-                pcl::PointXYZ p2(x_avg, y_min, 0.0);
-                Eigen::Vector2f dir(p2.x - p1.x, p2.y - p1.y);
-                float angle = std::atan2(dir.y(), dir.x());
+                // Quaternion aus Rotationsmatrix
+                Eigen::Quaternionf quat(rotational_matrix);
+                geometry_msgs::msg::Quaternion orientation;
+                orientation.x = quat.x();
+                orientation.y = quat.y();
+                orientation.z = quat.z();
+                orientation.w = quat.w();
 
+                // Marker setzen
                 visualization_msgs::msg::Marker marker;
                 marker.header = msg->header;
                 marker.ns = "box_" + params.name;
-                marker.id = ++marker_id;
+                marker.id = marker_id++;
                 marker.type = visualization_msgs::msg::Marker::CUBE;
                 marker.action = visualization_msgs::msg::Marker::ADD;
 
-                marker.pose.position.x = (min_pt.x + max_pt.x) / 2.0;
-                marker.pose.position.y = (min_pt.y + max_pt.y) / 2.0;
-                marker.pose.position.z = (min_pt.z + max_pt.z) / 2.0;
+                marker.pose.position.x = position.x;
+                marker.pose.position.y = position.y;
+                marker.pose.position.z = position.z;
+                marker.pose.orientation = orientation;
 
-                tf2::Quaternion q;
-                q.setRPY(0, 0, angle);
-                marker.pose.orientation = tf2::toMsg(q);
-
-                marker.scale.x = max_pt.x - min_pt.x;
-                marker.scale.y = max_pt.y - min_pt.y;
+                marker.scale.x = length;
+                marker.scale.y = width;
                 marker.scale.z = height;
 
                 marker.color.r = (params.name == "weit") ? 0.5 : 1 ;
@@ -151,11 +154,6 @@ private:
                 marker.color.a = 0.6;
 
                 marker_array.markers.push_back(marker);
-
-                // geometry_msgs::msg::Pose pose;
-                // pose.position = marker.pose.position;
-                // pose.orientation = marker.pose.orientation;
-                // pose_array.poses.push_back(pose);
             }
         }
 
