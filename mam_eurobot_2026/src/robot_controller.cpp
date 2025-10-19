@@ -21,8 +21,6 @@ using namespace std::chrono_literals;
 class RobotController : public rclcpp::Node {
 public:
   RobotController() : Node("robot_controller"), state_(State::SEARCHING), current_index_(0) {
-    planner_ = std::make_shared<TrajectoryPlanner>(this->shared_from_this());
-
     marker_sub_ = this->create_subscription<visualization_msgs::msg::MarkerArray>(
       "/supposed_objects", 10, std::bind(&RobotController::markerCallback, this, std::placeholders::_1));
 
@@ -34,6 +32,10 @@ public:
     timer_ = this->create_wall_timer(1s, std::bind(&RobotController::controlLoop, this));
 
     RCLCPP_INFO(this->get_logger(), "RobotController node initialized.");
+  }
+
+  void setPlanner(std::shared_ptr<TrajectoryPlanner> planner) {
+    planner_ = planner;
   }
 
 private:
@@ -53,7 +55,7 @@ private:
 
   void controlLoop() {
     bool reached = false;
-    
+
     switch (state_) {
       case State::SEARCHING:
         RCLCPP_INFO(this->get_logger(), "[SEARCHING] Checking for available markers...");
@@ -185,7 +187,10 @@ private:
 
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<RobotController>());
+  auto node = std::make_shared<RobotController>();
+  auto planner = std::make_shared<TrajectoryPlanner>(node);
+  node -> setPlanner(planner);
+  rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
 }
