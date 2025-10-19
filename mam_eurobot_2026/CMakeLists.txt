@@ -81,10 +81,10 @@ ament_target_dependencies(robot_controller rclcpp geometry_msgs nav_msgs visuali
 target_link_libraries(robot_controller ${tf2_LIBRARIES})
 install(TARGETS robot_controller DESTINATION lib/${PROJECT_NAME})
 
-add_executable(trajectory_planner src/trajectory_planner.cpp)
-ament_target_dependencies(trajectory_planner rclcpp geometry_msgs nav_msgs visualization_msgs tf2 tf2_geometry_msgs)
-target_link_libraries(trajectory_planner ${tf2_LIBRARIES})
-install(TARGETS trajectory_planner DESTINATION lib/${PROJECT_NAME})
+# add_executable(trajectory_planner src/trajectory_planner.hpp)
+# ament_target_dependencies(trajectory_planner rclcpp geometry_msgs nav_msgs visualization_msgs tf2 tf2_geometry_msgs)
+# target_link_libraries(trajectory_planner ${tf2_LIBRARIES})
+# install(TARGETS trajectory_planner DESTINATION lib/${PROJECT_NAME})
 
 add_executable(object_detector src/object_detector.cpp)
 ament_target_dependencies(object_detector rclcpp sensor_msgs geometry_msgs visualization_msgs tf2 tf2_geometry_msgs cv_bridge OpenCV)

@@ -39,7 +39,6 @@ public:
             std::bind(&ObjectDetector::image_callback, this, std::placeholders::_1));
 
 
-        pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/detected_objects", 10);
         debug_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/debug_cloud", 10);
         marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/supposed_objects", 10);
 
@@ -67,7 +66,9 @@ private:
     std::vector<ClusterParams> param_sets = {
         {"nah",  0.009,  45, 2000},
         {"mittel", 0.018, 45,  2000},
-        {"weit", 0.027, 20,  2000}
+        {"weit", 0.027, 20,  2000},
+        {"sweit", 0.036, 5,  2000},
+        {"ssweit", 0.045, 2,  2000}
     };
 
     void image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
@@ -223,9 +224,9 @@ private:
                 marker.scale.z = height;
 
                 if (cluster_colors.empty()) {
-                    marker.color.r = (params.name == "weit") ? 0.8 : 1.0 ;
-                    marker.color.g = (params.name == "nah") ? 0.0 : 0.2;
-                    marker.color.b = 0.0;
+                    marker.color.r = (params.name == "weit") ? 0.3 : 0.4 ;
+                    marker.color.g = (params.name == "nah") ? 0.1 : 0.2;
+                    marker.color.b = 0.5;
                 } else {
                     cv::Scalar avg_bgr = cv::mean(cluster_colors);
                     cv::Mat bgr_pixel(1, 1, CV_8UC3, cv::Vec3b(avg_bgr[0], avg_bgr[1], avg_bgr[2]));
@@ -241,7 +242,7 @@ private:
                     else if (is_yellow(avg_hsv)) {
                         marker.color.r = 1.0;
                         marker.color.g = 1.0;
-                        marker.color.b = 1.0;
+                        marker.color.b = 0.0;
                     }
                     else if (is_black(avg_hsv)) {
                         marker.color.r = 1.0;
@@ -261,7 +262,6 @@ private:
         }
 
         marker_pub_->publish(marker_array);
-        // pub_->publish(pose_array);
 
         sensor_msgs::msg::PointCloud2 clustered_msg;
         pcl::toROSMsg(*clustered, clustered_msg);
@@ -271,7 +271,6 @@ private:
 
     bool is_blue(const cv::Vec3b& hsv_color) const
     {
-        // Toleranter: breitere Hue-Spanne, geringere Anforderungen an Saturation und Value
         return (hsv_color[0] >= 90 && hsv_color[0] <= 140 &&
                 hsv_color[1] >= 50 &&
                 hsv_color[2] >= 40);
@@ -279,7 +278,6 @@ private:
 
     bool is_yellow(const cv::Vec3b& hsv_color) const
     {
-        // Toleranter: breitere Hue-Spanne, geringere Anforderungen an Saturation und Value
         return (hsv_color[0] >= 15 && hsv_color[0] <= 45 &&
                 hsv_color[1] >= 50 &&
                 hsv_color[2] >= 80);
@@ -287,13 +285,11 @@ private:
 
     bool is_black(const cv::Vec3b& hsv_color) const
     {
-        // Strenger: sehr niedriger Value, geringe Saturation erlaubt
         return (hsv_color[2] <= 30 && hsv_color[1] <= 60);
     }
 
     bool is_gray(const cv::Vec3b& hsv_color) const
     {
-        // Unverändert: niedrige Saturation, mittlerer bis hoher Value
         return (hsv_color[1] <= 50 && hsv_color[2] >= 80 && hsv_color[2] <= 200);
     }
 
@@ -317,7 +313,6 @@ private:
 
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
-    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 };
