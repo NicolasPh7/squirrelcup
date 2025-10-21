@@ -63,7 +63,7 @@
     <!-- Include mat model -->
     <include>
       <uri>file://models/mat</uri>
-      <pose>1.0 -1.5 0 0 0 0</pose>
+      <pose>1.5 1.0 0 0 0 3.1415</pose>
     </include>
     
   </world>
