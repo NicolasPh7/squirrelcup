@@ -1,0 +1,13 @@
+aruco_tags:
+  - name: aruco_20
+    model_path: file://models/aruco_20
+    pose: [0.6, 1.4, 0, 0, 0, 0]
+  - name: aruco_21
+    model_path: file://models/aruco_21
+    pose: [2.4, 1.4, 0, 0, 0, 0]
+  - name: aruco_22
+    model_path: file://models/aruco_22
+    pose: [0.6, 0.6, 0.0036, 0, 0, 0]
+  - name: aruco_23
+    model_path: file://models/aruco_23
+    pose: [2.4, 0.6, 0.0036, 0, 0, 0]

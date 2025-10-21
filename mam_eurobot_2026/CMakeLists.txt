@@ -95,6 +95,9 @@ install(TARGETS object_detector DESTINATION lib/${PROJECT_NAME})
 # Install launch files
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
+# Install config files
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+
 # Install worlds files
 install(DIRECTORY worlds DESTINATION share/${PROJECT_NAME})
 

@@ -3,7 +3,9 @@ from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Command
 from launch_ros.substitutions import FindPackageShare
+from launch.actions import OpaqueFunction
 
+from mam_eurobot_2026.helpers import load_aruco_tags
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
@@ -20,6 +22,9 @@ def generate_launch_description():
                 pkg_path, 'worlds', 'arena_world.sdf'
             ])
         ),
+
+        OpaqueFunction(function=load_aruco_tags),
+        
         DeclareLaunchArgument(
             'rviz_config_path',
             default_value=PathJoinSubstitution([
@@ -46,7 +51,7 @@ def generate_launch_description():
                 "ros2", "run", "ros_gz_sim", "create",
                 "-file", "file://models/simple_robot",
                 "-name", "simple_robot",
-                "-x", "0.80", "-y", "-1.15", "-z", "0.00", "-Y", "3.14"
+                "-x", "2.7", "-y", "1.8", "-z", "0.00", "-Y", "3.14"
             ],
             output="screen"
         ),
@@ -138,12 +143,12 @@ def generate_launch_description():
             name='object_detector',
             output='screen',
         ),
-        Node(
-            package='mam_eurobot_2026',
-            executable='trajectory_planner',
-            name='trajectory_planner',
-            output='screen',
-        ),
+        # Node(
+        #     package='mam_eurobot_2026',
+        #     executable='trajectory_planner',
+        #     name='trajectory_planner',
+        #     output='screen',
+        # ),
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
