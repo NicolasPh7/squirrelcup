@@ -24,12 +24,17 @@ public:
     marker_sub_ = this->create_subscription<visualization_msgs::msg::MarkerArray>(
       "/supposed_objects", 10, std::bind(&RobotController::markerCallback, this, std::placeholders::_1));
 
-    odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-      "/odom", 10, std::bind(&RobotController::odomCallback, this, std::placeholders::_1));
+    // odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
+    //   "/odom", 10, std::bind(&RobotController::odomCallback, this, std::placeholders::_1));
+    
+    poseCorrectionSub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+      "/corrected_pose", 10, std::bind(&RobotController::correctedPoseCallback, this, std::placeholders::_1));
 
     cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
     timer_ = this->create_wall_timer(50ms, std::bind(&RobotController::controlLoop, this));
+
+    initPositions() ;
 
     RCLCPP_INFO(this->get_logger(), "RobotController node initialized.");
   }
@@ -46,8 +51,8 @@ private:
     }
   }
 
-  void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
-    current_pose_ = msg->pose.pose;
+  void correctedPoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+    current_pose_ = msg->pose;
     planner_->updateCurrentPosition(current_pose_);
     
   }
@@ -77,7 +82,6 @@ private:
         }
 
         path_ = planner_->planTrajectory(reached);
-
         if (reached) {
           stopRobot();
           wait_time_ = this->now();
@@ -89,14 +93,25 @@ private:
 
       case State::COLLECTING:
         RCLCPP_INFO(this->get_logger(), "[COLLECTING] Waiting...");
-        if ((this->now() - wait_time_).seconds() > 2.0) {
+        if ((this->now() - wait_time_).seconds() > 3.0) {
+          state_ = State::PREPARE_RETURN;
+        }
+        break;
+
+      case State::PREPARE_RETURN:
+        RCLCPP_INFO(this->get_logger(), "[PREPARE_RETURN] Driving to nearest marker...");
+        path_ = planner_->generateNearestMarkerPath(reached);
+        if (reached) {
+          stopRobot();
           state_ = State::RETURNING;
+        } else {
+          followPath();
         }
         break;
 
       case State::RETURNING:
         RCLCPP_INFO(this->get_logger(), "[RETURNING] Driving to nest...");
-          planner_->setHomePosition(invertPose(current_pose_));
+          planner_->setHomePosition(planner_->computeTranslationPose(home_position_, current_pose_));
           path_ = planner_->planWayHome();
           if (reachedHome()) {
             stopRobot();
@@ -109,21 +124,20 @@ private:
 
       case State::PLACING:
         RCLCPP_INFO(this->get_logger(), "[PLACE] Waiting...");
-        if ((this->now() - wait_time_).seconds() > 2.0) {
-          state_ = State::PREPARE;
+        if ((this->now() - wait_time_).seconds() > 3.0) {
+          state_ = State::PREPARE_SEARCH;
         }
         break;
       
-      case State::PREPARE:
-        RCLCPP_INFO(this->get_logger(), "[PREPARE] Preparing...");
-          planner_->setHomePosition(invertPose(current_pose_));
-          path_ = planner_->planWayHome();
-          if (inPreparedPosition()) {
-            stopRobot();
-            state_ = State::SEARCHING;
-          } else {
-            followPath();
-          }
+      case State::PREPARE_SEARCH:
+        RCLCPP_INFO(this->get_logger(), "[PREPARE_SEARCH] Preparing Search...");
+        path_ = planner_->generateNearestMarkerPath(reached);
+        if (reached) {
+          stopRobot();
+          state_ = State::SEARCHING;
+        } else {
+          followPath();
+        }
         break;
         
     }
@@ -170,7 +184,7 @@ private:
     yaw_error = std::atan2(std::sin(yaw_error), std::cos(yaw_error));
   
     // Regelparameter
-    const double max_linear_speed = 0.3;
+    const double max_linear_speed = 0.2;
     // const double max_angular_speed = 1.2;
     // const double linear_kp = 0.8;
     // const double angular_kp = 2.0;
@@ -200,6 +214,8 @@ private:
   }
 
 
+
+
   double getYawFromQuaternion(const geometry_msgs::msg::Quaternion& q) {
     tf2::Quaternion quat(q.x, q.y, q.z, q.w);
     tf2::Matrix3x3 m(quat);
@@ -208,29 +224,59 @@ private:
     return yaw;
   }
 
-  bool reachedHome(double threshold = 0.1) {
-    double dx = current_pose_.position.x;
-    double dy = current_pose_.position.y;
+  bool reachedHome(double threshold = 0.4) {
+    double dx = current_pose_.position.x - home_position_.position.x;
+    double dy = current_pose_.position.y - home_position_.position.y;
     double dist = std::sqrt(dx * dx + dy * dy);
-    return dist < threshold;
+    return dist <= threshold;
   }
 
-  bool inPreparedPosition() {
-    return current_pose_.orientation.z >= -0.05 && current_pose_.orientation.z <= 0.05 ;
+  bool inPreparedPosition(double threshold = 0.05) {
+    tf2::Quaternion q;
+    q.setRPY(0.0, 0.0, -1.57079633);  // Roll, Pitch, Yaw
+    return reachedHome() 
+      && (std::abs(start_position_.orientation.x) <= std::abs(q.x()) + threshold)
+      && (std::abs(start_position_.orientation.y) <= std::abs(q.y()) + threshold)
+      && (std::abs(start_position_.orientation.z) <= std::abs(q.z()) + threshold)
+      && (std::abs(start_position_.orientation.w) <= std::abs(q.w()) + threshold);
   }
 
-  enum class State { SEARCHING, APPROACHING, COLLECTING, RETURNING, PLACING, PREPARE};
+  void initPositions() {
+    // Home-Position (nur Translation)
+    home_position_.position.x = 2.8;
+    home_position_.position.y = 1.9;
+    home_position_.position.z = 0.0;
+    home_position_.orientation.x = 0.0;
+    home_position_.orientation.y = 0.0;
+    home_position_.orientation.z = 0.0;
+    home_position_.orientation.w = 1.0;
+
+    // Start-Position (Translation + Rotation um Z-Achse)
+    start_position_.position = home_position_.position;
+
+    tf2::Quaternion q;
+    q.setRPY(0.0, 0.0, -1.57079633);  // Roll, Pitch, Yaw
+    start_position_.orientation.x = q.x();
+    start_position_.orientation.y = q.y();
+    start_position_.orientation.z = q.z();
+    start_position_.orientation.w = q.w();
+  }
+
+  enum class State { SEARCHING, APPROACHING, COLLECTING, PREPARE_RETURN, RETURNING, PLACING, PREPARE_SEARCH};
   State state_;
 
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr marker_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr poseCorrectionSub_;
+
 
   std::shared_ptr<TrajectoryPlanner> planner_;
 
+  geometry_msgs::msg::Pose home_position_;
+  geometry_msgs::msg::Pose start_position_;
   geometry_msgs::msg::Pose current_pose_;
-  geometry_msgs::msg::Pose start_pose_;
   geometry_msgs::msg::Pose current_goal_pose_;
   std::vector<geometry_msgs::msg::PoseStamped> path_;
   size_t current_index_;

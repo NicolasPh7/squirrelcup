@@ -127,18 +127,8 @@ public:
     double dx = marker.position.x;
     double dy = marker.position.y;
     double dist = std::sqrt(dx * dx + dy * dy);
-    if (dist < 0.01) { 
-      for (size_t i = 0; i < markers_.size(); i++) {
-        double dx = goal_pose_.position.x - markers_[i].pose.position.x;
-        double dy = goal_pose_.position.y - markers_[i].pose.position.y;
-        double dz = goal_pose_.position.z - markers_[i].pose.position.z;
-        double dist = std::sqrt(dx * dx + dy * dy + dz * dz);
-        if (dist < 0.01){ markers_.erase( markers_.begin() + i ); break;}  
-         
-      }
-      return true;
-    }
-    return false;
+
+    return dist < 0.01;
   }
 
   std::vector<geometry_msgs::msg::PoseStamped> generateDiscoveryPath() {
@@ -175,12 +165,95 @@ public:
       pose.pose.position.y = pos[1];
       pose.pose.position.z = 0.0;
       pose.pose.orientation.w = 1.0;  // facing forward
+      
+      auto target = computeTranslationPose(pose.pose, current_position_);
+      pose.pose = target;
       discovery_path.push_back(pose);
       path_msg.poses.push_back(pose);
     }
 
     path_pub_->publish(path_msg);
     return discovery_path;
+  }
+
+  std::vector<geometry_msgs::msg::PoseStamped> generateNearestMarkerPath(bool& reached) {
+    nav_msgs::msg::Path path_msg;
+    path_msg.header.stamp = node_->now();
+    path_msg.header.frame_id = "base_link";
+
+    std::vector<geometry_msgs::msg::PoseStamped> nearest_path;
+
+    int nearest_id = -1;
+    cv::Vec3d nearest_pos;
+    double min_distance = std::numeric_limits<double>::max();
+
+    // Find the nearest marker
+    for (const auto& [id, pos] : aruco_marker_map_) {
+      double dx = pos[0] - current_position_.position.x;
+      double dy = pos[1] - current_position_.position.y;
+      double distance = std::sqrt(dx * dx + dy * dy);
+
+      if (distance < min_distance) {
+        min_distance = distance;
+        nearest_id = id;
+        nearest_pos = pos;
+      }
+    }
+
+    if (min_distance <= 0.05) {
+      reached = true;
+      return nearest_path;
+    }
+
+    if (nearest_id != -1) {
+      geometry_msgs::msg::PoseStamped pose;
+      pose.header = path_msg.header;
+      pose.pose.position.x = nearest_pos[0];
+      pose.pose.position.y = nearest_pos[1];
+      pose.pose.position.z = 0.0;
+      pose.pose.orientation.w = 1.0;  // facing forward
+
+      auto target = computeTranslationPose(pose.pose, current_position_);
+      pose.pose = target;
+      nearest_path.push_back(pose);
+      path_msg.poses.push_back(pose);
+    }
+
+    path_pub_->publish(path_msg);
+    return nearest_path;
+  }
+
+  geometry_msgs::msg::Pose computeTranslationPose(
+    const geometry_msgs::msg::Pose& reference_pose,
+    const geometry_msgs::msg::Pose& current_pose)
+  {
+    // Berechne globale Positionsdifferenz
+    tf2::Vector3 global_diff(
+        reference_pose.position.x - current_pose.position.x,
+        reference_pose.position.y - current_pose.position.y,
+        reference_pose.position.z - current_pose.position.z);
+
+    // Extrahiere Rotation von current_pose
+    tf2::Quaternion q_current;
+    tf2::fromMsg(current_pose.orientation, q_current);
+    tf2::Matrix3x3 rot_current(q_current);
+
+    // Transformiere Differenz in lokalen Frame von current_pose
+    tf2::Vector3 local_diff = rot_current.transpose() * global_diff;
+
+    // Setze Pose mit lokalem Positionsvektor
+    geometry_msgs::msg::Pose pose;
+    pose.position.x = local_diff.x();
+    pose.position.y = local_diff.y();
+    pose.position.z = local_diff.z();
+
+    // Orientierung bleibt neutral (Einheitsquaternion)
+    pose.orientation.x = 0.0;
+    pose.orientation.y = 0.0;
+    pose.orientation.z = 0.0;
+    pose.orientation.w = 1.0;
+
+    return pose;
   }
 
 private:
@@ -203,6 +276,10 @@ private:
       intermediate.position.z = start.position.z + ratio * (end.position.z - start.position.z);
 
       if (isNearMarker(intermediate)) continue;
+
+      
+      q_start.normalize();
+      q_end.normalize();
 
       // Interpoliere die Orientierung mit SLERP
       tf2::Quaternion q_interp = q_start.slerp(q_end, ratio);

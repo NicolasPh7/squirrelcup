@@ -49,9 +49,9 @@ public:
 
         //TODO: camera calibration
         K_ = (cv::Mat_<double>(3,3) << 
-            554.3827, 0.0,     320.0,
-            0.0,      415.787, 240.0,
-            0.0,      0.0,     1.0);
+            960.0, 0.0, 960.0,
+            0.0,  960.0, 540.0,
+            0.0,  0.0,   1.0);
         
         RCLCPP_INFO(this->get_logger(), "ObjectDetector initialized.");
     }
@@ -193,6 +193,7 @@ private:
                 // Höhe berechnen (wie bisher)
                 auto height = std::abs(max_pt_OBB.z - floor_offset_);
                 if (height < 0.01 || height > 0.3) continue;
+                if (min_pt_OBB.z >= 0 || position.z >= 0) continue;
 
                 // Länge und Breite aus OBB
                 float length = std::abs(max_pt_OBB.x - min_pt_OBB.x);

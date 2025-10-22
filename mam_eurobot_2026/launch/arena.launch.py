@@ -51,7 +51,7 @@ def generate_launch_description():
                 "ros2", "run", "ros_gz_sim", "create",
                 "-file", "file://models/bird_eye",
                 "-name", "bird_eye",
-                "-x", "1.5", "-y", "0.0", "-z", "0.8", "-R", "0.0" , "-P", "1.07", "-Y", "1.57" 
+                "-x", "1.5", "-y", "0.0", "-z", "0.9", "-R", "0.0" , "-P", "1.07", "-Y", "1.57" 
             ],
             output="screen"
         ),
