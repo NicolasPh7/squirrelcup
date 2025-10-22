@@ -84,9 +84,29 @@
 	  <topic>lidar_3d</topic>
 	</sensor>
 
-
+	<visual name='aruco_marker'>
+	<pose>0 0 0.05 0 0 0</pose> Slightly above the chassis
+			<pose relative_to='chassis'>0.0 0 0 0 0 0</pose>
+	<geometry>
+		<plane>
+		<normal>0 0 1</normal> 
+		<size>0.1 0.1 0.001</size> 
+		</plane>
+	</geometry>
+	<material>
+		<diffuse>1 1 1 1</diffuse>
+		<pbr>
+			<metal>
+				<albedo_map>file://models/simple_robot/aruco_0.png</albedo_map>
+				<metalness>0.0</metalness>
+				<roughness>0.8</roughness>
+			</metal>
+		</pbr>
+	</material>
+	</visual>
 
     </link>
+	
 		<link name='left_wheel'>
 			<pose relative_to="chassis">-0.05 0.06 0 -1.5707 0 0</pose>
 			<inertial>

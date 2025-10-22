@@ -20,7 +20,7 @@
                     </friction>
                 </surface>
             </collision>
-            <visual name="visual">
+            <visual name="visual_mat">
                 <geometry>
                     <box>
                         <size>3 2 0.007</size>

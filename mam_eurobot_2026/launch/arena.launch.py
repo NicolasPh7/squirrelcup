@@ -49,9 +49,18 @@ def generate_launch_description():
         ExecuteProcess(
             cmd=[
                 "ros2", "run", "ros_gz_sim", "create",
+                "-file", "file://models/bird_eye",
+                "-name", "bird_eye",
+                "-x", "1.5", "-y", "0.0", "-z", "0.8", "-R", "0.0" , "-P", "1.07", "-Y", "1.57" 
+            ],
+            output="screen"
+        ),
+        ExecuteProcess(
+            cmd=[
+                "ros2", "run", "ros_gz_sim", "create",
                 "-file", "file://models/simple_robot",
                 "-name", "simple_robot",
-                "-x", "2.7", "-y", "1.8", "-z", "0.00", "-Y", "3.14"
+                "-x", "2.7", "-y", "1.8", "-z", "0.00", "-Y", "-1.57079633"
             ],
             output="screen"
         ),
@@ -77,6 +86,12 @@ def generate_launch_description():
             package='ros_gz_bridge',
             executable='parameter_bridge',
             arguments=['/camera@sensor_msgs/msg/Image@gz.msgs.Image'],
+        ),
+
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            arguments=['/bird_eye@sensor_msgs/msg/Image@gz.msgs.Image'],
         ),
 
         # Node(
