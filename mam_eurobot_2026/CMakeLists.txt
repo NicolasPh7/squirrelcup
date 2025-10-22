@@ -92,7 +92,7 @@ target_link_libraries(object_detector ${PCL_LIBRARIES})
 install(TARGETS object_detector DESTINATION lib/${PROJECT_NAME})
 
 add_executable(aruco_localization src/aruco_localization.cpp)
-ament_target_dependencies(aruco_localization rclcpp sensor_msgs geometry_msgs cv_bridge OpenCV)
+ament_target_dependencies(aruco_localization rclcpp sensor_msgs geometry_msgs cv_bridge OpenCV tf2 tf2_geometry_msgs cv_bridge OpenCV)
 install(TARGETS aruco_localization DESTINATION lib/${PROJECT_NAME})
 
 # Install launch files
