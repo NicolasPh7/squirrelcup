@@ -7,6 +7,8 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
+#include <opencv2/opencv.hpp>
+
 #include <vector>
 #include <cmath>
 
@@ -14,7 +16,10 @@ class TrajectoryPlanner {
 public:
   TrajectoryPlanner(rclcpp::Node::SharedPtr node)
     : node_(node),
-      path_pub_(node_->create_publisher<nav_msgs::msg::Path>("/planned_path", 10)) {}
+      path_pub_(node_->create_publisher<nav_msgs::msg::Path>("/planned_path", 10)) 
+      {
+        initializeMarkerMap() ;
+      }
 
   void setHomePosition(const geometry_msgs::msg::Pose& home) {
     home_position_ = home;
@@ -136,6 +141,48 @@ public:
     return false;
   }
 
+  std::vector<geometry_msgs::msg::PoseStamped> generateDiscoveryPath() {
+    nav_msgs::msg::Path path_msg;
+    path_msg.header.stamp = node_->now();
+    path_msg.header.frame_id = "base_link";
+
+    std::vector<std::pair<int, cv::Vec3d>> sorted_markers;
+
+    // Compute distances
+    for (const auto& [id, pos] : aruco_marker_map_) {
+      sorted_markers.emplace_back(id, pos);
+    }
+
+    // Sort clockwise: top-left → top-right → bottom-right → bottom-left
+    std::sort(sorted_markers.begin(), sorted_markers.end(), [this](const auto& a, const auto& b) {
+      double dx_a = a.second[0] - current_position_.position.x;
+      double dy_a = a.second[1] - current_position_.position.y;
+      double dist_a = std::sqrt(dx_a * dx_a + dy_a * dy_a);
+      
+      double dx_b = b.second[0] - current_position_.position.x;
+      double dy_b = b.second[1] - current_position_.position.y;
+      double dist_b = std::sqrt(dx_b * dx_b + dy_b * dy_b);
+
+      return dist_a > dist_b;
+    });
+
+    std::vector<geometry_msgs::msg::PoseStamped> discovery_path;
+    discovery_path.clear();
+    for (const auto& [id, pos] : sorted_markers) {
+      geometry_msgs::msg::PoseStamped pose;
+      pose.header = path_msg.header;
+      pose.pose.position.x = pos[0];
+      pose.pose.position.y = pos[1];
+      pose.pose.position.z = 0.0;
+      pose.pose.orientation.w = 1.0;  // facing forward
+      discovery_path.push_back(pose);
+      path_msg.poses.push_back(pose);
+    }
+
+    path_pub_->publish(path_msg);
+    return discovery_path;
+  }
+
 private:
   void generatePath(nav_msgs::msg::Path& path_msg,
                     const geometry_msgs::msg::Pose& start,
@@ -178,6 +225,13 @@ private:
     return false;
   }
 
+  void initializeMarkerMap() {
+    aruco_marker_map_[20] = cv::Vec3d(0.6, 1.4, 0.0036);
+    aruco_marker_map_[21] = cv::Vec3d(2.4, 1.4, 0.0036);
+    aruco_marker_map_[22] = cv::Vec3d(0.6, 0.6, 0.0036);
+    aruco_marker_map_[23] = cv::Vec3d(2.4, 0.6, 0.0036);
+  }
+
   rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
 
@@ -185,6 +239,9 @@ private:
   geometry_msgs::msg::Pose home_position_;
   geometry_msgs::msg::Pose goal_pose_;
   std::vector<visualization_msgs::msg::Marker> markers_;
+
+  std::map<int, cv::Vec3d> aruco_marker_map_;
+
 
   bool has_position_ = false;
   bool has_goal_ = false;

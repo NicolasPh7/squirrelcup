@@ -39,8 +39,8 @@
 		<pose>0.1 0 0.05 0 0 0</pose> 
 	    <camera>
 	      <image>
-	        <width>640</width>
-	        <height>480</height>
+	        <width>1920</width>
+	        <height>1080</height>
 	        <format>R8G8B8</format>
 	      </image>
 	      <clip>

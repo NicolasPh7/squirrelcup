@@ -42,7 +42,7 @@ def generate_launch_description():
                 "ros2", "run", "ros_gz_sim", "create",
                 "-file", "file://models/crate",
                 "-name", "crate",
-                "-x", "-0.20", "-y", "0", "-z", "0.05"
+                "-x", "1.5", "-y", "1.0", "-z", "0.05"
             ],
             output="screen"
         ),
@@ -133,22 +133,22 @@ def generate_launch_description():
         ),
         Node(
             package='mam_eurobot_2026',
-            executable='nut_identifier',
-            name='nut_identifier',
+            executable='aruco_localization',
+            name='aruco_localization',
             output='screen',
         ),
+        # Node(
+        #     package='mam_eurobot_2026',
+        #     executable='nut_identifier',
+        #     name='nut_identifier',
+        #     output='screen',
+        # ),
         Node(
             package='mam_eurobot_2026',
             executable='object_detector',
             name='object_detector',
             output='screen',
         ),
-        # Node(
-        #     package='mam_eurobot_2026',
-        #     executable='trajectory_planner',
-        #     name='trajectory_planner',
-        #     output='screen',
-        # ),
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',

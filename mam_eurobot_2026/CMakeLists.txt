@@ -72,12 +72,12 @@ ament_target_dependencies(teleop rclcpp geometry_msgs)
 install(TARGETS teleop DESTINATION lib/${PROJECT_NAME})
 
 add_executable(inertial_odometry src/inertial_odometry.cpp)
-ament_target_dependencies(inertial_odometry rclcpp geometry_msgs nav_msgs tf2 tf2_ros)
+ament_target_dependencies(inertial_odometry rclcpp geometry_msgs nav_msgs tf2 tf2_ros tf2_geometry_msgs)
 target_link_libraries(inertial_odometry ${tf2_LIBRARIES})
 install(TARGETS inertial_odometry DESTINATION lib/${PROJECT_NAME})
 
 add_executable(robot_controller src/robot_controller.cpp)
-ament_target_dependencies(robot_controller rclcpp geometry_msgs nav_msgs visualization_msgs tf2 tf2_geometry_msgs)
+ament_target_dependencies(robot_controller rclcpp geometry_msgs nav_msgs visualization_msgs tf2 tf2_geometry_msgs cv_bridge OpenCV)
 target_link_libraries(robot_controller ${tf2_LIBRARIES})
 install(TARGETS robot_controller DESTINATION lib/${PROJECT_NAME})
 
@@ -91,6 +91,9 @@ ament_target_dependencies(object_detector rclcpp sensor_msgs geometry_msgs visua
 target_link_libraries(object_detector ${PCL_LIBRARIES})
 install(TARGETS object_detector DESTINATION lib/${PROJECT_NAME})
 
+add_executable(aruco_localization src/aruco_localization.cpp)
+ament_target_dependencies(aruco_localization rclcpp sensor_msgs geometry_msgs cv_bridge OpenCV)
+install(TARGETS aruco_localization DESTINATION lib/${PROJECT_NAME})
 
 # Install launch files
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})

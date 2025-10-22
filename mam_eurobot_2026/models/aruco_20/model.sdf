@@ -4,6 +4,17 @@
     <pose>0 0 0 0 0 0</pose> 
     <static>true</static>
     <link name="link">
+      <visual name="border">
+      <geometry>
+        <box>
+          <size>0.12 0.12 0.0004</size>
+        </box>
+      </geometry>
+      <material>
+        <diffuse>1 1 1 1</diffuse> <!-- Weiß -->
+      </material>
+    </visual>
+
       <visual name="visual">
         <geometry>
           <box>

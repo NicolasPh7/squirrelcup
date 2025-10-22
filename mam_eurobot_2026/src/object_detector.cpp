@@ -47,6 +47,7 @@ public:
             1, 0, 0;        
         t_ = Eigen::Vector3f(0.0f, 0.0f, -0.03f);
 
+        //TODO: camera calibration
         K_ = (cv::Mat_<double>(3,3) << 
             554.3827, 0.0,     320.0,
             0.0,      415.787, 240.0,

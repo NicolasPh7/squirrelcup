@@ -59,15 +59,23 @@ private:
       case State::SEARCHING:
         RCLCPP_INFO(this->get_logger(), "[SEARCHING] Checking for available markers...");
         if (planner_->setGoal()) {
+          stopRobot();
           state_ = State::APPROACHING;
         } else {
-          discorver();
+          path_ = planner_->generateDiscoveryPath();
+          followPath();
         }
         break;
 
       case State::APPROACHING:
         RCLCPP_INFO(this->get_logger(), "[APPROACHING] Driving to target...");
-        planner_->setGoal();
+        
+        if(!planner_->setGoal()) {
+          stopRobot();
+          state_ = State::SEARCHING;
+          break;
+        }
+
         path_ = planner_->planTrajectory(reached);
 
         if (reached) {
@@ -131,16 +139,10 @@ private:
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.0;
     cmd.angular.z = 0.0;
+    current_index_ = 0;
     cmd_pub_->publish(cmd);
   }
 
-  void discorver() {
-    geometry_msgs::msg::Twist cmd;
-    cmd.linear.x = 0.5;
-    cmd.angular.z = 0.2;
-    cmd_pub_->publish(cmd);
-
-  }
 
   void followPath() {
     if (current_index_ >= path_.size()) {
@@ -188,25 +190,13 @@ private:
     tf2::Transform tf_pose;
     tf2::fromMsg(pose, tf_pose);
 
-    // Invertiere die gesamte Pose (Translation + Rotation)
+    // Invert the transform
     tf2::Transform tf_inverse = tf_pose.inverse();
 
-    geometry_msgs::msg::Pose inverted_pose;
-    tf2::toMsg(tf_inverse, inverted_pose);
-
-    tf2::Quaternion original_q;
-    tf2::fromMsg(pose.orientation, original_q);
-
-    tf2::Quaternion rotation_180;
-    rotation_180.setRPY(0, 0, M_PI);  // Roll=0, Pitch=0, Yaw=180°
-
-    // Kombiniere die Rotationen: neue Orientierung = 180° * original
-    tf2::Quaternion new_q = rotation_180 * original_q;
-    new_q.normalize();
-
-    inverted_pose.orientation = tf2::toMsg(new_q);
-
-    return inverted_pose;
+    // Convert back to geometry_msgs::msg::Pose
+    geometry_msgs::msg::Pose inverse_pose;
+    tf2::toMsg(tf_inverse, inverse_pose);
+    return inverse_pose;
   }
 
 

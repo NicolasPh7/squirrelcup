@@ -1,8 +1,11 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2/LinearMath/Quaternion.h>
+#include "tf2/LinearMath/Matrix3x3.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include <tf2_ros/transform_broadcaster.h>
 #include <chrono>
 #include <mutex>
@@ -19,6 +22,9 @@ public:
 
     sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "/cmd_vel", 10, std::bind(&InertialOdometry::cmdVelCallback, this, std::placeholders::_1));
+
+    poseCorrectionSub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+      "/corrected_pose", 10, std::bind(&InertialOdometry::correctedPoseCallback, this, std::placeholders::_1));
 
     pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 
@@ -38,6 +44,33 @@ public:
   }
 
 private:
+  void correctedPoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) 
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    // Convert poses to tf2::Transform
+    tf2::Transform corrected_tf, odom_tf;
+    tf2::fromMsg(msg->pose, corrected_tf);
+    tf2::fromMsg(last_odom_.pose.pose, odom_tf);  
+
+    // Compute T = corrected_pose * inverse(odom_pose)
+    tf2::Transform T = corrected_tf * odom_tf.inverse();
+
+    // Store T for future use
+    // transform_odom_to_map_ = T;
+
+    // Optionally apply T to current odometry
+    tf2::Transform corrected_pose = T * odom_tf;
+
+    // Extract position and yaw
+    x_ = corrected_pose.getOrigin().x();
+    y_ = corrected_pose.getOrigin().y();
+    tf2::Quaternion q = corrected_pose.getRotation();
+    yaw_ = std::atan2(2.0 * (q.w() * q.z() + q.x() * q.y()),
+                      1.0 - 2.0 * (q.y() * q.y() + q.z() * q.z()));
+  }
+
+
   void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -88,6 +121,7 @@ private:
     odom.twist.twist.linear.x = local_vx;
     odom.twist.twist.angular.z = local_omega;
     pub_->publish(odom);
+    last_odom_ = odom;
 
     // publish TF odom -> base_link
     geometry_msgs::msg::TransformStamped t;
@@ -108,6 +142,7 @@ private:
 
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr poseCorrectionSub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
@@ -118,6 +153,7 @@ private:
   double x_ = 0.0;
   double y_ = 0.0;
   double yaw_ = 0.0;
+  nav_msgs::msg::Odometry last_odom_;
   rclcpp::Time last_time_;
   double publish_frequency_;
 };
