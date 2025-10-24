@@ -128,100 +128,58 @@ public:
     double dy = marker.position.y;
     double dist = std::sqrt(dx * dx + dy * dy);
 
-    return dist < 0.01;
+    return dist <= 0.01;
   }
 
-  std::vector<geometry_msgs::msg::PoseStamped> generateDiscoveryPath() {
-    nav_msgs::msg::Path path_msg;
-    path_msg.header.stamp = node_->now();
-    path_msg.header.frame_id = "base_link";
-
-    std::vector<std::pair<int, cv::Vec3d>> sorted_markers;
-
-    // Compute distances
-    for (const auto& [id, pos] : aruco_marker_map_) {
-      sorted_markers.emplace_back(id, pos);
-    }
-
-    // Sort clockwise: top-left → top-right → bottom-right → bottom-left
-    std::sort(sorted_markers.begin(), sorted_markers.end(), [this](const auto& a, const auto& b) {
-      double dx_a = a.second[0] - current_position_.position.x;
-      double dy_a = a.second[1] - current_position_.position.y;
-      double dist_a = std::sqrt(dx_a * dx_a + dy_a * dy_a);
-      
-      double dx_b = b.second[0] - current_position_.position.x;
-      double dy_b = b.second[1] - current_position_.position.y;
-      double dist_b = std::sqrt(dx_b * dx_b + dy_b * dy_b);
-
-      return dist_a > dist_b;
-    });
-
-    std::vector<geometry_msgs::msg::PoseStamped> discovery_path;
-    discovery_path.clear();
-    for (const auto& [id, pos] : sorted_markers) {
-      geometry_msgs::msg::PoseStamped pose;
-      pose.header = path_msg.header;
-      pose.pose.position.x = pos[0];
-      pose.pose.position.y = pos[1];
-      pose.pose.position.z = 0.0;
-      pose.pose.orientation.w = 1.0;  // facing forward
-      
-      auto target = computeTranslationPose(pose.pose, current_position_);
-      pose.pose = target;
-      discovery_path.push_back(pose);
-      path_msg.poses.push_back(pose);
-    }
-
-    path_pub_->publish(path_msg);
-    return discovery_path;
-  }
-
-  std::vector<geometry_msgs::msg::PoseStamped> generateNearestMarkerPath(bool& reached) {
+  std::vector<geometry_msgs::msg::PoseStamped> generateNearestMarkerPath(bool& reached, int& marker_id) {
     nav_msgs::msg::Path path_msg;
     path_msg.header.stamp = node_->now();
     path_msg.header.frame_id = "base_link";
 
     std::vector<geometry_msgs::msg::PoseStamped> nearest_path;
-
     int nearest_id = -1;
     cv::Vec3d nearest_pos;
     double min_distance = std::numeric_limits<double>::max();
 
-    // Find the nearest marker
-    for (const auto& [id, pos] : aruco_marker_map_) {
-      double dx = pos[0] - current_position_.position.x;
-      double dy = pos[1] - current_position_.position.y;
-      double distance = std::sqrt(dx * dx + dy * dy);
+      // Check if near any marker
+      for (const auto& [id, pos] : aruco_marker_map_) {
+          double dx = pos[0] - current_position_.position.x;
+          double dy = pos[1] - current_position_.position.y;
+          double distance = std::sqrt(dx * dx + dy * dy);
 
-      if (distance < min_distance) {
-        min_distance = distance;
-        nearest_id = id;
-        nearest_pos = pos;
+          if (distance <= 0.2) {
+              reached = true;
+              continue;
+          }
+
+          if (distance < min_distance && id != marker_id) {
+              min_distance = distance;
+              nearest_id = id;
+              nearest_pos = pos;
+          }
       }
-    }
 
-    if (min_distance <= 0.05) {
-      reached = true;
+      
+
+      if (nearest_id != -1) {
+          marker_id = nearest_id;
+          geometry_msgs::msg::PoseStamped pose;
+          pose.header = path_msg.header;
+          pose.pose.position.x = nearest_pos[0];
+          pose.pose.position.y = nearest_pos[1];
+          pose.pose.position.z = 0.0;
+          pose.pose.orientation.w = 1.0;  // facing forward
+
+          auto target = computeTranslationPose(pose.pose, current_position_);
+          pose.pose = target;
+          nearest_path.push_back(pose);
+          path_msg.poses.push_back(pose);
+      }
+
+      path_pub_->publish(path_msg);
       return nearest_path;
-    }
-
-    if (nearest_id != -1) {
-      geometry_msgs::msg::PoseStamped pose;
-      pose.header = path_msg.header;
-      pose.pose.position.x = nearest_pos[0];
-      pose.pose.position.y = nearest_pos[1];
-      pose.pose.position.z = 0.0;
-      pose.pose.orientation.w = 1.0;  // facing forward
-
-      auto target = computeTranslationPose(pose.pose, current_position_);
-      pose.pose = target;
-      nearest_path.push_back(pose);
-      path_msg.poses.push_back(pose);
-    }
-
-    path_pub_->publish(path_msg);
-    return nearest_path;
   }
+
 
   geometry_msgs::msg::Pose computeTranslationPose(
     const geometry_msgs::msg::Pose& reference_pose,

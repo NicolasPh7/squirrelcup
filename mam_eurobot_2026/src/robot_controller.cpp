@@ -58,18 +58,16 @@ private:
   }
 
   void controlLoop() {
-    bool reached = false;
-
     switch (state_) {
       case State::SEARCHING:
-        RCLCPP_INFO(this->get_logger(), "[SEARCHING] Checking for available markers...");
-        if (planner_->setGoal()) {
-          stopRobot();
-          state_ = State::APPROACHING;
-        } else {
-          path_ = planner_->generateDiscoveryPath();
-          followPath();
-        }
+      RCLCPP_INFO(this->get_logger(), "[SEARCHING] Checking for available markers...");
+      path_ = planner_->generateNearestMarkerPath(reached_, marker_id_);
+      if (planner_->setGoal()) {
+        stopRobot();
+        state_ = State::APPROACHING;
+      } else {
+        followPath();
+      }
         break;
 
       case State::APPROACHING:
@@ -81,8 +79,8 @@ private:
           break;
         }
 
-        path_ = planner_->planTrajectory(reached);
-        if (reached) {
+        path_ = planner_->planTrajectory(reached_);
+        if (reached_) {
           stopRobot();
           wait_time_ = this->now();
           state_ = State::COLLECTING;
@@ -100,8 +98,8 @@ private:
 
       case State::PREPARE_RETURN:
         RCLCPP_INFO(this->get_logger(), "[PREPARE_RETURN] Driving to nearest marker...");
-        path_ = planner_->generateNearestMarkerPath(reached);
-        if (reached) {
+        path_ = planner_->generateNearestMarkerPath(reached_, marker_id_);
+        if (reached_) {
           stopRobot();
           state_ = State::RETURNING;
         } else {
@@ -131,8 +129,8 @@ private:
       
       case State::PREPARE_SEARCH:
         RCLCPP_INFO(this->get_logger(), "[PREPARE_SEARCH] Preparing Search...");
-        path_ = planner_->generateNearestMarkerPath(reached);
-        if (reached) {
+        path_ = planner_->generateNearestMarkerPath(reached_, marker_id_);
+        if (reached_) {
           stopRobot();
           state_ = State::SEARCHING;
         } else {
@@ -150,6 +148,10 @@ private:
   }
 
   void stopRobot() {
+    current_index_ = 0;
+    reached_ = false;
+    marker_id_ = -1;
+    
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.0;
     cmd.angular.z = 0.0;
@@ -161,7 +163,6 @@ private:
   void followPath() {
     if (current_index_ >= path_.size()) {
       stopRobot();
-      current_index_ = 0;
       return;
     }
   
@@ -281,6 +282,9 @@ private:
   std::vector<geometry_msgs::msg::PoseStamped> path_;
   size_t current_index_;
   rclcpp::Time wait_time_;
+
+  bool reached_ = false;
+  int marker_id_ = -1;
 };
 
 int main(int argc, char** argv) {
