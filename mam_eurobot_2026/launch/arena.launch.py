@@ -1,11 +1,11 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, SetEnvironmentVariable, TimerAction
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Command
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import OpaqueFunction
 
-from mam_eurobot_2026.helpers import load_aruco_tags
+from mam_eurobot_2026.helpers import load_aruco_tags, load_crates
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
@@ -23,7 +23,14 @@ def generate_launch_description():
             ])
         ),
 
-        OpaqueFunction(function=load_aruco_tags),
+        TimerAction(
+            period=3.0,  # wait seconds
+            actions=[
+                OpaqueFunction(function=load_aruco_tags),
+                OpaqueFunction(function=load_crates),
+            ]
+        ),
+
         
         DeclareLaunchArgument(
             'rviz_config_path',
@@ -37,15 +44,15 @@ def generate_launch_description():
             ],
             output='screen'
         ),
-        ExecuteProcess(
-            cmd=[
-                "ros2", "run", "ros_gz_sim", "create",
-                "-file", "file://models/crate",
-                "-name", "crate",
-                "-x", "1.5", "-y", "1.0", "-z", "0.05"
-            ],
-            output="screen"
-        ),
+        # ExecuteProcess(
+        #     cmd=[
+        #         "ros2", "run", "ros_gz_sim", "create",
+        #         "-file", "file://models/crate",
+        #         "-name", "crate",
+        #         "-x", "1.5", "-y", "1.0", "-z", "0.05"
+        #     ],
+        #     output="screen"
+        # ),
         ExecuteProcess(
             cmd=[
                 "ros2", "run", "ros_gz_sim", "create",
