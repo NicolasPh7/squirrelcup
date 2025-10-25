@@ -9,7 +9,7 @@ crates:
     - { name: blue_crate_6, pose: [2.750, 1.325, 0.0036, 0, 0, 0] }
     - { name: blue_crate_7, pose: [2.750, 1.275, 0.0036, 0, 0, 0] }
     - { name: blue_crate_8, pose: [2.750, 0.525, 0.0036, 0, 0, 0] }
-    - { name: blue_crate_9, pose: [2.750, 0.425, 0.0036, 0, 0, 0] }
+    - { name: blue_crate_9, pose: [2.750, 0.450, 0.0036, 0, 0, 0] }
     - { name: blue_crate_10, pose: [1.775, 0.875, 0.0036, 0, 0, 1.570] }
     - { name: blue_crate_11, pose: [1.825, 0.875, 0.0036, 0, 0, 1.570] }
     - { name: blue_crate_12, pose: [1.825, 0.250, 0.0036, 0, 0, 1.570] }
@@ -17,9 +17,9 @@ crates:
     - { name: blue_crate_14, pose: [1.325, 1.850, 0.0036, 0, 0, 1.570] }
     - { name: blue_crate_15, pose: [1.075, 1.800, 0.0036, 0, 0, 1.570] }
     - { name: blue_crate_16, pose: [0.100, 1.325, 0.0036, 0, 0, 0] }
-    - { name: blue_crate_17, pose: [0.100, 1.225, 0.0036, 0, 0, 0] }
+    - { name: blue_crate_17, pose: [0.100, 1.275, 0.0036, 0, 0, 0] }
     - { name: blue_crate_18, pose: [0.100, 0.525, 0.0036, 0, 0, 0] }
-    - { name: blue_crate_19, pose: [0.100, 0.425, 0.0036, 0, 0, 0] }
+    - { name: blue_crate_19, pose: [0.100, 0.475, 0.0036, 0, 0, 0] }
     - { name: blue_crate_20, pose: [1.075, 0.875, 0.0036, 0, 0, 1.570] }
     - { name: blue_crate_21, pose: [1.175, 0.875, 0.0036, 0, 0, 1.570] }
     - { name: blue_crate_22, pose: [1.025, 0.250, 0.0036, 0, 0, 1.570] }
@@ -29,9 +29,9 @@ crates:
     - { name: yellow_crate_0, pose: [1.675, 1.850, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_1, pose: [1.925, 1.800, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_2, pose: [2.750, 1.225, 0.0036, 0, 0, 0] }
-    - { name: yellow_crate_3, pose: [2.750, 1.125, 0.0036, 0, 0, 0] }
-    - { name: yellow_crate_4, pose: [2.750, 0.325, 0.0036, 0, 0, 0] }
-    - { name: yellow_crate_5, pose: [2.750, 0.225, 0.0036, 0, 0, 0] }
+    - { name: yellow_crate_3, pose: [2.750, 1.175, 0.0036, 0, 0, 0] }
+    - { name: yellow_crate_4, pose: [2.750, 0.400, 0.0036, 0, 0, 0] }
+    - { name: yellow_crate_5, pose: [2.750, 0.350, 0.0036, 0, 0, 0] }
     - { name: yellow_crate_6, pose: [1.875, 0.875, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_7, pose: [1.925, 0.875, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_8, pose: [1.925, 0.250, 0.0036, 0, 0, 1.570] }
@@ -42,10 +42,10 @@ crates:
     - { name: yellow_crate_13, pose: [0.775, 1.750, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_14, pose: [0.825, 1.750, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_15, pose: [0.875, 1.750, 0.0036, 0, 0, 1.570] }
-    - { name: yellow_crate_16, pose: [0.100, 1.125, 0.0036, 0, 0, 0] }
-    - { name: yellow_crate_17, pose: [0.100, 1.025, 0.0036, 0, 0, 0] }
-    - { name: yellow_crate_18, pose: [0.100, 0.325, 0.0036, 0, 0, 0] }
-    - { name: yellow_crate_19, pose: [0.100, 0.225, 0.0036, 0, 0, 0] }
+    - { name: yellow_crate_16, pose: [0.100, 1.225, 0.0036, 0, 0, 0] }
+    - { name: yellow_crate_17, pose: [0.100, 1.175, 0.0036, 0, 0, 0] }
+    - { name: yellow_crate_18, pose: [0.100, 0.425, 0.0036, 0, 0, 0] }
+    - { name: yellow_crate_19, pose: [0.100, 0.375, 0.0036, 0, 0, 0] }
     - { name: yellow_crate_20, pose: [1.125, 0.875, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_21, pose: [1.050, 0.250, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_22, pose: [1.100, 0.250, 0.0036, 0, 0, 1.570] }
