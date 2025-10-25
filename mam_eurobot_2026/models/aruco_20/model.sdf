@@ -5,9 +5,10 @@
     <static>true</static>
     <link name="link">
       <visual name="border_20">
+      <pose >0.0 0 0.0 0 0 0</pose>
       <geometry>
         <box>
-          <size>0.12 0.12 0.0004</size>
+          <size>0.14 0.14 0.0004</size>
         </box>
       </geometry>
       <material>
@@ -16,9 +17,10 @@
     </visual>
 
       <visual name="visual_20">
+      <pose >0.0 0 0.001 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.1 0.1 0.0005</size> 
+            <size>0.1 0.1 0.001</size> 
           </box>
         </geometry>
         <material>

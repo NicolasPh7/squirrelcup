@@ -25,8 +25,8 @@
               <format>R8G8B8</format>
             </image>
             <clip>
-              <near>0.1</near>
-              <far>100</far>
+              <near>0.5</near>
+              <far>5</far>
             </clip>
             <horizontal_fov>2.094</horizontal_fov>
           </camera>
