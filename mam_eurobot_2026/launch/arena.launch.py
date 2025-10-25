@@ -9,7 +9,6 @@ from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
-    # urdf_path = PathJoinSubstitution([pkg_path, 'models', 'simple_robot.urdf'])
 
     return LaunchDescription([
         SetEnvironmentVariable(
@@ -66,19 +65,9 @@ def generate_launch_description():
         ExecuteProcess(
             cmd=[
                 "ros2", "run", "ros_gz_sim", "create",
-                "-file", "file://models/simple_robot",
-                "-name", "simple_robot",
-                "-x", "2.7", "-y", "1.8", "-z", "0.00", "-Y", "-1.57079633"
-            ],
-            output="screen"
-        ),
-
-        ExecuteProcess(
-            cmd=[
-                "ros2", "run", "ros_gz_sim", "create",
                 "-file", "file://models/robot_v1",
                 "-name", "robot_v1",
-                "-x", "0.3", "-y", "1.8", "-z", "0.00", "-Y", "-1.57079633"
+                "-x", "2.7", "-y", "1.8", "-z", "0.00", "-Y", "-1.57079633"
             ],
             output="screen"
         ),
@@ -96,7 +85,7 @@ def generate_launch_description():
             executable='parameter_bridge',
             name='odom_bridge',
             output='screen',
-            arguments=['/model/simple_robot/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
+            arguments=['/model/robot_v1/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
         ),
 
 
@@ -132,7 +121,7 @@ def generate_launch_description():
             package='tf2_ros',
             executable='static_transform_publisher',
             name='lidar_tf',
-            arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'simple_robot/chassis/lidar_3d'],
+            arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'robot_v1/chassis/lidar_3d'],
             output='screen'
         ),
 
