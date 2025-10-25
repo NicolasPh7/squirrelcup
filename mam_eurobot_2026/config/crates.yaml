@@ -49,7 +49,7 @@ crates:
     - { name: yellow_crate_20, pose: [1.125, 0.875, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_21, pose: [1.050, 0.250, 0.0036, 0, 0, 1.570] }
     - { name: yellow_crate_22, pose: [1.100, 0.250, 0.0036, 0, 0, 1.570] }
-    - { name: yellow_crate_23, pose: [1.150, 0.250, 0.0036, 0, 0, 1.570] }
+    - { name: yellow_crate_23, pose: [1.175, 0.875, 0.0036, 0, 0, 1.570] }
 
   black_crates:
     - { name: black_crate_0, pose: [2.175, 1.750, 0.0336, 0, 0, 1.570] }  
