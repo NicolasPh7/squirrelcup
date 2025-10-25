@@ -73,6 +73,16 @@ def generate_launch_description():
             output="screen"
         ),
 
+        ExecuteProcess(
+            cmd=[
+                "ros2", "run", "ros_gz_sim", "create",
+                "-file", "file://models/robot_v1",
+                "-name", "robot_v1",
+                "-x", "0.3", "-y", "1.8", "-z", "0.00", "-Y", "-1.57079633"
+            ],
+            output="screen"
+        ),
+
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
