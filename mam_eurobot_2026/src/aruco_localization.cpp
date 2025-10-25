@@ -127,27 +127,27 @@ private:
             expected_world_positions.push_back(marker_map_[id]);
 
           } else {
-            cv::Mat R_marker_to_cam;
-            cv::Rodrigues(rvecs[i], R_marker_to_cam);
-            cv::Mat t_marker_to_cam = cv::Mat(tvecs[i]);
+            // cv::Mat R_marker_to_cam;
+            // cv::Rodrigues(rvecs[i], R_marker_to_cam);
+            // cv::Mat t_marker_to_cam = cv::Mat(tvecs[i]);
 
-            // Invertiere die Transformation: Kamera zur Marker
-            cv::Mat R_cam_to_marker = R_marker_to_cam.t();  // Transponierte Rotation
-            cv::Mat t_cam_to_marker = -R_cam_to_marker * t_marker_to_cam;
+            // // Invertiere die Transformation: Kamera zur Marker
+            // cv::Mat R_cam_to_marker = R_marker_to_cam.t();  // Transponierte Rotation
+            // cv::Mat t_cam_to_marker = -R_cam_to_marker * t_marker_to_cam;
 
-            // Markerposition im Weltkoordinatensystem
-            cv::Vec3d marker_world = marker_map_[id];
-            cv::Mat marker_world_mat = (cv::Mat_<double>(3,1) << marker_world[0], marker_world[1], marker_world[2]);
+            // // Markerposition im Weltkoordinatensystem
+            // cv::Vec3d marker_world = marker_map_[id];
+            // cv::Mat marker_world_mat = (cv::Mat_<double>(3,1) << marker_world[0], marker_world[1], marker_world[2]);
 
-            // Kamera (Roboter) Position im Weltkoordinatensystem
-            cv::Mat robot_world_mat = marker_world_mat + R_cam_to_marker * t_marker_to_cam;
-            cv::Vec3d robot_world(robot_world_mat.at<double>(0), robot_world_mat.at<double>(1), robot_world_mat.at<double>(2));
-            geometry_msgs::msg::Pose pose;
-            pose.position.x = robot_world[0];
-            pose.position.y = robot_world[1];
-            pose.position.z = robot_world[2];
+            // // Kamera (Roboter) Position im Weltkoordinatensystem
+            // cv::Mat robot_world_mat = marker_world_mat + R_cam_to_marker * t_marker_to_cam;
+            // cv::Vec3d robot_world(robot_world_mat.at<double>(0), robot_world_mat.at<double>(1), robot_world_mat.at<double>(2));
+            // geometry_msgs::msg::Pose pose;
+            // pose.position.x = robot_world[0];
+            // pose.position.y = robot_world[1];
+            // pose.position.z = robot_world[2];
 
-            publishPose(pose);
+            // publishPose(pose);
           }
         }
       }
