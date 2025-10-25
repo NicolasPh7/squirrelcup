@@ -5,7 +5,7 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Comm
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import OpaqueFunction
 
-from mam_eurobot_2026.helpers import load_aruco_tags, load_crates
+from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_fixes
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
@@ -24,9 +24,10 @@ def generate_launch_description():
         ),
 
         TimerAction(
-            period=3.0,  # wait seconds
+            period=2.0,  # wait seconds
             actions=[
                 OpaqueFunction(function=load_aruco_tags),
+                OpaqueFunction(function=load_balises_fixes),
                 OpaqueFunction(function=load_crates),
             ]
         ),

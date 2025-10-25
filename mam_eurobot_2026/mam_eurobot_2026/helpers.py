@@ -63,3 +63,30 @@ def load_crates(context):
             )
     return crate_processes
 
+
+def load_balises_fixes(context):
+    pkg_path = FindPackageShare('mam_eurobot_2026').perform(context)
+    config_path = PathJoinSubstitution([pkg_path, 'config', 'fix_balises.yaml']).perform(context)
+
+    print(f"Loading balises fixes from: {config_path}")
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+        print(f"Loaded balises: {config.get('balises_fixes', [])}")
+
+    balise_processes = []
+    for balise in config.get('balises_fixes', []):
+        print(f"Loading balise {balise['name']}")
+        x, y, z, roll, pitch, yaw = balise['pose']
+        balise_processes.append(
+            ExecuteProcess(
+                cmd=[
+                    "ros2", "run", "ros_gz_sim", "create",
+                    "-file", balise['model_path'],
+                    "-name", balise['name'],
+                    "-x", str(x), "-y", str(y), "-z", str(z),
+                    "-R", str(roll), "-P", str(pitch), "-Y", str(yaw)
+                ],
+                output="screen"
+            )
+        )
+    return balise_processes
