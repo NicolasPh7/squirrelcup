@@ -83,10 +83,20 @@ def generate_launch_description():
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
-            name='odom_bridge',
+            name='arm_joint_bridge',
             output='screen',
-            arguments=['/model/robot_v1/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
+            arguments=[
+                '/arm_joint/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double'
+            ]
         ),
+
+        # Node(
+        #     package='ros_gz_bridge',
+        #     executable='parameter_bridge',
+        #     name='odom_bridge',
+        #     output='screen',
+        #     arguments=['/model/robot_v1/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
+        # ),
 
 
         Node(
