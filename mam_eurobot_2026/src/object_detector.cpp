@@ -161,9 +161,9 @@ private:
                 marker.scale.y = width;
                 marker.scale.z = height;
 
-                marker.color.r = (params.name == "weit") ? 0.3 : 0.4 ;
-                marker.color.g = (params.name == "nah") ? 0.1 : 0.2;
-                marker.color.b = 0.5;
+                marker.color.r = 1.0 ;
+                marker.color.g = 0.0;
+                marker.color.b = 0.0;
 
                 marker.color.a = 0.2;
                 marker_array.markers.push_back(marker);

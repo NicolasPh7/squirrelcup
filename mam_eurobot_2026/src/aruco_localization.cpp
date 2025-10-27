@@ -42,6 +42,14 @@ public:
     marker_map_[22] = cv::Vec3d(0.6, 0.6, 0.0036);
     marker_map_[23] = cv::Vec3d(2.4, 0.6, 0.0036);
 
+    marker_sizes_ = {
+      {0, 0.1},     // Referenzmarker
+      {20, 0.1}, {21, 0.1}, {22, 0.1}, {23, 0.1}, // Weltmarker
+      {36, 0.04}, {47, 0.04}, {41, 0.04}, // Kistenmarker
+      {91, 0.06}, {92, 0.06}, {93, 0.06} //Fix Balises
+    };
+
+
     dist_coeffs_ = cv::Mat::zeros(5, 1, CV_64F);
 
     if (is_bird_eye_) {
@@ -110,13 +118,20 @@ private:
     bool robot_visible = false;
 
     if (!ids.empty()) {
-      std::vector<cv::Vec3d> rvecs, tvecs;
-      cv::aruco::estimatePoseSingleMarkers(corners, 0.05, camera_matrix_, dist_coeffs_, rvecs, tvecs);
+      std::vector<cv::Vec3d> rvecs(ids.size()), tvecs(ids.size());
+
+      for (size_t i = 0; i < ids.size(); ++i) {
+        int id = ids[i];
+        float markerLength = marker_sizes_.count(id) ? marker_sizes_[id] : 0.1; // Default fallback
+        std::vector<std::vector<cv::Point2f>> single_corner = { corners[i] };
+        std::vector<cv::Vec3d> rvec_single, tvec_single;
+
+        cv::aruco::estimatePoseSingleMarkers(single_corner, markerLength, camera_matrix_, dist_coeffs_, rvec_single, tvec_single);
+        rvecs[i] = rvec_single[0];
+        tvecs[i] = tvec_single[0];
+      }
 
       cv::aruco::drawDetectedMarkers(debug_image, corners, ids);
-
-      std::vector<cv::Vec3d> observed_world_positions;
-      std::vector<cv::Vec3d> expected_world_positions;
 
       visualization_msgs::msg::MarkerArray marker_array;
       visualization_msgs::msg::Marker clear_marker;
@@ -130,6 +145,9 @@ private:
       marker_pub_->publish(marker_array);
       marker_array.markers.clear();
 
+      std::vector<cv::Point3f> objectPoints;
+      std::vector<cv::Point2f> imagePoints;
+
       for (size_t i = 0; i < ids.size(); ++i) {
         cv::aruco::drawAxis(debug_image, camera_matrix_, dist_coeffs_, rvecs[i], tvecs[i], 0.05);
 
@@ -140,12 +158,15 @@ private:
           robot_visible = true;
         } else if (marker_map_.count(id)) {
           if (is_bird_eye_) {
-            // Berechne Markerposition im Weltkoordinatensystem
-            geometry_msgs::msg::Pose estimated_pose = transformToWorld(tvecs[i], rvecs[i]);
-            cv::Vec3d estimated_pos(estimated_pose.position.x, estimated_pose.position.y, estimated_pose.position.z);
-            observed_world_positions.push_back(estimated_pos);
-            expected_world_positions.push_back(marker_map_[id]);
+            int id = ids[i];
+            if (marker_map_.count(id)) {
+              cv::Point2f center(0, 0);
+              for (const auto& pt : corners[i]) center += pt;
+              center *= 0.25;
 
+              imagePoints.push_back(center);
+              objectPoints.push_back(cv::Point3f(marker_map_[id]));
+            }
           } else {
             // TODO: tag calibration by the robot
           }
@@ -153,42 +174,47 @@ private:
       }
 
       if (is_bird_eye_) {
-        cv::Vec3d mean_variance(0.005, 0.005, 0.005);
-        cv::Vec3d mean_error(0.01, 0.01, 0.01);
-        
-        if (!observed_world_positions.empty()) {
-          cv::Vec3d variance(0, 0, 0);
-          cv::Vec3d total_error(0, 0, 0);
-          // Covariance 
-          for (size_t i = 0; i < observed_world_positions.size(); ++i) {
-            total_error += expected_world_positions[i] - observed_world_positions[i];
+        double mean_variance;
+        double mean_error;
 
-            cv::Vec3d error = expected_world_positions[i] - observed_world_positions[i];
-            variance += error.mul(error);
+        // solvePnP zur Kamerapose-Schätzung
+        if (objectPoints.size() >= 4) {
+          cv::Vec3d rvec, tvec;
+          cv::solvePnP(objectPoints, imagePoints, camera_matrix_, dist_coeffs_, rvec, tvec);
+
+          std::vector<cv::Point2f> projectedPoints;
+          cv::projectPoints(objectPoints, rvec, tvec, camera_matrix_, dist_coeffs_, projectedPoints);
+
+          double totalError = 0;
+          double variance = 0;
+          for (size_t i = 0; i < imagePoints.size(); ++i) {
+            auto error = cv::norm(imagePoints[i] - projectedPoints[i]);
+            totalError += error;
+            variance += error*error;
           }
           
-          mean_error = total_error * (1.0 / observed_world_positions.size());
-          mean_variance = variance * (1.0 / observed_world_positions.size());
+          mean_error = totalError / imagePoints.size();
+          mean_variance = variance / imagePoints.size();
 
-          RCLCPP_INFO(this->get_logger(), "Position Mean error correction: [%.4f, %.4f, %.4f]",
-              mean_error[0], mean_error[1], mean_error[2]);
-          RCLCPP_INFO(this->get_logger(), "Position Covariance: [x=%.4f, y=%.4f, z=%.4f]",
-              mean_variance[0], mean_variance[1], mean_variance[2]);
-        } 
+          RCLCPP_INFO(this->get_logger(), "Position Mean error correction: %.4f pixels", mean_error);
+          RCLCPP_INFO(this->get_logger(), "Position Covariance: %.4f pixels square",mean_variance);
 
-        int marker_id = 0;
-        for (size_t i = 0; i < ids.size(); ++i) {
-          if (ids[i] == 0) {
-            geometry_msgs::msg::Pose raw_pose = transformToWorld(tvecs[i], rvecs[i]);
-            publishPoseWithCovariance(raw_pose, mean_variance);
-          } else {
-            geometry_msgs::msg::Pose raw_nut_pose = transformToWorld(tvecs[i], rvecs[i]);
-            raw_nut_pose.position.x += mean_error[0];
-            raw_nut_pose.position.y += mean_error[1];
-            raw_nut_pose.position.z += mean_error[2];
-            prepareNuts(marker_array, raw_nut_pose, ids[i], ++marker_id);
+          geometry_msgs::msg::Pose camera_pose = cameraPoseToWorld(tvec, rvec);
+
+          // publishPoseWithCovariance(camera_pose, mean_variance);
+
+          int marker_id = 0;
+          for (size_t i = 0; i < ids.size(); ++i) {
+            if (ids[i] == 0) {
+              geometry_msgs::msg::Pose raw_pose = transformTagToWorld(tvecs[i], rvecs[i], camera_pose);
+              publishPoseWithCovariance(raw_pose, mean_variance);
+            } else {
+              geometry_msgs::msg::Pose raw_nut_pose = transformTagToWorld(tvecs[i], rvecs[i], camera_pose);
+              prepareNuts(marker_array, raw_nut_pose, ids[i], ++marker_id);
+            }
           }
         }
+
         
       }
 
@@ -197,7 +223,7 @@ private:
 
     if (is_bird_eye_ && !robot_visible) {
       RCLCPP_INFO(this->get_logger(), "Robot not visible. Falling back to odometry");
-      cv::Vec3d assumed_cov(0.0100, 0.0100, 0.005);
+      auto assumed_cov = 0.0100;
       publishPoseWithCovariance(robot_pose_, assumed_cov);
     }
 
@@ -210,64 +236,91 @@ private:
 
   }
 
-  geometry_msgs::msg::Pose transformToWorld(const cv::Vec3d &tvec, const cv::Vec3d &rvec) {
-      // Kamera-RPY → Rotation
-      double roll = camera_bird_eye_rpy_[0], pitch = camera_bird_eye_rpy_[1], yaw = camera_bird_eye_rpy_[2];
-      cv::Mat Rx = (cv::Mat_<double>(3,3) <<
-          1, 0, 0,
-          0, cos(roll), -sin(roll),
-          0, sin(roll), cos(roll));
-      cv::Mat Ry = (cv::Mat_<double>(3,3) <<
-          cos(pitch), 0, sin(pitch),
-          0, 1, 0,
-          -sin(pitch), 0, cos(pitch));
-      cv::Mat Rz = (cv::Mat_<double>(3,3) <<
-          cos(yaw), -sin(yaw), 0,
-          sin(yaw), cos(yaw), 0,
-          0, 0, 1);
+  geometry_msgs::msg::Pose cameraPoseToWorld(const cv::Vec3d &tvec, const cv::Vec3d &rvec) {
+    // Rotation
+    cv::Mat R;
+    cv::Rodrigues(rvec, R);
+    tf2::Matrix3x3 tf_rot(
+        R.at<double>(0,0), R.at<double>(0,1), R.at<double>(0,2),
+        R.at<double>(1,0), R.at<double>(1,1), R.at<double>(1,2),
+        R.at<double>(2,0), R.at<double>(2,1), R.at<double>(2,2)
+    );
+    tf2::Quaternion q;
+    tf_rot.getRotation(q);
 
-      cv::Mat R_cam = Rz * Ry * Rx;
+    geometry_msgs::msg::Pose pose;
+    pose.position.x = tvec[0];
+    pose.position.y = tvec[1];
+    pose.position.z = tvec[2];
+    pose.orientation = tf2::toMsg(q);
 
-      // Markerposition relativ zur Kamera
-      cv::Mat tvec_cam = cv::Mat(tvec).reshape(1, 3);
-      cv::Mat cam_pos = cv::Mat(camera_position_).reshape(1, 3);
-      cv::Mat marker_world = R_cam * tvec_cam + cam_pos;
+    RCLCPP_INFO(this->get_logger(),
+        "Computed Camera Pose x=%.3f, y=%.3f, z=%.3f",
+       pose.position.x, pose.position.y, pose.position.z);
 
-      // Markerrotation relativ zur Kamera
-      cv::Mat R_marker_cam;
-      cv::Rodrigues(rvec, R_marker_cam);  // rvec → Rotation matrix
-
-      // Markerrotation in Weltkoordinaten
-      cv::Mat R_marker_world = R_cam * R_marker_cam;
-
-      // Konvertiere Rotation in Quaternion
-      tf2::Matrix3x3 tf_rot(
-          R_marker_world.at<double>(0,0), R_marker_world.at<double>(0,1), R_marker_world.at<double>(0,2),
-          R_marker_world.at<double>(1,0), R_marker_world.at<double>(1,1), R_marker_world.at<double>(1,2),
-          R_marker_world.at<double>(2,0), R_marker_world.at<double>(2,1), R_marker_world.at<double>(2,2)
-      );
-      tf2::Quaternion q;
-      tf_rot.getRotation(q);
-
-      // Rückgabe als Pose
-      geometry_msgs::msg::Pose pose;
-      pose.position.x = marker_world.at<double>(0);
-      pose.position.y = marker_world.at<double>(1);
-      pose.position.z = marker_world.at<double>(2);
-      pose.orientation = tf2::toMsg(q);
-      return pose;
+    return pose;
   }
 
-  void publishPoseWithCovariance(const geometry_msgs::msg::Pose &position, const cv::Vec3d &cov_diag) {
+
+  geometry_msgs::msg::Pose transformTagToWorld(const cv::Vec3d &tag_tvec_cam, const cv::Vec3d &tag_rvec_cam,
+                                             const geometry_msgs::msg::Pose &camera_pose_world) {
+    // Kamera-Rotation als Matrix
+    tf2::Quaternion q_cam;
+    tf2::fromMsg(camera_pose_world.orientation, q_cam);
+    tf2::Matrix3x3 tf_R_cam(q_cam);
+
+    cv::Mat R_cam = (cv::Mat_<double>(3,3) <<
+        tf_R_cam[0][0], tf_R_cam[0][1], tf_R_cam[0][2],
+        tf_R_cam[1][0], tf_R_cam[1][1], tf_R_cam[1][2],
+        tf_R_cam[2][0], tf_R_cam[2][1], tf_R_cam[2][2]);
+
+    // Kamera-Position als Vektor
+    cv::Mat cam_pos = (cv::Mat_<double>(3,1) <<
+        camera_pose_world.position.x,
+        camera_pose_world.position.y,
+        camera_pose_world.position.z);
+
+    // Markerposition relativ zur Kamera
+    cv::Mat tvec_cam = cv::Mat(tag_tvec_cam).reshape(1, 3);
+
+    // Markerposition in Weltkoordinaten
+    cv::Mat marker_world = R_cam * tvec_cam + cam_pos;
+
+    // Markerrotation relativ zur Kamera
+    cv::Mat R_marker_cam;
+    cv::Rodrigues(tag_rvec_cam, R_marker_cam);
+
+    // Markerrotation in Weltkoordinaten
+    cv::Mat R_marker_world = R_cam * R_marker_cam;
+
+    // Rotation → Quaternion
+    tf2::Matrix3x3 tf_rot(
+        R_marker_world.at<double>(0,0), R_marker_world.at<double>(0,1), R_marker_world.at<double>(0,2),
+        R_marker_world.at<double>(1,0), R_marker_world.at<double>(1,1), R_marker_world.at<double>(1,2),
+        R_marker_world.at<double>(2,0), R_marker_world.at<double>(2,1), R_marker_world.at<double>(2,2)
+    );
+    tf2::Quaternion q;
+    tf_rot.getRotation(q);
+
+    // Rückgabe als Pose
+    geometry_msgs::msg::Pose pose;
+    pose.position.x = marker_world.at<double>(0);
+    pose.position.y = marker_world.at<double>(1);
+    pose.position.z = marker_world.at<double>(2);
+    pose.orientation = tf2::toMsg(q);
+    return pose;
+  }
+
+  void publishPoseWithCovariance(const geometry_msgs::msg::Pose &position, double cov_diag) {
     geometry_msgs::msg::PoseWithCovarianceStamped pose;
   rclcpp::Time now = this->now();
     pose.header.frame_id = "map";
     pose.header.stamp = now;
     pose.pose.pose = position;
 
-    pose.pose.covariance[0] = cov_diag[0]; // x-x
-    pose.pose.covariance[7] = cov_diag[1]; // y-y
-    pose.pose.covariance[14] = cov_diag[2]; // z-z
+    pose.pose.covariance[0] = cov_diag; // x-x
+    pose.pose.covariance[7] = cov_diag; // y-y
+    pose.pose.covariance[14] = cov_diag; // z-z
     pose.pose.covariance[21] = 0.01; // roll
     pose.pose.covariance[28] = 0.01; // pitch
     pose.pose.covariance[35] = 0.01; // yaw
@@ -276,9 +329,9 @@ private:
     pose_with_cov_pub_->publish(pose);
 
     RCLCPP_INFO(this->get_logger(),
-        "Published PoseWithCovariance x=%.3f, y=%.3f, z=%.3f | cov=[%.4f, %.4f, %.4f]",
+        "Published PoseWithCovariance x=%.3f, y=%.3f, z=%.3f | cov=%.4f",
         pose.pose.pose.position.x, pose.pose.pose.position.y, pose.pose.pose.position.z,
-        cov_diag[0], cov_diag[1], cov_diag[2]);
+        cov_diag);
   }
 
   void udpateBaseLinkTF(const geometry_msgs::msg::Pose &pose) {
@@ -289,12 +342,7 @@ private:
     t.transform.translation.x = pose.position.x;
     t.transform.translation.y = pose.position.y;
     t.transform.translation.z = pose.position.z;
-    tf2::Quaternion qt;
-    qt.setRPY(pose.orientation.x, pose.orientation.y, pose.orientation.z);
-    t.transform.rotation.x = qt.x();
-    t.transform.rotation.y = qt.y();
-    t.transform.rotation.z = qt.z();
-    t.transform.rotation.w = qt.w();
+    t.transform.rotation = pose.orientation;
     tf_broadcaster_->sendTransform(t);
   }
 
@@ -309,7 +357,7 @@ private:
 
     marker.pose.position.x = position.position.x;
     marker.pose.position.y = position.position.y;
-    marker.pose.position.z = 0.0;
+    marker.pose.position.z = position.position.z;
     marker.pose.orientation = position.orientation;
 
     marker.scale.x = 0.150;
@@ -355,6 +403,7 @@ private:
 
   geometry_msgs::msg::Pose robot_pose_;
   std::unordered_map<int, cv::Vec3d> marker_map_;
+  std::unordered_map<int, float> marker_sizes_;
   cv::Mat camera_matrix_, dist_coeffs_;
   cv::Vec3d camera_position_, camera_bird_eye_rpy_;
 

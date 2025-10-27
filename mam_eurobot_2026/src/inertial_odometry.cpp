@@ -31,7 +31,7 @@ public:
   rclcpp::Time now = this->now();    last_time_ = now;
 
     // TF broadcaster
-    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+    // tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     auto period = std::chrono::duration<double>(1.0 / publish_frequency_);
     timer_ = this->create_wall_timer(
@@ -105,7 +105,7 @@ private:
     // publish odometry
     nav_msgs::msg::Odometry odom;
     odom.header.stamp = now;
-    odom.header.frame_id = "odom";
+    odom.header.frame_id = "map";
     odom.child_frame_id = "base_link";
     odom.pose.pose.position.x = x_;
     odom.pose.pose.position.y = y_;
@@ -121,21 +121,21 @@ private:
     pub_->publish(odom);
     last_odom_ = odom;
 
-    // publish TF odom -> base_link
-    geometry_msgs::msg::TransformStamped t;
-    t.header.stamp = now;
-    t.header.frame_id = "odom";
-    t.child_frame_id = "base_link";
-    t.transform.translation.x = x_;
-    t.transform.translation.y = y_;
-    t.transform.translation.z = 0.0;
-    tf2::Quaternion qt;
-    qt.setRPY(0.0, 0.0, yaw_);
-    t.transform.rotation.x = qt.x();
-    t.transform.rotation.y = qt.y();
-    t.transform.rotation.z = qt.z();
-    t.transform.rotation.w = qt.w();
-    tf_broadcaster_->sendTransform(t);
+    // // publish TF odom -> base_link
+    // geometry_msgs::msg::TransformStamped t;
+    // t.header.stamp = now;
+    // t.header.frame_id = "odom";
+    // t.child_frame_id = "base_link";
+    // t.transform.translation.x = x_;
+    // t.transform.translation.y = y_;
+    // t.transform.translation.z = 0.0;
+    // tf2::Quaternion qt;
+    // qt.setRPY(0.0, 0.0, yaw_);
+    // t.transform.rotation.x = qt.x();
+    // t.transform.rotation.y = qt.y();
+    // t.transform.rotation.z = qt.z();
+    // t.transform.rotation.w = qt.w();
+    // tf_broadcaster_->sendTransform(t);
   }
 
 
@@ -143,7 +143,7 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr poseCorrectionSub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;
-  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  // std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   std::mutex mutex_;
   double vx_ = 0.0;
   double vy_ = 0.0;
