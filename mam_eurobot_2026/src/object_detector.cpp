@@ -34,25 +34,9 @@ public:
             "/lidar_3d/points", 10,
             std::bind(&ObjectDetector::pointCloudCallback, this, std::placeholders::_1));
 
-        image_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
-            "/camera", 10,
-            std::bind(&ObjectDetector::image_callback, this, std::placeholders::_1));
-
-
         debug_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/debug_cloud", 10);
         marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/supposed_objects", 10);
 
-        R_  << 0, 1, 0,   // x_cam = y_gazebo
-            0, 0, -1,  // y_cam = -z_gazebo
-            1, 0, 0;        
-        t_ = Eigen::Vector3f(0.0f, 0.0f, -0.03f);
-
-        //TODO: camera calibration
-        K_ = (cv::Mat_<double>(3,3) << 
-            960.0, 0.0, 960.0,
-            0.0,  960.0, 540.0,
-            0.0,  0.0,   1.0);
-        
         RCLCPP_INFO(this->get_logger(), "ObjectDetector initialized.");
     }
 
@@ -71,48 +55,6 @@ private:
         {"sweit", 0.036, 5,  2000},
         {"ssweit", 0.045, 2,  2000}
     };
-
-    void image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
-        cv::Mat frame_raw;
-         try {
-           frame_raw = cv_bridge::toCvCopy(msg, "bgr8")->image;
-        } catch (cv_bridge::Exception & e) {
-            RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
-            return;
-        }  
-
-        cv::Mat hsv;
-        cv::cvtColor(frame_raw, hsv, cv::COLOR_BGR2HSV);
-
-        //Blau (RAL 5017)
-        cv::Scalar lower_blue(100, 100, 50);
-        cv::Scalar upper_blue(130, 255, 255);
-        cv::Mat mask_blue;
-        cv::inRange(hsv, lower_blue, upper_blue, mask_blue);
-
-        //Gelb (RAL 1023)
-        cv::Scalar lower_yellow(20, 100, 100);
-        cv::Scalar upper_yellow(35, 255, 255);
-        cv::Mat mask_yellow;
-        cv::inRange(hsv, lower_yellow, upper_yellow, mask_yellow);
-
-        // Schwarz (RAL 9017)
-        cv::Scalar lower_black(0, 0, 0);
-        cv::Scalar upper_black(180, 255, 50);
-        cv::Mat mask_black;
-        cv::inRange(hsv, lower_black, upper_black, mask_black);
-
-        // Grau (RAL 7032)
-        cv::Scalar lower_gray(0, 0, 80);
-        cv::Scalar upper_gray(180, 50, 200);
-        cv::Mat mask_gray;
-        cv::inRange(hsv, lower_gray, upper_gray, mask_gray);
-
-        cv::Mat combined_mask = mask_blue | mask_yellow | mask_black | mask_gray;
-
-        frame_raw.copyTo(frame_, combined_mask); // Nur relevante Farben bleiben
-    }
-
 
     void pointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
@@ -167,18 +109,6 @@ private:
                     const auto& pt = filtered->points[idx];
                     clustered->points.push_back(pt);
                     cluster->points.push_back(pt);
-
-                    Eigen::Vector3f p_lidar(pt.x, pt.y, pt.z);
-                    Eigen::Vector3f p_cam = R_ * p_lidar + t_;
-                    if (p_cam.z() <= 0) continue; // hinter der Kamera
-
-                    float u = (K_.at<double>(0,0) * p_cam.x() / p_cam.z()) + K_.at<double>(0,2);
-                    float v = (K_.at<double>(1,1) * p_cam.y() / p_cam.z()) + K_.at<double>(1,2);
-                
-                    if (u >= 0 && u < frame_.cols && v >= 0 && v < frame_.rows) {
-                        cv::Vec3b color = frame_.at<cv::Vec3b>(cv::Point(u,v));
-                        cluster_colors.push_back(color); 
-                    }
                 }
 
                 // OBB berechnen
@@ -192,7 +122,7 @@ private:
 
                 // Höhe berechnen (wie bisher)
                 auto height = std::abs(max_pt_OBB.z - floor_offset_);
-                if (height < 0.01 || height > 0.3) continue;
+                if (height < 0.02 || height > 0.4) continue;
                 if (min_pt_OBB.z >= 0 || position.z >= 0) continue;
 
                 // Länge und Breite aus OBB
@@ -225,40 +155,11 @@ private:
                 marker.scale.y = width;
                 marker.scale.z = height;
 
-                if (cluster_colors.empty()) {
-                    marker.color.r = (params.name == "weit") ? 0.3 : 0.4 ;
-                    marker.color.g = (params.name == "nah") ? 0.1 : 0.2;
-                    marker.color.b = 0.5;
-                } else {
-                    cv::Scalar avg_bgr = cv::mean(cluster_colors);
-                    cv::Mat bgr_pixel(1, 1, CV_8UC3, cv::Vec3b(avg_bgr[0], avg_bgr[1], avg_bgr[2]));
-                    cv::Mat hsv_pixel;
-                    cv::cvtColor(bgr_pixel, hsv_pixel, cv::COLOR_BGR2HSV);
-                    cv::Vec3b avg_hsv = hsv_pixel.at<cv::Vec3b>(0, 0);
+                marker.color.r = (params.name == "weit") ? 0.3 : 0.4 ;
+                marker.color.g = (params.name == "nah") ? 0.1 : 0.2;
+                marker.color.b = 0.5;
 
-                    if (is_blue(avg_hsv)) {
-                        marker.color.r = 0.0;
-                        marker.color.g = 0.0;
-                        marker.color.b = 1.0;
-                    }
-                    else if (is_yellow(avg_hsv)) {
-                        marker.color.r = 1.0;
-                        marker.color.g = 1.0;
-                        marker.color.b = 0.0;
-                    }
-                    else if (is_black(avg_hsv)) {
-                        marker.color.r = 1.0;
-                        marker.color.g = 1.0;
-                        marker.color.b = 1.0;
-                    } 
-                    else {
-                        marker.color.r = 0.5;
-                        marker.color.g = 0.5;
-                        marker.color.b = 0.5;
-                    } 
-                }
-
-                marker.color.a = 0.6;
+                marker.color.a = 0.2;
                 marker_array.markers.push_back(marker);
             }
         }
@@ -271,50 +172,10 @@ private:
         debug_pub_->publish(clustered_msg);
     }
 
-    bool is_blue(const cv::Vec3b& hsv_color) const
-    {
-        return (hsv_color[0] >= 90 && hsv_color[0] <= 140 &&
-                hsv_color[1] >= 50 &&
-                hsv_color[2] >= 40);
-    }
-
-    bool is_yellow(const cv::Vec3b& hsv_color) const
-    {
-        return (hsv_color[0] >= 15 && hsv_color[0] <= 45 &&
-                hsv_color[1] >= 50 &&
-                hsv_color[2] >= 80);
-    }
-
-    bool is_black(const cv::Vec3b& hsv_color) const
-    {
-        return (hsv_color[2] <= 30 && hsv_color[1] <= 60);
-    }
-
-    bool is_gray(const cv::Vec3b& hsv_color) const
-    {
-        return (hsv_color[1] <= 50 && hsv_color[2] >= 80 && hsv_color[2] <= 200);
-    }
-
-
-    bool isRelevantColor(const cv::Vec3b& hsv_color) const
-    {
-        return is_blue(hsv_color) || is_yellow(hsv_color) || is_black(hsv_color) || is_gray(hsv_color);
-    }
-
     float leaf_size_;
     float floor_offset_;
 
-    cv::Mat frame_;
-    Eigen::Matrix3f R_; // Rotation Lidar → Kamera
-    Eigen::Vector3f t_; // Translation Lidar → Kamera
-    cv::Mat K_; // kamera Matrix 
-    /* | f_x  0   c_x   |
-       | 0   f_y  c_y   |
-       | 0    0    1    |
-    */
-
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
-    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 };

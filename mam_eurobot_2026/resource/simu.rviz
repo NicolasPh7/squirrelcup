@@ -7,6 +7,9 @@ Panels:
         - /Global Options1
         - /Status1
         - /Odometry1/Shape1
+        - /PoseWithCovariance1/Covariance1
+        - /MarkerArray2
+        - /MarkerArray2/Status1
       Splitter Ratio: 0.5
     Tree Height: 704
   - Class: rviz_common/Selection
@@ -115,19 +118,6 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /planned_path
       Value: true
-    - Class: rviz_default_plugins/Marker
-      Enabled: true
-      Name: Marker
-      Namespaces:
-        {}
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /current_goal_marker
-      Value: true
     - Alpha: 0.20000000298023224
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -162,27 +152,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Alpha: 1
-      Arrow Length: 0.30000001192092896
-      Axes Length: 0.30000001192092896
-      Axes Radius: 0.009999999776482582
-      Class: rviz_default_plugins/PoseArray
-      Color: 0; 0; 255
-      Enabled: true
-      Head Length: 0.05000000074505806
-      Head Radius: 0.05000000074505806
-      Name: PoseArray
-      Shaft Length: 0.05000000074505806
-      Shaft Radius: 0.019999999552965164
-      Shape: Arrow (3D)
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /detected_objects
-      Value: true
     - Class: rviz_default_plugins/Axes
       Enabled: true
       Length: 0.10000000149011612
@@ -205,26 +174,6 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /supposed_objects
-      Value: true
-    - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.10000000149011612
-      Class: rviz_default_plugins/Pose
-      Color: 170; 255; 255
-      Enabled: true
-      Head Length: 0.10000000149011612
-      Head Radius: 0.05000000074505806
-      Name: Pose
-      Shaft Length: 0.10000000149011612
-      Shaft Radius: 0.019999999552965164
-      Shape: Arrow
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /corrected_pose
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
@@ -253,6 +202,53 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /bird_eye_debug
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz_default_plugins/PoseWithCovariance
+      Color: 0; 255; 255
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Head Length: 0.029999999329447746
+      Head Radius: 0.019999999552965164
+      Name: PoseWithCovariance
+      Shaft Length: 0.10000000149011612
+      Shaft Radius: 0.009999999776482582
+      Shape: Arrow
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /corrected_pose
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        nuts: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /nuts
       Value: true
   Enabled: true
   Global Options:
@@ -300,25 +296,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.4193050861358643
+      Distance: 6.5664801597595215
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.11104214936494827
-        Y: -0.004996975883841515
-        Z: 0.12778665125370026
+        X: 0.7016681432723999
+        Y: 0.3929283618927002
+        Z: 1.5310837030410767
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7047960162162781
+      Pitch: 0.41979607939720154
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.8854434490203857
+      Yaw: 2.865443229675293
     Saved: ~
 Window Geometry:
   Displays:
@@ -338,5 +334,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 948
-  X: 905
-  Y: -25
+  X: 496
+  Y: -21

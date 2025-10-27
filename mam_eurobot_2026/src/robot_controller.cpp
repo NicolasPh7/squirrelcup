@@ -27,7 +27,7 @@ public:
     // odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
     //   "/odom", 10, std::bind(&RobotController::odomCallback, this, std::placeholders::_1));
     
-    poseCorrectionSub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+    poseCorrectionSub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
       "/corrected_pose", 10, std::bind(&RobotController::correctedPoseCallback, this, std::placeholders::_1));
 
     cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
@@ -51,8 +51,8 @@ private:
     }
   }
 
-  void correctedPoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
-    current_pose_ = msg->pose;
+  void correctedPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
+    current_pose_ = msg->pose.pose;
     planner_->updateCurrentPosition(current_pose_);
     
   }
@@ -270,7 +270,7 @@ private:
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr poseCorrectionSub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr poseCorrectionSub_;
 
 
   std::shared_ptr<TrajectoryPlanner> planner_;
