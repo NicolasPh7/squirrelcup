@@ -7,6 +7,8 @@
 #include "cv_bridge/cv_bridge.h"
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -33,8 +35,7 @@ public:
       std::bind(&ArucoLocalization::imageCallback, this, std::placeholders::_1));
 
     debug_image_pub_ = this->create_publisher<sensor_msgs::msg::Image>(debug_topic, 10);
-    pose_with_cov_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(pose_topic, 10);
-    marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/nuts", 10);
+    marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>((is_bird_eye_ ? "/nuts" : "/nuts_robot"), 10);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     marker_map_[20] = cv::Vec3d(0.6, 1.4, 0.0036);
@@ -53,6 +54,7 @@ public:
     dist_coeffs_ = cv::Mat::zeros(5, 1, CV_64F);
 
     if (is_bird_eye_) {
+    pose_with_cov_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(pose_topic, 10);
     camera_position_ = cv::Vec3d(1.5, 0.0, 0.9);
     camera_bird_eye_rpy_ = cv::Vec3d(0.0, 1.07, 1.57);
 
@@ -66,39 +68,24 @@ public:
     // 0.0,    0.0,     1.0);
     
   } else {
+    pose_with_cov_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+      pose_topic, 10,
+      std::bind(&ArucoLocalization::PoseWithCovarianceStampedCallback, this, std::placeholders::_1));
+
     camera_matrix_ = (cv::Mat_<double>(3,3) <<
     960.0, 0.0, 960.0,
     0.0,  960.0, 540.0,
     0.0,  0.0,   1.0);
     
-    
-    // Dynamisch über Odometrie oder tf2
-    odom_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-      "/odometry", 10,
-      std::bind(&ArucoLocalization::odomCallback, this, std::placeholders::_1));
   }
   }
 
 private:
-  void odomCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
-    camera_position_ = cv::Vec3d(
-      msg->pose.position.x,
-      msg->pose.position.y,
-      msg->pose.position.z
-    );
 
-    // // Optional: RPY aus Quaternion extrahieren
-    // tf2::Quaternion q(
-    //   msg->pose.orientation.x,
-    //   msg->pose.orientation.y,
-    //   msg->pose.orientation.z,
-    //   msg->pose.orientation.w);
-    // tf2::Matrix3x3 m(q);
-    // double roll, pitch, yaw;
-    // m.getRPY(roll, pitch, yaw);
-
-    robot_pose_ = msg->pose;
+  void PoseWithCovarianceStampedCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
+    robot_pose_ = msg->pose.pose;
   }
+ 
 
   void imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) {
     cv::Mat image = cv_bridge::toCvCopy(msg, "bgr8")->image;
@@ -173,6 +160,8 @@ private:
         }
       }
 
+      int marker_id = 0;
+
       if (is_bird_eye_) {
         double mean_variance;
         double mean_error;
@@ -203,19 +192,25 @@ private:
 
           // publishPoseWithCovariance(camera_pose, mean_variance);
 
-          int marker_id = 0;
           for (size_t i = 0; i < ids.size(); ++i) {
             if (ids[i] == 0) {
               geometry_msgs::msg::Pose raw_pose = transformTagToWorld(tvecs[i], rvecs[i], camera_pose);
               publishPoseWithCovariance(raw_pose, mean_variance);
-            } else {
+            } else if (!(marker_map_.count(ids[i]))) {
               geometry_msgs::msg::Pose raw_nut_pose = transformTagToWorld(tvecs[i], rvecs[i], camera_pose);
               prepareNuts(marker_array, raw_nut_pose, ids[i], ++marker_id);
             }
           }
         }
 
-        
+      } else { // Robot view
+          for (size_t i = 0; i < ids.size(); ++i) {
+            if (!(marker_map_.count(ids[i]))) {
+              geometry_msgs::msg::Pose raw_nut_pose = transformTagToWorld(tvecs[i], rvecs[i], robot_pose_);
+              RCLCPP_INFO(this->get_logger(), "Robot sees nuts");
+              prepareNuts(marker_array, raw_nut_pose, ids[i], ++marker_id);
+            }
+          }
       }
 
       marker_pub_->publish(marker_array);
@@ -235,6 +230,24 @@ private:
     debug_image_pub_->publish(*debug_msg);
 
   }
+
+  geometry_msgs::msg::Pose invertPose(const geometry_msgs::msg::Pose& pose) {
+      tf2::Transform tf_pose;
+      tf2::fromMsg(pose, tf_pose);
+
+      tf2::Transform tf_inv = tf_pose.inverse();
+
+      geometry_msgs::msg::Pose inverted_pose;
+      inverted_pose.position.x = tf_inv.getOrigin().x();
+      inverted_pose.position.y = tf_inv.getOrigin().y();
+      inverted_pose.position.z = tf_inv.getOrigin().z();
+
+      tf2::Quaternion q = tf_inv.getRotation();
+      inverted_pose.orientation = tf2::toMsg(q);
+
+      return inverted_pose;
+  }
+
 
   geometry_msgs::msg::Pose cameraPoseToWorld(const cv::Vec3d &tvec, const cv::Vec3d &rvec) {
     // Rotation
@@ -395,12 +408,12 @@ private:
 
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_with_cov_pub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_with_cov_sub_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr debug_image_pub_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr odom_sub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-
-
+  
+  
   geometry_msgs::msg::Pose robot_pose_;
   std::unordered_map<int, cv::Vec3d> marker_map_;
   std::unordered_map<int, float> marker_sizes_;

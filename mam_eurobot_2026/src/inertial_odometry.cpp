@@ -23,7 +23,7 @@ public:
     sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "/cmd_vel", 10, std::bind(&InertialOdometry::cmdVelCallback, this, std::placeholders::_1));
 
-    poseCorrectionSub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+    poseCorrectionSub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
       "/corrected_pose", 10, std::bind(&InertialOdometry::correctedPoseCallback, this, std::placeholders::_1));
 
     pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
@@ -44,13 +44,13 @@ public:
   }
 
 private:
-  void correctedPoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) 
+  void correctedPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) 
   {
     std::lock_guard<std::mutex> lock(mutex_);
 
     // Convert poses to tf2::Transform
     tf2::Transform corrected_tf, odom_tf;
-    tf2::fromMsg(msg->pose, corrected_tf);
+    tf2::fromMsg(msg->pose.pose, corrected_tf);
     tf2::fromMsg(last_odom_.pose.pose, odom_tf);  
 
     // Compute T = corrected_pose * inverse(odom_pose)
@@ -140,7 +140,7 @@ private:
 
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr poseCorrectionSub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr poseCorrectionSub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;
   // std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
