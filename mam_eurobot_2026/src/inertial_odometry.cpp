@@ -28,7 +28,7 @@ public:
 
     pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 
-    last_time_ = this->now();
+  rclcpp::Time now = this->now();    last_time_ = now;
 
     // TF broadcaster
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
@@ -81,9 +81,7 @@ private:
 
   void timerCallback()
   {
-    rclcpp::Clock clock(RCL_ROS_TIME);
-    rclcpp::Time now = clock.now();
-    double dt = (now - last_time_).seconds();
+  rclcpp::Time now = this->now();    double dt = (now - last_time_).seconds();
     last_time_ = now;
 
     double local_vx = 0.0, local_omega = 0.0;

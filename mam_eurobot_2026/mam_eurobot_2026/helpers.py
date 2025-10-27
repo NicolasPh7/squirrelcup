@@ -90,3 +90,34 @@ def load_balises_fixes(context):
             )
         )
     return balise_processes
+
+
+def wait_for_clock(context, *args, **kwargs):
+    import rclpy
+    from rclpy.node import Node
+    from rosgraph_msgs.msg import Clock
+
+    rclpy.init()
+    node = rclpy.create_node('clock_waiter')
+    received = False
+
+    def callback(msg):
+        nonlocal received
+        received = True
+
+    sub = node.create_subscription(Clock, '/clock', callback, 10)
+
+    print("[Launch] Waiting for /clock to publish...")
+    timeout_sec = 10.0
+    start = node.get_clock().now().seconds_nanoseconds()[0]
+    while not received and node.get_clock().now().seconds_nanoseconds()[0] - start < timeout_sec:
+        rclpy.spin_once(node, timeout_sec=0.1)
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+    if not received:
+        print("[Launch] WARNING: /clock did not publish within timeout.")
+    else:
+        print("[Launch] /clock is active — proceeding.")
+

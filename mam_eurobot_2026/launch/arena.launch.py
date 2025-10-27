@@ -5,21 +5,30 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Comm
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import OpaqueFunction
 
-from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_fixes
+from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_fixes, wait_for_clock
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
-    # urdf_path = PathJoinSubstitution([pkg_path, 'models', 'simple_robot.urdf'])
+
 
     return LaunchDescription([
         SetEnvironmentVariable(
             'GZ_SIM_RESOURCE_PATH',
             pkg_path
         ),
+        SetEnvironmentVariable('ROS_USE_SIM_TIME', 'true'),
+        
         DeclareLaunchArgument(
             'world',
             default_value=PathJoinSubstitution([
                 pkg_path, 'worlds', 'arena_world.sdf'
+            ])
+        ),
+        
+        DeclareLaunchArgument(
+            'clock_config',
+            default_value=PathJoinSubstitution([
+                pkg_path, 'config', 'ros_gz_bridge.yaml'
             ])
         ),
 
@@ -45,15 +54,21 @@ def generate_launch_description():
             ],
             output='screen'
         ),
-        # ExecuteProcess(
-        #     cmd=[
-        #         "ros2", "run", "ros_gz_sim", "create",
-        #         "-file", "file://models/crate",
-        #         "-name", "crate",
-        #         "-x", "1.5", "-y", "1.0", "-z", "0.05"
-        #     ],
-        #     output="screen"
-        # ),
+
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='clock_bridge',
+            output='screen',
+            parameters=[
+                {
+                    'config_file': LaunchConfiguration('clock_config')
+                },
+            ]
+        ),
+
+        OpaqueFunction(function=wait_for_clock),
+
         ExecuteProcess(
             cmd=[
                 "ros2", "run", "ros_gz_sim", "create",
@@ -78,6 +93,7 @@ def generate_launch_description():
             executable='parameter_bridge',
             name='cmd_vel_bridge',
             output='screen',
+            parameters=[{'use_sim_time': True}],
             arguments=['/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist']
         ),
 
@@ -86,6 +102,7 @@ def generate_launch_description():
             executable='parameter_bridge',
             name='odom_bridge',
             output='screen',
+            parameters=[{'use_sim_time': True}],
             arguments=['/model/simple_robot/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
         ),
 
@@ -93,12 +110,14 @@ def generate_launch_description():
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
+            parameters=[{'use_sim_time': True}],
             arguments=['/camera@sensor_msgs/msg/Image@gz.msgs.Image'],
         ),
 
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
+            parameters=[{'use_sim_time': True}],
             arguments=['/bird_eye@sensor_msgs/msg/Image@gz.msgs.Image'],
         ),
 
@@ -115,6 +134,7 @@ def generate_launch_description():
             executable='parameter_bridge',
             name='lidar_3d_pc_bridge',
             output='screen',
+            parameters=[{'use_sim_time': True}],
             arguments=['/lidar_3d/points@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked']
         ),
 
@@ -123,6 +143,7 @@ def generate_launch_description():
             executable='static_transform_publisher',
             name='lidar_tf',
             arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'simple_robot/chassis/lidar_3d'],
+            parameters=[{'use_sim_time': True}],
             output='screen'
         ),
 
@@ -146,18 +167,21 @@ def generate_launch_description():
             executable='rviz2',
             name='rviz2',
             output='screen',
+            parameters=[{'use_sim_time': True}],
             arguments=['-d', LaunchConfiguration('rviz_config_path')],
         ),
         Node(
             package='mam_eurobot_2026',
             executable='inertial_odometry',
             name='inertial_odometry',
+            parameters=[{'use_sim_time': True}],
             output='screen',
         ),
         Node(
             package='mam_eurobot_2026',
             executable='aruco_localization',
             name='aruco_localization',
+            parameters=[{'use_sim_time': True}],
             output='screen',
         ),
         # Node(
@@ -170,6 +194,7 @@ def generate_launch_description():
             package='mam_eurobot_2026',
             executable='object_detector',
             name='object_detector',
+            parameters=[{'use_sim_time': True}],
             output='screen',
         ),
         Node(
@@ -177,6 +202,7 @@ def generate_launch_description():
             executable='static_transform_publisher',
             name='map_to_odom_tf',
             arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom'],
+            parameters=[{'use_sim_time': True}],
             output='screen'
         )
 

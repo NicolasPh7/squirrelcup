@@ -57,6 +57,12 @@ private:
     };
 
     void pointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
+        double stamp_sec = rclcpp::Time(msg->header.stamp).seconds();
+        RCLCPP_INFO(this->get_logger(), "Lidar timestamp: %.3f", stamp_sec);
+        RCLCPP_INFO(this->get_logger(), "Current Node time: %.3f", this->now().seconds());
+        rclcpp::Clock clock(RCL_ROS_TIME);
+        RCLCPP_INFO(this->get_logger(), "Current ROS time: %.3f", clock.now().seconds());
+
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::fromROSMsg(*msg, *cloud);
 

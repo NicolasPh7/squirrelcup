@@ -86,7 +86,8 @@ public:
 
   std::vector<geometry_msgs::msg::PoseStamped> planTrajectory(bool& goalReached) {
     nav_msgs::msg::Path path_msg;
-    path_msg.header.stamp = node_->now();
+  rclcpp::Time now = node_->now();    
+  path_msg.header.stamp = now;
     path_msg.header.frame_id = "base_link";
 
     if (!has_goal_) return path_msg.poses;
@@ -107,7 +108,8 @@ public:
 
   std::vector<geometry_msgs::msg::PoseStamped> planWayHome() {
     nav_msgs::msg::Path return_path;
-    return_path.header.stamp = node_->now();
+  rclcpp::Time now = node_->now();    
+  return_path.header.stamp = now;
     return_path.header.frame_id = "base_link";
     
     if (has_home_ && has_position_) {
@@ -133,7 +135,8 @@ public:
 
   std::vector<geometry_msgs::msg::PoseStamped> generateNearestMarkerPath(bool& reached, int& marker_id) {
     nav_msgs::msg::Path path_msg;
-    path_msg.header.stamp = node_->now();
+  rclcpp::Time now = node_->now();    
+  path_msg.header.stamp = now;
     path_msg.header.frame_id = "base_link";
 
     std::vector<geometry_msgs::msg::PoseStamped> nearest_path;

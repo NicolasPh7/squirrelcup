@@ -2,11 +2,13 @@
 #include "sensor_msgs/msg/image.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/pose_array.hpp"
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include "geometry_msgs/msg/pose.hpp"
 #include "cv_bridge/cv_bridge.h"
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -33,6 +35,7 @@ public:
     debug_image_pub_ = this->create_publisher<sensor_msgs::msg::Image>(debug_topic, 10);
     pose_with_cov_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(pose_topic, 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/nuts", 10);
+    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     marker_map_[20] = cv::Vec3d(0.6, 1.4, 0.0036);
     marker_map_[21] = cv::Vec3d(2.4, 1.4, 0.0036);
@@ -118,7 +121,7 @@ private:
       visualization_msgs::msg::MarkerArray marker_array;
       visualization_msgs::msg::Marker clear_marker;
       clear_marker.header.frame_id = "map";
-      clear_marker.header.stamp = this->now();
+      clear_marker.header.stamp = msg->header.stamp;
       clear_marker.ns = "nuts";
       clear_marker.id = 0;
       clear_marker.action = visualization_msgs::msg::Marker::DELETEALL;
@@ -193,6 +196,7 @@ private:
     }
 
     if (is_bird_eye_ && !robot_visible) {
+      RCLCPP_INFO(this->get_logger(), "Robot not visible. Falling back to odometry");
       cv::Vec3d assumed_cov(0.0100, 0.0100, 0.005);
       publishPoseWithCovariance(robot_pose_, assumed_cov);
     }
@@ -256,8 +260,9 @@ private:
 
   void publishPoseWithCovariance(const geometry_msgs::msg::Pose &position, const cv::Vec3d &cov_diag) {
     geometry_msgs::msg::PoseWithCovarianceStamped pose;
+  rclcpp::Time now = this->now();
     pose.header.frame_id = "map";
-    pose.header.stamp = this->now();
+    pose.header.stamp = now;
     pose.pose.pose = position;
 
     pose.pose.covariance[0] = cov_diag[0]; // x-x
@@ -267,6 +272,7 @@ private:
     pose.pose.covariance[28] = 0.01; // pitch
     pose.pose.covariance[35] = 0.01; // yaw
 
+    udpateBaseLinkTF(position);
     pose_with_cov_pub_->publish(pose);
 
     RCLCPP_INFO(this->get_logger(),
@@ -275,10 +281,27 @@ private:
         cov_diag[0], cov_diag[1], cov_diag[2]);
   }
 
+  void udpateBaseLinkTF(const geometry_msgs::msg::Pose &pose) {
+    geometry_msgs::msg::TransformStamped t;
+  rclcpp::Time now = this->now();    t.header.stamp = now;
+    t.header.frame_id = "map";
+    t.child_frame_id = "base_link";
+    t.transform.translation.x = pose.position.x;
+    t.transform.translation.y = pose.position.y;
+    t.transform.translation.z = pose.position.z;
+    tf2::Quaternion qt;
+    qt.setRPY(pose.orientation.x, pose.orientation.y, pose.orientation.z);
+    t.transform.rotation.x = qt.x();
+    t.transform.rotation.y = qt.y();
+    t.transform.rotation.z = qt.z();
+    t.transform.rotation.w = qt.w();
+    tf_broadcaster_->sendTransform(t);
+  }
+
   void prepareNuts(visualization_msgs::msg::MarkerArray& marker_array, const geometry_msgs::msg::Pose &position, int tag_id, int index) {
     visualization_msgs::msg::Marker marker;
     marker.header.frame_id = "map";
-    marker.header.stamp = this->now();
+  rclcpp::Time now = this->now();    marker.header.stamp = now;
     marker.ns = "nuts";
     marker.id = index;
     marker.type = visualization_msgs::msg::Marker::CUBE;
@@ -327,6 +350,8 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr debug_image_pub_;
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr odom_sub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+
 
   geometry_msgs::msg::Pose robot_pose_;
   std::unordered_map<int, cv::Vec3d> marker_map_;

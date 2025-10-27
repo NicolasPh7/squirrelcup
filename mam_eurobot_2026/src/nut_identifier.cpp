@@ -209,7 +209,9 @@ private:
         visualization_msgs::msg::Marker delete_marker;
         delete_marker.action = visualization_msgs::msg::Marker::DELETEALL;
         delete_marker.header.frame_id = "map";
-        delete_marker.header.stamp = this->now();
+        rclcpp::Clock clock(RCL_ROS_TIME);
+        rclcpp::Time now = clock.now();
+        delete_marker.header.stamp = now;
 
         visualization_msgs::msg::MarkerArray clear_array;
         clear_array.markers.push_back(delete_marker);
