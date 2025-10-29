@@ -194,10 +194,10 @@ private:
 
           for (size_t i = 0; i < ids.size(); ++i) {
             if (ids[i] == 0) {
-              geometry_msgs::msg::Pose raw_pose = transformTagToWorld(tvecs[i], rvecs[i], camera_pose);
+              geometry_msgs::msg::Pose raw_pose = transformTagToWorld(tvecs[i], rvecs[i], invertPose(camera_pose));
               publishPoseWithCovariance(raw_pose, mean_variance);
             } else if (!(marker_map_.count(ids[i]))) {
-              geometry_msgs::msg::Pose raw_nut_pose = transformTagToWorld(tvecs[i], rvecs[i], camera_pose);
+              geometry_msgs::msg::Pose raw_nut_pose = transformTagToWorld(tvecs[i], rvecs[i], invertPose(camera_pose));
               prepareNuts(marker_array, raw_nut_pose, ids[i], ++marker_id);
             }
           }
@@ -206,7 +206,7 @@ private:
       } else { // Robot view
           for (size_t i = 0; i < ids.size(); ++i) {
             if (!(marker_map_.count(ids[i]))) {
-              geometry_msgs::msg::Pose raw_nut_pose = transformTagToWorld(tvecs[i], rvecs[i], robot_pose_);
+              geometry_msgs::msg::Pose raw_nut_pose = transformTagToWorld(tvecs[i], rvecs[i], invertPose(robot_pose_));
               RCLCPP_INFO(this->get_logger(), "Robot sees nuts");
               prepareNuts(marker_array, raw_nut_pose, ids[i], ++marker_id);
             }
