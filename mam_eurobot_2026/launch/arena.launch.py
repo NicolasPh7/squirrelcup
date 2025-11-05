@@ -65,8 +65,8 @@ def generate_launch_description():
         ExecuteProcess(
             cmd=[
                 "ros2", "run", "ros_gz_sim", "create",
-                "-file", "file://models/robot_v1",
-                "-name", "robot_v1",
+                "-file", "file://models/robot_v2",
+                "-name", "robot_v2",
                 "-x", "2.7", "-y", "1.8", "-z", "0.00", "-Y", "-1.57079633"
             ],
             output="screen"
