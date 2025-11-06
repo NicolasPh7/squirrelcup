@@ -18,6 +18,10 @@ public:
         joint2_pub_ = this->create_publisher<std_msgs::msg::Float64>("/joint_2/position_cmd", 10);
         joint3_pub_ = this->create_publisher<std_msgs::msg::Float64>("/joint_3/position_cmd", 10);
         joint4_pub_ = this->create_publisher<std_msgs::msg::Float64>("/joint_4/position_cmd", 10);
+        joint5_pub_ = this->create_publisher<std_msgs::msg::Float64>("/joint_5/position_cmd", 10);
+
+        arm_1_pub_ = this->create_publisher<std_msgs::msg::Float64>("/arm_1_joint/position_cmd", 10);
+        arm_2_pub_ = this->create_publisher<std_msgs::msg::Float64>("/arm_2_joint/position_cmd", 10);
 
         configureTerminal();
         std::cout << R"(
@@ -37,6 +41,8 @@ u/j : joint 1 up/down
 i/k : joint 2 up/down
 o/l : joint 3 up/down
 p/; : joint 4 up/down
+r/f : joint 5 up/down
+v/b : gripper open/close
 CTRL-C to quit
 )" << std::endl;
         teleop_thread_ = std::thread(&Teleop::run, this);
@@ -55,18 +61,18 @@ private:
     double target_linear_ = 0.0, target_angular_ = 0.0;
     double control_linear_ = 0.0, control_angular_ = 0.0;
     const double LIN_STEP = 0.05, ANG_STEP = 0.1;
-    const double MAX_LIN = 3.0, MAX_ANG = 2.84;
+    const double MAX_LIN = 5.0, MAX_ANG = 2.84;
 
-    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr joint1_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr joint2_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr joint3_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr joint4_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr joint1_pub_, joint2_pub_, joint3_pub_, joint4_pub_, joint5_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr arm_1_pub_, arm_2_pub_;
     const double JOINT_STEP = 0.1; 
     const double JOINT_MIN = -3.1415; 
     const double JOINT_MAX = 3.1415;
 
-    double target_joint1_pos_ = 0.1, target_joint2_pos_ = 0.1, target_joint3_pos_ = 0.1, target_joint4_pos_ = 0.1;
-
+    double target_joint1_pos_ = 0.1, target_joint2_pos_ = 0.1, 
+           target_joint3_pos_ = 0.1, target_joint4_pos_ = 0.1,
+           target_joint5_pos_ = 0.1,
+           target_arm_1_pos_ = 0.1, target_arm_2_pos_ = 0.1;
 
     void configureTerminal()
     {
@@ -87,6 +93,8 @@ private:
             double prev_joint2_pos = target_joint2_pos_;
             double prev_joint3_pos = target_joint3_pos_;
             double prev_joint4_pos = target_joint4_pos_;
+            double prev_joint5_pos = target_joint5_pos_;
+            double prev_arm_1_pos = target_arm_1_pos_;
 
             switch (c) {
                 case 'w': target_linear_ += LIN_STEP; break;
@@ -107,7 +115,12 @@ private:
                 case 'l': target_joint3_pos_ -= JOINT_STEP; break;
                 case 'p': target_joint4_pos_ += JOINT_STEP; break;
                 case ';': target_joint4_pos_ -= JOINT_STEP; break;
-
+                case 'r': target_joint5_pos_ += JOINT_STEP; break;
+                case 'f': target_joint5_pos_ -= JOINT_STEP; break;
+                case 'v': target_arm_1_pos_ += JOINT_STEP; 
+                          target_arm_2_pos_ += JOINT_STEP; break;
+                case 'b': target_arm_1_pos_ -= JOINT_STEP; 
+                          target_arm_2_pos_ -= JOINT_STEP; break;
                 default: continue;
             }
 
@@ -117,21 +130,27 @@ private:
             target_joint2_pos_ = std::clamp(target_joint2_pos_, JOINT_MIN, JOINT_MAX);
             target_joint3_pos_ = std::clamp(target_joint3_pos_, JOINT_MIN, JOINT_MAX);
             target_joint4_pos_ = std::clamp(target_joint4_pos_, JOINT_MIN, JOINT_MAX);
+            target_joint5_pos_ = std::clamp(target_joint5_pos_, JOINT_MIN, JOINT_MAX);
+            target_arm_1_pos_ = std::clamp(target_arm_1_pos_, JOINT_MIN, JOINT_MAX);
+            target_arm_2_pos_ = std::clamp(target_arm_2_pos_, JOINT_MIN, JOINT_MAX);
 
             if (target_linear_ != prev_linear || target_angular_ != prev_angular) {
-                RCLCPP_INFO(
-                    this->get_logger(),
+                RCLCPP_INFO(this->get_logger(),
                     "Target velocity updated → linear: %.2f m/s, angular: %.2f rad/s",
                     target_linear_, target_angular_);
             }
             if (target_joint1_pos_ != prev_joint1_pos || target_joint2_pos_ != prev_joint2_pos ||
-                target_joint3_pos_ != prev_joint3_pos || target_joint4_pos_ != prev_joint4_pos) {
-                RCLCPP_INFO(
-                    this->get_logger(),
-                    "Target Joint position updated → joint1: %.2f rad, joint2: %.2f rad, joint3: %.2f rad, joint4: %.2f rad",
-                    target_joint1_pos_, target_joint2_pos_, target_joint3_pos_,target_joint4_pos_);
+                target_joint3_pos_ != prev_joint3_pos || target_joint4_pos_ != prev_joint4_pos ||
+                target_joint5_pos_ != prev_joint5_pos) {
+                RCLCPP_INFO(this->get_logger(),
+                    "Target Joint position updated → joint1: %.2f, joint2: %.2f, joint3: %.2f, joint4: %.2f, joint5: %.2f",
+                    target_joint1_pos_, target_joint2_pos_, target_joint3_pos_, target_joint4_pos_, target_joint5_pos_);
             }
-
+            if (target_arm_1_pos_ != prev_arm_1_pos) {
+                RCLCPP_INFO(this->get_logger(),
+                    "Target gripper position updated → arm_1: %.2f, arm_2: %.2f",
+                    target_arm_1_pos_, target_arm_2_pos_);
+            }
 
             control_linear_ += (target_linear_ - control_linear_) * 0.5;
             control_angular_ += (target_angular_ - control_angular_) * 0.5;
@@ -146,7 +165,9 @@ private:
             msg.data = target_joint2_pos_; joint2_pub_->publish(msg);
             msg.data = target_joint3_pos_; joint3_pub_->publish(msg);
             msg.data = target_joint4_pos_; joint4_pub_->publish(msg);
-
+            msg.data = target_joint5_pos_; joint5_pub_->publish(msg);
+            msg.data = target_arm_1_pos_; arm_1_pub_->publish(msg);
+            msg.data = target_arm_2_pos_; arm_2_pub_->publish(msg);
         }
     }
 };

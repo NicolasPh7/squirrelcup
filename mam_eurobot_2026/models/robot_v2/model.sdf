@@ -348,11 +348,11 @@
     </include>
 
     <joint name='joint_5' type='revolute'>
-      <pose relative_to='link_4'>0 0 0.06875 0 0 1.571</pose>
+      <pose relative_to='link_4'>0 0 0.069 0 0 1.571</pose>
       <parent>link_4</parent>
       <child>gripper</child>
       <axis>
-        <xyz>1 0 0</xyz>
+        <xyz>0 0 1</xyz>
         <limit>
           <lower>-3.1415</lower>
           <upper>3.1415</upper>
@@ -376,6 +376,8 @@
         <limit>
           <lower>-1.79769e+308</lower>
           <upper> 1.79769e+308</upper>
+          <effort>100</effort>
+          <velocity>5.0</velocity>
         </limit>
       </axis>
     </joint>
@@ -422,6 +424,8 @@
         <limit>
           <lower>-1.79769e+308</lower>
           <upper> 1.79769e+308</upper>
+          <effort>100</effort>
+          <velocity>5.0</velocity>
         </limit>
       </axis>
     </joint>
@@ -468,6 +472,8 @@
         <limit>
           <lower>-1.79769e+308</lower>
           <upper> 1.79769e+308</upper>
+          <effort>100</effort>
+          <velocity>5.0</velocity>
         </limit>
       </axis>
     </joint>
@@ -514,6 +520,8 @@
         <limit>
           <lower>-1.79769e+308</lower>
           <upper> 1.79769e+308</upper>
+          <effort>100</effort>
+          <velocity>5.0</velocity>
         </limit>
       </axis>
     </joint>

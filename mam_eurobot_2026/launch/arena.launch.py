@@ -98,7 +98,10 @@ def generate_launch_description():
                 '/joint_1/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
                 '/joint_2/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
                 '/joint_3/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
-                '/joint_4/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double'
+                '/joint_4/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
+                '/joint_5/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
+                '/arm_1_joint/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
+                '/arm_2_joint/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double'
             ]
         ),
 
