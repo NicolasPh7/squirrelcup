@@ -342,10 +342,30 @@
       </visual>
     </link>
 
-   <include>
+    <include>
       <uri>file://models/gripper</uri>
-      <pose relative_to='joint_4'>0 0.0 0 0 0 0</pose>
+      <pose relative_to='joint_5'>0 0.0 0 0 0 0</pose>
     </include>
+
+    <joint name='joint_5' type='revolute'>
+      <pose relative_to='link_4'>0 0 0.06875 0 0 1.571</pose>
+      <parent>link_4</parent>
+      <child>gripper</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-3.1415</lower>
+          <upper>3.1415</upper>
+		  <effort>100</effort>
+          <velocity>5.0</velocity>
+        </limit>
+		<dynamics>
+          <damping>0.1</damping>
+          <friction>0.01</friction>
+        </dynamics>
+      </axis>
+    </joint>
+   
 
     <joint name='wheel_joint_1' type='revolute'>
       <pose relative_to='base_link'>0.0765 -0.0505 -0.0032237 1.5708 -1.179 -1.5708</pose>
@@ -605,6 +625,19 @@
 		name="ignition::gazebo::systems::JointPositionController">
 		<joint_name>joint_4</joint_name>
 		<topic>/joint_4/position_cmd</topic>
+		<p_gain>100</p_gain>
+		<i_gain>0.1</i_gain>
+		<d_gain>0.01</d_gain>
+		<i_max>1</i_max>
+		<i_min>-1</i_min>
+		<cmd_max>1000</cmd_max>
+		<cmd_min>-1000</cmd_min>
+	</plugin>
+	<plugin
+		filename="libignition-gazebo-joint-position-controller-system.so"
+		name="ignition::gazebo::systems::JointPositionController">
+		<joint_name>joint_5</joint_name>
+		<topic>/joint_5/position_cmd</topic>
 		<p_gain>100</p_gain>
 		<i_gain>0.1</i_gain>
 		<d_gain>0.01</d_gain>
