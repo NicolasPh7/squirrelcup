@@ -129,7 +129,7 @@ private:
                 RCLCPP_INFO(
                     this->get_logger(),
                     "Target Joint position updated → joint1: %.2f rad, joint2: %.2f rad, joint3: %.2f rad, joint4: %.2f rad",
-                    target_joint1_pos_, target_joint1_pos_, target_joint3_pos_,target_joint4_pos_);
+                    target_joint1_pos_, target_joint2_pos_, target_joint3_pos_,target_joint4_pos_);
             }
 
 
@@ -143,7 +143,7 @@ private:
 
             std_msgs::msg::Float64 msg;
             msg.data = target_joint1_pos_; joint1_pub_->publish(msg);
-            msg.data = target_joint1_pos_; joint2_pub_->publish(msg);
+            msg.data = target_joint2_pos_; joint2_pub_->publish(msg);
             msg.data = target_joint3_pos_; joint3_pub_->publish(msg);
             msg.data = target_joint4_pos_; joint4_pub_->publish(msg);
 

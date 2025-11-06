@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="endeffector_ros">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="1.20345416541926E-06 0.0402572142288836 7.46338198926382E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.118178990513371" />
+      <inertia
+        ixx="6.01287575012106E-05"
+        ixy="1.11828577357883E-09"
+        ixz="-1.85720765587666E-10"
+        iyy="4.67283990275469E-05"
+        iyz="8.26675381504612E-08"
+        izz="7.70222497341494E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="shaft_1_link">
+    <inertial>
+      <origin
+        xyz="-0.017613870245323 0.0359131114633768 2.97852273066416E-16"
+        rpy="0 0 0" />
+      <mass
+        value="0.02252603418623" />
+      <inertia
+        ixx="1.15828043963503E-05"
+        ixy="5.41263946451551E-06"
+        ixz="-8.30532081395565E-22"
+        iyy="3.20158690797155E-06"
+        iyz="1.59965869931089E-21"
+        izz="1.44455622067707E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/shaft_1_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/shaft_1_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shaft_1_joint"
+    type="revolute">
+    <origin
+      xyz="0 -0.03 0.061858"
+      rpy="1.5708 -0.041167 1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="shaft_1_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="arm_1_link">
+    <inertial>
+      <origin
+        xyz="0.0521330633718958 -0.0399533991816051 0.005"
+        rpy="0 0 0" />
+      <mass
+        value="0.0329177629039053" />
+      <inertia
+        ixx="5.16014760985871E-05"
+        ixy="2.06515660036378E-05"
+        ixz="-2.04153998786417E-21"
+        iyy="2.9327192345491E-05"
+        iyz="1.07825811420777E-21"
+        izz="7.91570014890071E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/arm_1_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/arm_1_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="arm_1_joint"
+    type="revolute">
+    <origin
+      xyz="0.0041093 0.083489 -0.005"
+      rpy="0 0 -2.8778" />
+    <parent
+      link="shaft_1_link" />
+    <child
+      link="arm_1_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="shaft_2_link">
+    <inertial>
+      <origin
+        xyz="0.0176138702453225 0.0359131114633768 2.82509948009401E-16"
+        rpy="0 0 0" />
+      <mass
+        value="0.02252603418623" />
+      <inertia
+        ixx="1.15828043963504E-05"
+        ixy="-5.41263946451548E-06"
+        ixz="-1.83450967128691E-22"
+        iyy="3.20158690797151E-06"
+        iyz="-3.5051291087806E-22"
+        izz="1.44455622067707E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/shaft_2_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/shaft_2_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shaft_2_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.03 0.061858"
+      rpy="1.5708 0.041167 1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="shaft_2_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="arm_2_link">
+    <inertial>
+      <origin
+        xyz="0.0521330633718939 -0.039953399181604 0.005"
+        rpy="0 0 0" />
+      <mass
+        value="0.0329177629039054" />
+      <inertia
+        ixx="5.16014760985872E-05"
+        ixy="2.06515660036377E-05"
+        ixz="-1.67456572159045E-21"
+        iyy="2.93271923454909E-05"
+        iyz="6.58168183330692E-21"
+        izz="7.91570014890072E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/arm_2_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/arm_2_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="arm_2_joint"
+    type="revolute">
+    <origin
+      xyz="-0.0041093 0.083489 0.005"
+      rpy="-3.1416 0 -0.26383" />
+    <parent
+      link="shaft_2_link" />
+    <child
+      link="arm_2_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="actuactor_link">
+    <inertial>
+      <origin
+        xyz="1.85604993455276E-08 0.0435532153475376 -3.84648885745715E-11"
+        rpy="0 0 0" />
+      <mass
+        value="0.0512156078297464" />
+      <inertia
+        ixx="6.40991174505963E-06"
+        ixy="-1.81917662188099E-11"
+        ixz="8.72990321487422E-14"
+        iyy="9.65773691375466E-06"
+        iyz="-3.89986107553448E-13"
+        izz="1.21277508668611E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/actuactor_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://endeffector_ros/meshes/actuactor_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="actuactor_joint"
+    type="prismatic">
+    <origin
+      xyz="0 0 0.084786"
+      rpy="1.5708 0 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="actuactor_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>

@@ -1,0 +1,316 @@
+<?xml version="1.0" ?>
+<sdf version='1.9'>
+  <model name='gripper'>
+    <link name='base_link'>
+      <inertial>
+        <pose>1.20345416541926e-06 0.0402572142288836 7.46338198926382e-05 0 0 0</pose>
+        <mass>0.118178990513371</mass>
+        <inertia>
+          <ixx>6.01287575012106e-05</ixx>
+          <ixy>1.1182857735788301e-09</ixy>
+          <ixz>-1.85720765587666e-10</ixz>
+          <iyy>4.6728399027546903e-05</iyy>
+          <iyz>8.2667538150461203e-08</iyz>
+          <izz>7.7022249734149398e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name='base_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/base_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='base_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/base_link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
+          <ambient>0.941176 0.941176 0.941176 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='actuactor_joint' type='prismatic'>
+      <pose relative_to='base_link'>0 0 0.084786 1.5708 0 -1.5708</pose>
+      <parent>base_link</parent>
+      <child>actuactor_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='actuactor_link'>
+      <pose relative_to='actuactor_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>1.85604993455276e-08 0.0435532153475376 -3.84648885745715e-11 0 0 0</pose>
+        <mass>0.0512156078297464</mass>
+        <inertia>
+          <ixx>6.4099117450596302e-06</ixx>
+          <ixy>-1.8191766218809899e-11</ixy>
+          <ixz>8.7299032148742199e-14</ixz>
+          <iyy>9.65773691375466e-06</iyy>
+          <iyz>-3.8998610755344799e-13</iyz>
+          <izz>1.21277508668611e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name='actuactor_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/actuactor_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='actuactor_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/actuactor_link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
+          <ambient>0.941176 0.941176 0.941176 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='shaft_1_joint' type='revolute'>
+      <pose relative_to='base_link'>0 -0.03 0.061858 1.5708 -0.04116700000000018 1.5708</pose>
+      <parent>base_link</parent>
+      <child>shaft_1_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='shaft_1_link'>
+      <pose relative_to='shaft_1_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>-0.017613870245323 0.0359131114633768 2.97852273066416e-16 0 0 0</pose>
+        <mass>0.022526034186230001</mass>
+        <inertia>
+          <ixx>1.15828043963503e-05</ixx>
+          <ixy>5.4126394645155098e-06</ixy>
+          <ixz>-8.3053208139556501e-22</ixz>
+          <iyy>3.2015869079715502e-06</iyy>
+          <iyz>1.59965869931089e-21</iyz>
+          <izz>1.4445562206770701e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name='shaft_1_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/shaft_1_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='shaft_1_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/shaft_1_link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
+          <ambient>0.941176 0.941176 0.941176 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='arm_1_joint' type='revolute'>
+      <pose relative_to='shaft_1_link'>0.0041093 0.08348899999999999 -0.005 0 0 -2.8778</pose>
+      <parent>shaft_1_link</parent>
+      <child>arm_1_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='arm_1_link'>
+      <pose relative_to='arm_1_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.0521330633718958 -0.0399533991816051 0.005 0 0 0</pose>
+        <mass>0.032917762903905301</mass>
+        <inertia>
+          <ixx>5.1601476098587098e-05</ixx>
+          <ixy>2.0651566003637801e-05</ixy>
+          <ixz>-2.0415399878641699e-21</ixz>
+          <iyy>2.9327192345491001e-05</iyy>
+          <iyz>1.07825811420777e-21</iyz>
+          <izz>7.9157001489007093e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name='arm_1_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/arm_1_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='arm_1_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/arm_1_link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>0.990196 1 1 1</diffuse>
+          <ambient>0.990196 1 1 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='shaft_2_joint' type='revolute'>
+      <pose relative_to='base_link'>0 0.03 0.061858 1.5708 0.04116700000000018 1.5708</pose>
+      <parent>base_link</parent>
+      <child>shaft_2_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='shaft_2_link'>
+      <pose relative_to='shaft_2_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.0176138702453225 0.0359131114633768 2.82509948009401e-16 0 0 0</pose>
+        <mass>0.022526034186230001</mass>
+        <inertia>
+          <ixx>1.15828043963504e-05</ixx>
+          <ixy>-5.4126394645154802e-06</ixy>
+          <ixz>-1.8345096712869099e-22</ixz>
+          <iyy>3.20158690797151e-06</iyy>
+          <iyz>-3.5051291087805998e-22</iyz>
+          <izz>1.4445562206770701e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name='shaft_2_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/shaft_2_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='shaft_2_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/shaft_2_link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
+          <ambient>0.941176 0.941176 0.941176 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='arm_2_joint' type='revolute'>
+      <pose relative_to='shaft_2_link'>-0.0041093 0.08348899999999999 0.005 3.141585307179587 0 -0.2638300000000001</pose>
+      <parent>shaft_2_link</parent>
+      <child>arm_2_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='arm_2_link'>
+      <pose relative_to='arm_2_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.0521330633718939 -0.039953399181604 0.005 0 0 0</pose>
+        <mass>0.032917762903905398</mass>
+        <inertia>
+          <ixx>5.16014760985872e-05</ixx>
+          <ixy>2.0651566003637699e-05</ixy>
+          <ixz>-1.67456572159045e-21</ixz>
+          <iyy>2.9327192345490899e-05</iyy>
+          <iyz>6.58168183330692e-21</iyz>
+          <izz>7.9157001489007202e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name='arm_2_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/arm_2_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='arm_2_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file://models/gripper/meshes/arm_2_link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>0.990196 1 1 1</diffuse>
+          <ambient>0.990196 1 1 1</ambient>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

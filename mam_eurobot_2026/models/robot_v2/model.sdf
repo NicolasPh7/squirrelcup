@@ -341,6 +341,12 @@
 		</material>
       </visual>
     </link>
+
+   <include>
+      <uri>file://models/gripper</uri>
+      <pose relative_to='joint_4'>0 0.0 0 0 0 0</pose>
+    </include>
+
     <joint name='wheel_joint_1' type='revolute'>
       <pose relative_to='base_link'>0.0765 -0.0505 -0.0032237 1.5708 -1.179 -1.5708</pose>
       <parent>base_link</parent>
