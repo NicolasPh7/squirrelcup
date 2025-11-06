@@ -1,18 +1,18 @@
 <?xml version="1.0" ?>
 <sdf version='1.9'>
   <model name='robot_v2'>
-    <pose>0 0 0 1.571 0 0</pose>
+    <pose>0 0 0 0 0 0</pose>
     <link name='base_link'>
       <inertial>
-        <pose>-1.25318904837706e-07 0.0209832157903133 0.151073041633521 0 0 0</pose>
+        <pose>0 -0.15 0.01 0 0 0</pose>
         <mass>3.1643396567672002</mass>
         <inertia>
-          <ixx>0.017304031059993698</ixx>
-          <ixy>3.0205539204368998e-09</ixy>
-          <ixz>-2.0781080043983002e-06</ixz>
-          <iyy>0.0215884204445769</iyy>
-          <iyz>-5.0121695842451202e-05</iyz>
-          <izz>0.0051864027407369099</izz>
+          <ixx>0.01</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.005</iyy>
+          <iyz>0</iyz>
+          <izz>0.005</izz>
         </inertia>
       </inertial>
       <collision name='base_link_collision'>
@@ -32,42 +32,125 @@
             <uri>file://models/robot_v2/meshes/base_link.STL</uri>
           </mesh>
         </geometry>
-        <material>
-          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
-          <ambient>0.941176 0.941176 0.941176 1</ambient>
-        </material>
+		<material>
+			<diffuse>0.12 0.12 0.12 1</diffuse>
+			<ambient>0.12 0.12 0.12 1</ambient>
+		</material>
       </visual>
+
+	<sensor name="camera_sensor" type="camera">
+		<pose>0.1 0 0.05 0 0 1.571</pose> 
+	    <camera>
+	      <image>
+	        <width>1920</width>
+	        <height>1080</height>
+	        <format>R8G8B8</format>
+	      </image>
+	      <clip>
+	        <near>0.1</near>
+	        <far>100</far>
+	      </clip>
+	      <horizontal_fov>1.047</horizontal_fov>
+	    </camera>
+	    <always_on>1</always_on>
+	    <update_rate>5</update_rate>
+	    <visualize>true</visualize>
+		<topic>camera</topic>
+	  </sensor>
+
+	  <sensor name="lidar_3d" type="gpu_lidar">
+	  <pose>0.1 0 0.08 0 0.0 1.571</pose> 
+	  <lidar>
+	    <scan>
+	      <horizontal>
+	        <samples>180</samples>
+	        <resolution>1</resolution>
+	        <min_angle>-1.5708</min_angle>
+	        <max_angle>1.5708</max_angle>
+	      </horizontal>
+	      <vertical>
+	        <samples>180</samples>
+	        <resolution>1</resolution>
+	        <min_angle>-0.5236</min_angle>
+	        <max_angle>0.5236</max_angle>
+	      </vertical>
+	    </scan>
+	    <range>
+	      <min>0.02</min>
+	      <max>20.0</max>
+	      <resolution>0.01</resolution>
+	    </range>
+	  </lidar>
+	  <always_on>1</always_on>
+	  <update_rate>10</update_rate>
+	  <visualize>true</visualize>
+	  <topic>lidar_3d</topic>
+	</sensor>
+
+	<visual name="marker_border">
+		<pose relative_to='chassis'>0.0 -0.22 0.05 0 0 0</pose>
+      <geometry>
+        <box>
+          <size>0.12 0.12 0.0004</size>
+        </box>
+      </geometry>
+      <material>
+        <diffuse>1 1 1 1</diffuse> <!-- Weiß -->
+      </material>
+    </visual>
+	<visual name='aruco_marker'>
+		<pose relative_to='chassis'>0.0 -0.22 0.051 0 0 0</pose>
+	<geometry>
+		<plane>
+		<normal>0 0 1</normal> 
+		<size>0.1 0.1 0.001</size> 
+		</plane>
+	</geometry>
+	<material>
+		<diffuse>1 1 1 1</diffuse>
+		<pbr>
+			<metal>
+				<albedo_map>file://models/simple_robot/aruco_0.png</albedo_map>
+				<metalness>0.0</metalness>
+				<roughness>0.8</roughness>
+			</metal>
+		</pbr>
+	</material>
+	</visual>
+
     </link>
+
+
     <joint name='joint_1' type='revolute'>
-      <pose relative_to='base_link'>0 -0.081313 0.08128000000000001 -1.5708 1.110223024625157e-16 -2.1036</pose>
+      <pose relative_to='base_link'>0 -0.081313 0.08128000000000001 -1.5708 0 -2.1036</pose>
       <parent>base_link</parent>
       <child>link_1</child>
       <axis>
         <xyz>0 1 0</xyz>
         <limit>
-          <lower>0</lower>
-          <upper>0</upper>
-          <effort>0</effort>
-          <velocity>0</velocity>
+          <lower>-3.1415</lower>
+          <upper>3.1415</upper>
+		  <effort>100</effort>
+          <velocity>5.0</velocity>
         </limit>
-        <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
+		<dynamics>
+          <damping>0.1</damping>
+          <friction>0.01</friction>
         </dynamics>
       </axis>
     </joint>
     <link name='link_1'>
       <pose relative_to='joint_1'>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.00104293857582603 -0.0200716463587287 -0.000239310286706415 0 0 0</pose>
+        <pose>0.00104293857582605 -0.0200716463587287 -0.000239310286706415 0 0 0</pose>
         <mass>0.064021348009921195</mass>
         <inertia>
-          <ixx>1.1120584372442101e-05</ixx>
-          <ixy>8.9385802550295794e-12</ixy>
-          <ixz>1.1974906097408501e-07</ixz>
-          <iyy>2.3896445085932699e-05</iyy>
-          <iyz>-1.1493592540015899e-07</iyz>
-          <izz>1.5318123250350499e-05</izz>
+          <ixx>0.0002</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0001</iyy>
+          <iyz>0</iyz>
+          <izz>0.0001</izz>
         </inertia>
       </inertial>
       <collision name='link_1_collision'>
@@ -87,10 +170,10 @@
             <uri>file://models/robot_v2/meshes/link_1.STL</uri>
           </mesh>
         </geometry>
-        <material>
-          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
-          <ambient>0.941176 0.941176 0.941176 1</ambient>
-        </material>
+		<material>
+			<diffuse>0.0 0.4 0.4 1</diffuse>
+			<ambient>0.0 0.4 0.4 1</ambient>
+		</material>
       </visual>
     </link>
     <joint name='joint_2' type='revolute'>
@@ -100,29 +183,29 @@
       <axis>
         <xyz>1 0 0</xyz>
         <limit>
-          <lower>0</lower>
-          <upper>0</upper>
-          <effort>0</effort>
-          <velocity>0</velocity>
+          <lower>-3.1415</lower>
+          <upper>3.1415</upper>
+		  <effort>100</effort>
+          <velocity>5.0</velocity>
         </limit>
-        <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
+		<dynamics>
+          <damping>0.1</damping>
+          <friction>0.01</friction>
         </dynamics>
       </axis>
     </joint>
     <link name='link_2'>
       <pose relative_to='joint_2'>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.000603587791177987 -0.0502714257298916 -6.36990460378684e-15 0 0 0</pose>
-        <mass>0.19959080849265201</mass>
+        <pose>-0.000603587791177973 -0.050271425729893 -0 0 0 0</pose>
+        <mass>0.19959080849265101</mass>
         <inertia>
-          <ixx>4.8781235150212303e-05</ixx>
-          <ixy>2.5061587326886602e-19</ixy>
-          <ixz>5.2516042729766603e-20</ixz>
-          <iyy>9.2034056908131494e-05</iyy>
-          <iyz>3.22931311140702e-19</iyz>
-          <izz>0.00011878071525158499</izz>
+          <ixx>0.001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0005</iyy>
+          <iyz>0</iyz>
+          <izz>0.0005</izz>
         </inertia>
       </inertial>
       <collision name='link_2_collision'>
@@ -142,10 +225,10 @@
             <uri>file://models/robot_v2/meshes/link_2.STL</uri>
           </mesh>
         </geometry>
-        <material>
-          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
-          <ambient>0.941176 0.941176 0.941176 1</ambient>
-        </material>
+		<material>
+			<diffuse>0.0 0.4 0.4 1</diffuse>
+			<ambient>0.0 0.4 0.4 1</ambient>
+		</material>
       </visual>
     </link>
     <joint name='joint_3' type='revolute'>
@@ -155,29 +238,29 @@
       <axis>
         <xyz>1 0 0</xyz>
         <limit>
-          <lower>0</lower>
-          <upper>0</upper>
-          <effort>0</effort>
-          <velocity>0</velocity>
+          <lower>-3.1415</lower>
+          <upper>3.1415</upper>
+		  <effort>100</effort>
+          <velocity>5.0</velocity>
         </limit>
-        <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
+		<dynamics>
+          <damping>0.1</damping>
+          <friction>0.01</friction>
         </dynamics>
       </axis>
     </joint>
     <link name='link_3'>
       <pose relative_to='joint_3'>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.000682520892340457 6.90253409985075e-13 -0.0438713507571973 0 0 0</pose>
+        <pose>-0.000682520892340457 0 -0.0438713507571973 0 0 0</pose>
         <mass>0.115150609607431</mass>
         <inertia>
-          <ixx>1.5666574009537902e-05</ixx>
-          <ixy>-1.0322685972558699e-16</ixy>
-          <ixz>1.57255605360966e-15</ixz>
-          <iyy>1.8109865277709701e-05</iyy>
-          <iyz>8.7165976646599592e-15</iyz>
-          <izz>1.08269781614601e-05</izz>
+          <ixx>0.0005</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0003</iyy>
+          <iyz>0</iyz>
+          <izz>0.0003</izz>
         </inertia>
       </inertial>
       <collision name='link_3_collision'>
@@ -197,10 +280,10 @@
             <uri>file://models/robot_v2/meshes/link_3.STL</uri>
           </mesh>
         </geometry>
-        <material>
-          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
-          <ambient>0.941176 0.941176 0.941176 1</ambient>
-        </material>
+		<material>
+			<diffuse>0.0 0.4 0.4 1</diffuse>
+			<ambient>0.0 0.4 0.4 1</ambient>
+		</material>
       </visual>
     </link>
     <joint name='joint_4' type='revolute'>
@@ -210,29 +293,29 @@
       <axis>
         <xyz>1 0 0</xyz>
         <limit>
-          <lower>0</lower>
-          <upper>0</upper>
-          <effort>0</effort>
-          <velocity>0</velocity>
+          <lower>-3.1415</lower>
+          <upper>3.1415</upper>
+		  <effort>100</effort>
+          <velocity>5.0</velocity>
         </limit>
-        <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
+		<dynamics>
+          <damping>0.1</damping>
+          <friction>0.01</friction>
         </dynamics>
       </axis>
     </joint>
     <link name='link_4'>
       <pose relative_to='joint_4'>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.0006035877909638801 0.00781692910512485 0.0420092089396763 0 0 0</pose>
+        <pose>-0.000603587790963866 0.0078169291051248 0.0420092089396764 0 0 0</pose>
         <mass>0.11665330221327801</mass>
         <inertia>
-          <ixx>6.5477841828023899e-05</ixx>
-          <ixy>-1.62825651670463e-15</ixy>
-          <ixz>-3.6346183766682003e-17</ixz>
-          <iyy>8.2628838704557203e-05</iyy>
-          <iyz>-1.07953546735893e-05</iyz>
-          <izz>5.5153321529907e-05</izz>
+          <ixx>0.0006</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0004</iyy>
+          <iyz>0</iyz>
+          <izz>0.0004</izz>
         </inertia>
       </inertial>
       <collision name='link_4_collision'>
@@ -252,10 +335,10 @@
             <uri>file://models/robot_v2/meshes/link_4.STL</uri>
           </mesh>
         </geometry>
-        <material>
-          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
-          <ambient>0.941176 0.941176 0.941176 1</ambient>
-        </material>
+		<material>
+			<diffuse>0.0 0.4 0.4 1</diffuse>
+			<ambient>0.0 0.4 0.4 1</ambient>
+		</material>
       </visual>
     </link>
     <joint name='wheel_joint_1' type='revolute'>
@@ -265,50 +348,43 @@
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
-          <lower>-10000000000000000</lower>
-          <upper>10000000000000000</upper>
+          <lower>-1.79769e+308</lower>
+          <upper> 1.79769e+308</upper>
         </limit>
-        <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
-        </dynamics>
       </axis>
     </joint>
     <link name='wheel_link_1'>
       <pose relative_to='wheel_joint_1'>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.000936230026474218 0.000294296502742625 -0.0253134741975138 0 0 0</pose>
+        <pose>-0.000936230026474243 0.000294296502742687 -0.0253134741975136 0 0 0</pose>
         <mass>0.13046603137643001</mass>
         <inertia>
-          <ixx>1.7238144390672301e-05</ixx>
-          <ixy>-4.9650198196541e-08</ixy>
-          <ixz>5.3595544029503699e-08</ixz>
-          <iyy>1.7060705932743101e-05</iyy>
-          <iyz>1.9754320171987901e-07</iyz>
-          <izz>2.48965358964134e-05</izz>
+			<ixx>0.00015</ixx>
+			<iyy>0.00015</iyy>
+			<izz>0.0003</izz>
         </inertia>
       </inertial>
       <collision name='wheel_link_1_collision'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>file://models/robot_v2/meshes/wheel_link_1.STL</uri>
-          </mesh>
-        </geometry>
+			<cylinder>
+				<radius>0.04</radius>
+				<length>0.02</length>
+			</cylinder>
+		</geometry>
       </collision>
       <visual name='wheel_link_1_visual'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>file://models/robot_v2/meshes/wheel_link_1.STL</uri>
-          </mesh>
-        </geometry>
-        <material>
-          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
-          <ambient>0.941176 0.941176 0.941176 1</ambient>
-        </material>
+			<cylinder>
+				<radius>0.04</radius>
+				<length>0.02</length>
+			</cylinder>
+		</geometry>
+		<material>
+			<diffuse>0.05 0.05 0.05 1</diffuse>
+			<ambient>0.05 0.05 0.05 1</ambient>
+		</material>
       </visual>
     </link>
     <joint name='wheel_joint_2' type='revolute'>
@@ -318,50 +394,43 @@
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
-          <lower>-10000000000000000</lower>
-          <upper>10000000000000000</upper>
+          <lower>-1.79769e+308</lower>
+          <upper> 1.79769e+308</upper>
         </limit>
-        <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
-        </dynamics>
       </axis>
     </joint>
     <link name='wheel_link_2'>
       <pose relative_to='wheel_joint_2'>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.0009782753206814751 6.9331225933944e-06 -0.0253134741975718 0 0 0</pose>
+        <pose>0.000978275320681482 0 -0.0253134741975717 0 0 0</pose>
         <mass>0.13046603137681101</mass>
         <inertia>
-          <ixx>1.72510482080003e-05</ixx>
-          <ixy>1.22246556193541e-08</ixy>
-          <ixz>1.03520957269386e-08</ixz>
-          <iyy>1.7047802115375901e-05</iyy>
-          <iyz>-2.0432100823036299e-07</iyz>
-          <izz>2.4896535896397601e-05</izz>
+			<ixx>0.00015</ixx>
+			<iyy>0.00015</iyy>
+			<izz>0.0003</izz>
         </inertia>
       </inertial>
       <collision name='wheel_link_2_collision'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>file://models/robot_v2/meshes/wheel_link_2.STL</uri>
-          </mesh>
+			<cylinder>
+				<radius>0.04</radius>
+				<length>0.02</length>
+			</cylinder>
         </geometry>
       </collision>
       <visual name='wheel_link_2_visual'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>file://models/robot_v2/meshes/wheel_link_2.STL</uri>
-          </mesh>
+			<cylinder>
+				<radius>0.04</radius>
+				<length>0.02</length>
+			</cylinder>
         </geometry>
-        <material>
-          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
-          <ambient>0.941176 0.941176 0.941176 1</ambient>
-        </material>
+		<material>
+			<diffuse>0.05 0.05 0.05 1</diffuse>
+			<ambient>0.05 0.05 0.05 1</ambient>
+		</material>
       </visual>
     </link>
     <joint name='wheel_joint_3' type='revolute'>
@@ -371,50 +440,43 @@
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
-          <lower>-10000000000000000</lower>
-          <upper>10000000000000000</upper>
+          <lower>-1.79769e+308</lower>
+          <upper> 1.79769e+308</upper>
         </limit>
-        <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
-        </dynamics>
       </axis>
     </joint>
     <link name='wheel_link_3'>
       <pose relative_to='wheel_joint_3'>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.000295654501900083 0.000936778270720307 0.0253134741975858 0 0 0</pose>
+        <pose>-0.000295654501900236 0.0009367782707207229 0.0253134741975857 0 0 0</pose>
         <mass>0.13046603137693699</mass>
         <inertia>
-          <ixx>1.70598259800944e-05</ixx>
-          <ixy>-5.0765771822079399e-08</ixy>
-          <ixz>1.9750381103220501e-07</ixz>
-          <iyy>1.7239024343384901e-05</iyy>
-          <iyz>5.35815834164502e-08</iyz>
-          <izz>2.4896535896457201e-05</izz>
+			<ixx>0.00015</ixx>
+			<iyy>0.00015</iyy>
+			<izz>0.0003</izz>
         </inertia>
       </inertial>
       <collision name='wheel_link_3_collision'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>file://models/robot_v2/meshes/wheel_link_3.STL</uri>
-          </mesh>
+			<cylinder>
+				<radius>0.04</radius>
+				<length>0.02</length>
+			</cylinder>
         </geometry>
       </collision>
       <visual name='wheel_link_3_visual'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>file://models/robot_v2/meshes/wheel_link_3.STL</uri>
-          </mesh>
+			<cylinder>
+				<radius>0.04</radius>
+				<length>0.02</length>
+			</cylinder>
         </geometry>
-        <material>
-          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
-          <ambient>0.941176 0.941176 0.941176 1</ambient>
-        </material>
+		<material>
+			<diffuse>0.05 0.05 0.05 1</diffuse>
+			<ambient>0.05 0.05 0.05 1</ambient>
+		</material>
       </visual>
     </link>
     <joint name='wheel_joint_4' type='revolute'>
@@ -424,51 +486,127 @@
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
-          <lower>-10000000000000000</lower>
-          <upper>10000000000000000</upper>
+          <lower>-1.79769e+308</lower>
+          <upper> 1.79769e+308</upper>
         </limit>
-        <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
-        </dynamics>
       </axis>
     </joint>
     <link name='wheel_link_4'>
       <pose relative_to='wheel_joint_4'>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.000965094199165892 -0.000180750455276019 0.0253134741977022 0 0 0</pose>
+        <pose>-0.000965094199165933 -0.00018075045527613 0.0253134741977022 0 0 0</pose>
         <mass>0.13046603137788901</mass>
         <inertia>
-          <ixx>1.72479895060605e-05</ixx>
-          <ixy>2.73260640463473e-08</ixy>
-          <ixz>-2.9603039757738399e-08</ixz>
-          <iyy>1.7050860817364301e-05</iyy>
-          <iyz>2.0251823606803199e-07</iyz>
-          <izz>2.48965358964373e-05</izz>
+			<ixx>0.00015</ixx>
+			<iyy>0.00015</iyy>
+			<izz>0.0003</izz>
         </inertia>
       </inertial>
       <collision name='wheel_link_4_collision'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>file://models/robot_v2/meshes/wheel_link_4.STL</uri>
-          </mesh>
+			<cylinder>
+				<radius>0.04</radius>
+				<length>0.02</length>
+			</cylinder>
         </geometry>
       </collision>
       <visual name='wheel_link_4_visual'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>file://models/robot_v2/meshes/wheel_link_4.STL</uri>
-          </mesh>
+			<cylinder>
+				<radius>0.04</radius>
+				<length>0.02</length>
+			</cylinder>
         </geometry>
-        <material>
-          <diffuse>0.941176 0.941176 0.941176 1</diffuse>
-          <ambient>0.941176 0.941176 0.941176 1</ambient>
-        </material>
+		<material>
+			<diffuse>0.05 0.05 0.05 1</diffuse>
+			<ambient>0.05 0.05 0.05 1</ambient>
+		</material>
       </visual>
     </link>
+
+
+	<plugin
+		filename="libignition-gazebo-mecanum-drive-system.so"
+		name="ignition::gazebo::systems::MecanumDrive">
+		<back_right_joint>wheel_joint_1</back_right_joint>
+		<front_right_joint>wheel_joint_2</front_right_joint>
+		<front_left_joint>wheel_joint_3</front_left_joint>
+		<back_left_joint>wheel_joint_4</back_left_joint>
+
+		<wheelbase>0.20681</wheelbase> <!-- dist wheel front to back -->
+		<wheel_separation>0.189</wheel_separation>  <!-- dist wheel left to right -->
+		<wheel_radius>0.04</wheel_radius>
+
+		<odom_publish_frequency>50</odom_publish_frequency>
+		<publish_odom>true</publish_odom>
+		<odom_topic>/odometry</odom_topic>
+		<tf_topic>/tf</tf_topic>
+		<frame_id>odom</frame_id>
+		<child_frame_id>base_link</child_frame_id>
+
+		<topic>cmd_vel</topic>
+	</plugin>
+
+	<plugin
+		filename="ignition-gazebo-sensors-system"
+		name="ignition::gazebo::systems::Sensors">
+		<render_engine>ogre</render_engine>
+	</plugin>
+
+	<plugin
+		filename="libignition-gazebo-joint-position-controller-system.so"
+		name="ignition::gazebo::systems::JointPositionController">
+		<joint_name>joint_1</joint_name>
+		<topic>/joint_1/position_cmd</topic>
+		<p_gain>100</p_gain>
+		<i_gain>0.1</i_gain>
+		<d_gain>0.01</d_gain>
+		<i_max>1</i_max>
+		<i_min>-1</i_min>
+		<cmd_max>1000</cmd_max>
+		<cmd_min>-1000</cmd_min>
+	</plugin>
+	<plugin
+		filename="libignition-gazebo-joint-position-controller-system.so"
+		name="ignition::gazebo::systems::JointPositionController">
+		<joint_name>joint_2</joint_name>
+		<topic>/joint_2/position_cmd</topic>
+		<p_gain>100</p_gain>
+		<i_gain>0.1</i_gain>
+		<d_gain>0.01</d_gain>
+		<i_max>1</i_max>
+		<i_min>-1</i_min>
+		<cmd_max>1000</cmd_max>
+		<cmd_min>-1000</cmd_min>
+	</plugin>
+	<plugin
+		filename="libignition-gazebo-joint-position-controller-system.so"
+		name="ignition::gazebo::systems::JointPositionController">
+		<joint_name>joint_3</joint_name>
+		<topic>/joint_3/position_cmd</topic>
+		<p_gain>100</p_gain>
+		<i_gain>0.1</i_gain>
+		<d_gain>0.01</d_gain>
+		<i_max>1</i_max>
+		<i_min>-1</i_min>
+		<cmd_max>1000</cmd_max>
+		<cmd_min>-1000</cmd_min>
+	</plugin>
+	<plugin
+		filename="libignition-gazebo-joint-position-controller-system.so"
+		name="ignition::gazebo::systems::JointPositionController">
+		<joint_name>joint_4</joint_name>
+		<topic>/joint_4/position_cmd</topic>
+		<p_gain>100</p_gain>
+		<i_gain>0.1</i_gain>
+		<d_gain>0.01</d_gain>
+		<i_max>1</i_max>
+		<i_min>-1</i_min>
+		<cmd_max>1000</cmd_max>
+		<cmd_min>-1000</cmd_min>
+	</plugin>
+
   </model>
 </sdf>

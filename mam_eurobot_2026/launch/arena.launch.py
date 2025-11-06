@@ -15,6 +15,14 @@ def generate_launch_description():
             'GZ_SIM_RESOURCE_PATH',
             pkg_path
         ),
+        SetEnvironmentVariable(
+            'GZ_LOG_LEVEL',
+            "debug"
+        ),
+        SetEnvironmentVariable(
+            'IGN_LOG_LEVEL',
+            "trace"
+        ),
         DeclareLaunchArgument(
             'world',
             default_value=PathJoinSubstitution([
@@ -67,7 +75,8 @@ def generate_launch_description():
                 "ros2", "run", "ros_gz_sim", "create",
                 "-file", "file://models/robot_v2",
                 "-name", "robot_v2",
-                "-x", "2.7", "-y", "1.8", "-z", "0.00", "-Y", "-1.57079633"
+                "-x", "2.7", "-y", "1.6", "-z", "0.06", "-Y", "3.1415",
+                "--ros-args", "--log-level", "debug"
             ],
             output="screen"
         ),
@@ -131,7 +140,7 @@ def generate_launch_description():
             package='tf2_ros',
             executable='static_transform_publisher',
             name='lidar_tf',
-            arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'robot_v1/chassis/lidar_3d'],
+            arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'robot_v2/base_link/lidar_3d'],
             output='screen'
         ),
 
