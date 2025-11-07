@@ -312,5 +312,9 @@
       <cmd_min>-1000</cmd_min>
     </plugin>
 
+    <plugin
+  name="ignition::gazebo::systems::JointStatePublisher"
+  filename="libignition-gazebo-joint-state-publisher-system.so"/>
+
   </model>
 </sdf>

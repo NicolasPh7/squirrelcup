@@ -106,6 +106,17 @@ def generate_launch_description():
             ]
         ),
 
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='joint_state_bridge',
+            output='screen',
+            arguments=[
+                '/joint_states@sensor_msgs/msg/JointState@ignition.msgs.Model'
+            ]
+        ),
+
+
         # Node(
         #     package='ros_gz_bridge',
         #     executable='parameter_bridge',
