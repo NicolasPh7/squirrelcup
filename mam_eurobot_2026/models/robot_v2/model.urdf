@@ -1,0 +1,442 @@
+<?xml version="1.0"?>
+<!-- URDF generated from models/robot_v2/model.sdf
+     Notes:
+     - Sensors and Gazebo plugins from the SDF are not represented in URDF (left as comments).
+     - Mesh URIs kept as file://... as in the SDF.
+-->
+<robot name="robot_v2">
+
+  <!-- base_link -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 -0.15 0.01" rpy="0 0 0" />
+      <mass value="3.1643396567672002" />
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/base_link.STL" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- link_1 -->
+  <link name="link_1">
+    <inertial>
+      <origin xyz="0.00104293857582605 -0.0200716463587287 -0.000239310286706415" rpy="0 0 0" />
+      <mass value="0.064021348009921195" />
+      <inertia ixx="0.0002" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/link_1.STL" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/link_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- link_2 -->
+  <link name="link_2">
+    <inertial>
+      <origin xyz="-0.000603587791177973 -0.050271425729893 -0" rpy="0 0 0" />
+      <mass value="0.19959080849265101" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.0005" iyz="0" izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/link_2.STL" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/link_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- link_3 -->
+  <link name="link_3">
+    <inertial>
+      <origin xyz="-0.000682520892340457 0 -0.0438713507571973" rpy="0 0 0" />
+      <mass value="0.115150609607431" />
+      <inertia ixx="0.0005" ixy="0" ixz="0" iyy="0.0003" iyz="0" izz="0.0003" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/link_3.STL" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/link_3.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- link_4 -->
+  <link name="link_4">
+    <inertial>
+      <origin xyz="-0.000603587790963866 0.0078169291051248 0.0420092089396764" rpy="0 0 0" />
+      <mass value="0.11665330221327801" />
+      <inertia ixx="0.0006" ixy="0" ixz="0" iyy="0.0004" iyz="0" izz="0.0004" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/link_4.STL" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/robot_v2/meshes/link_4.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- wheel links -->
+  <link name="wheel_link_1">
+    <inertial>
+      <origin xyz="-0.000936230026474243 0.000294296502742687 -0.0253134741975136" rpy="0 0 0" />
+      <mass value="0.13046603137643001" />
+      <inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.0003" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.02" />
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.04" length="0.02" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="wheel_link_2">
+    <inertial>
+      <origin xyz="0.000978275320681482 0 -0.0253134741975717" rpy="0 0 0" />
+      <mass value="0.13046603137681101" />
+      <inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.0003" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.02" />
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.04" length="0.02" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="wheel_link_3">
+    <inertial>
+      <origin xyz="-0.000295654501900236 0.0009367782707207229 0.0253134741975857" rpy="0 0 0" />
+      <mass value="0.13046603137693699" />
+      <inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.0003" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.02" />
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.04" length="0.02" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="wheel_link_4">
+    <inertial>
+      <origin xyz="-0.000965094199165933 -0.00018075045527613 0.0253134741977022" rpy="0 0 0" />
+      <mass value="0.13046603137788901" />
+      <inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.0003" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.02" />
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.04" length="0.02" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- gripper placeholder link (included model in SDF) -->
+  <!-- Begin gripper substructure (renamed for MoveIt/robot_state_publisher compatibility) -->
+  <link name="gripper_base_link">
+    <inertial>
+      <origin xyz="1.20345416542393E-06 -7.46338198926353E-05 0.0402572142288835" rpy="0 0 0" />
+      <mass value="0.118178990513371" />
+      <inertia ixx="6.01287575012105E-05" ixy="1.85720765586351E-10" ixz="1.11828577359352E-09" iyy="7.70222497341493E-05" iyz="-8.26675381504617E-08" izz="4.67283990275469E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/base_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="gripper_shaft_1_link">
+    <inertial>
+      <origin xyz="-0.0185483490157523 0.0354395083034431 2.99498299918544E-16" rpy="0 0 0" />
+      <mass value="0.02252603418623" />
+      <inertia ixx="1.12936526709408E-05" ixy="5.62463338808149E-06" ixz="-8.77212019586647E-22" iyy="3.49073863338112E-06" iyz="1.54353420695704E-21" izz="1.44455622067707E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/shaft_1_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/shaft_1_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="gripper_shaft_1_joint" type="revolute">
+    <origin xyz="0 -0.03 0.061858" rpy="1.5708 -0.041167 1.5708" />
+    <parent link="gripper_base_link" />
+    <child link="gripper_shaft_1_link" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+  <link name="gripper_shaft_2_link">
+    <inertial>
+      <origin xyz="0.0185483490157517 0.0354395083034417 2.92425178921861E-16" rpy="0 0 0" />
+      <mass value="0.02252603418623" />
+      <inertia ixx="1.12936526709407E-05" ixy="-5.62463338808151E-06" ixz="-4.80175514429532E-22" iyy="3.49073863338117E-06" iyz="-1.06899453632766E-21" izz="1.44455622067707E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/shaft_2_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/shaft_2_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="gripper_shaft_2_joint" type="revolute">
+    <origin xyz="0 0.03 0.061858" rpy="1.5708 0.041167 1.5708" />
+    <parent link="gripper_base_link" />
+    <child link="gripper_shaft_2_link" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+  <link name="gripper_actuactor_link">
+    <inertial>
+      <origin xyz="1.85604995391415E-08 0.0293282231493077 -3.84649389623577E-11" rpy="0 0 0" />
+      <mass value="0.0512156078297464" />
+      <inertia ixx="6.40991174505963E-06" ixy="-1.81917662188716E-11" ixz="8.72990322207868E-14" iyy="9.65773691375466E-06" iyz="-3.89986107585078E-13" izz="1.21277508668611E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/actuactor_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/actuactor_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="gripper_actuactor_joint" type="fixed">
+    <origin xyz="0 0 0.084786" rpy="1.5708 0 -1.5708" />
+    <parent link="gripper_base_link" />
+    <child link="gripper_actuactor_link" />
+  </joint>
+  <link name="gripper_arm_1_link">
+    <inertial>
+      <origin xyz="0.0521330633718729 -0.0399533991816216 0.005" rpy="0 0 0" />
+      <mass value="0.0329177629039053" />
+      <inertia ixx="5.16014760985873E-05" ixy="2.06515660036376E-05" ixz="8.54318905572456E-22" iyy="2.93271923454908E-05" iyz="-7.92111556290631E-22" izz="7.91570014890072E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/arm_1_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/arm_1_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="gripper_arm_1_joint" type="revolute">
+    <origin xyz="0.028953 0.046145 0.005" rpy="-3.1416 0 0.029755" />
+    <parent link="gripper_actuactor_link" />
+    <child link="gripper_arm_1_link" />
+    <axis xyz="0 0 1" />
+    <!-- Updated limits and dynamics from model.sdf -->
+    <limit lower="-3.1415" upper="3.1415" effort="100" velocity="5" />
+    <dynamics damping="0.1" friction="0.01" />
+  </joint>
+  <link name="gripper_arm_2_link">
+    <inertial>
+      <origin xyz="0.0521330633718464 -0.0399533991816367 0.005" rpy="0 0 0" />
+      <mass value="0.0329177629039053" />
+      <inertia ixx="5.16014760985873E-05" ixy="2.06515660036377E-05" ixz="-2.08366170933793E-21" iyy="2.93271923454908E-05" iyz="5.8724305266389E-21" izz="7.91570014890072E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/arm_2_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+  <mesh filename="package://mam_eurobot_2026/models/gripper/meshes/arm_2_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="gripper_arm_2_joint" type="revolute">
+    <origin xyz="-0.028953 0.046145 -0.005" rpy="0 0 3.1118" />
+    <parent link="gripper_actuactor_link" />
+    <child link="gripper_arm_2_link" />
+    <axis xyz="0 0 1" />
+    <!-- Updated limits and dynamics from model.sdf; mimic removed so this joint is independent -->
+    <limit lower="-3.1415" upper="3.1415" effort="100" velocity="5" />
+    <dynamics damping="0.1" friction="0.01" />
+  </joint>
+  <!-- End gripper substructure -->
+
+  <!-- joints -->
+  <joint name="joint_1" type="revolute">
+    <origin xyz="0 -0.081313 0.08128" rpy="-1.5708 0 2.1036" />
+    <parent link="base_link" />
+    <child link="link_1" />
+    <axis xyz="0 1 0" />
+    <limit lower="-3.1415" upper="3.1415" effort="100" velocity="5.0" />
+    <dynamics damping="0.1" friction="0.01" />
+  </joint>
+
+  <joint name="joint_2" type="revolute">
+    <origin xyz="0 -0.024358 0.009871" rpy="3.093 0 3.141585307179587" />
+    <parent link="link_1" />
+    <child link="link_2" />
+    <axis xyz="1 0 0" />
+    <limit lower="-3.1415" upper="3.1415" effort="100" velocity="5.0" />
+    <dynamics damping="0.1" friction="0.01" />
+  </joint>
+
+  <joint name="joint_3" type="revolute">
+    <origin xyz="0 -0.10532 0" rpy="-3.1187 0 0" />
+    <parent link="link_2" />
+    <child link="link_3" />
+    <axis xyz="1 0 0" />
+    <limit lower="-3.1415" upper="3.1415" effort="100" velocity="5.0" />
+    <dynamics damping="0.1" friction="0.01" />
+  </joint>
+
+  <joint name="joint_4" type="revolute">
+    <origin xyz="0 0 -0.087743" rpy="-2.6186 0 0" />
+    <parent link="link_3" />
+    <child link="link_4" />
+    <axis xyz="1 0 0" />
+    <limit lower="-3.1415" upper="3.1415" effort="100" velocity="5.0" />
+    <dynamics damping="0.1" friction="0.01" />
+  </joint>
+
+  <!-- joint_5 connects to gripper include in SDF -->
+  <joint name="joint_5" type="revolute">
+    <origin xyz="0 0 0.069" rpy="0 0 1.571" />
+    <parent link="link_4" />
+    <child link="gripper_base_link" />
+    <axis xyz="0 0 1" />
+    <limit lower="-3.1415" upper="3.1415" effort="100" velocity="5.0" />
+    <dynamics damping="0.1" friction="0.01" />
+  </joint>
+
+  <!-- wheel joints -->
+  <joint name="wheel_joint_1" type="revolute">
+    <origin xyz="0.0765 -0.0505 -0.0032237" rpy="1.5708 -1.179 -1.5708" />
+    <parent link="base_link" />
+    <child link="wheel_link_1" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.79769e+308" upper="1.79769e+308" effort="100" velocity="5.0" />
+  </joint>
+
+  <joint name="wheel_joint_2" type="revolute">
+    <origin xyz="-0.0765 -0.0505 -0.0032237" rpy="1.5708 1.179 1.5708" />
+    <parent link="base_link" />
+    <child link="wheel_link_2" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.79769e+308" upper="1.79769e+308" effort="100" velocity="5.0" />
+  </joint>
+
+  <joint name="wheel_joint_3" type="revolute">
+    <origin xyz="-0.0765 -0.25731 -0.0032237" rpy="1.5708 -1.179 -1.5708" />
+    <parent link="base_link" />
+    <child link="wheel_link_3" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.79769e+308" upper="1.79769e+308" effort="100" velocity="5.0" />
+  </joint>
+
+  <joint name="wheel_joint_4" type="revolute">
+    <origin xyz="0.0765 -0.25731 -0.0032237" rpy="1.5708 1.179 1.5708" />
+    <parent link="base_link" />
+    <child link="wheel_link_4" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.79769e+308" upper="1.79769e+308" effort="100" velocity="5.0" />
+  </joint>
+
+  <!-- Note: SDF-only sensors and plugins omitted. If you need Gazebo/ignition plugins, keep them in a companion SDF file. -->
+
+</robot>

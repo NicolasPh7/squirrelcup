@@ -5,10 +5,11 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Comm
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import OpaqueFunction
 
-from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_fixes
+from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_fixes, start_robot_state_publisher_node
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
+
 
     return LaunchDescription([
         SetEnvironmentVariable(
@@ -29,7 +30,7 @@ def generate_launch_description():
                 pkg_path, 'worlds', 'arena_world.sdf'
             ])
         ),
-
+        
         TimerAction(
             period=2.0,  # wait seconds
             actions=[
@@ -150,20 +151,7 @@ def generate_launch_description():
             output='screen'
         ),
 
-        # Node(
-        #     package='robot_state_publisher',
-        #     executable='robot_state_publisher',
-        #     name='robot_state_publisher',
-        #     parameters=[{
-        #         'robot_description': Command(['cat', urdf_path])
-        #     }]
-        # ),
-
-        # Node(
-        #     package='joint_state_publisher_gui',
-        #     executable='joint_state_publisher_gui',
-        #     name='joint_state_publisher_gui'
-        # ),
+        OpaqueFunction(function=start_robot_state_publisher_node),
 
         Node(
             package='rviz2',
@@ -178,12 +166,12 @@ def generate_launch_description():
             name='inertial_odometry',
             output='screen',
         ),
-        Node(
-            package='mam_eurobot_2026',
-            executable='aruco_localization',
-            name='aruco_localization',
-            output='screen',
-        ),
+        # Node(
+        #     package='mam_eurobot_2026',
+        #     executable='aruco_localization',
+        #     name='aruco_localization',
+        #     output='screen',
+        # ),
         # Node(
         #     package='mam_eurobot_2026',
         #     executable='nut_identifier',
