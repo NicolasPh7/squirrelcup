@@ -1,0 +1,107 @@
+================================================================================
+GITHUB REPOSITORY ANALYSIS
+================================================================================
+
+Generated: 2025-11-12 10:03:09
+
+================================================================================
+REPOSITORY INFO
+================================================================================
+Remote URL: https://github.com/NicolasPh7/squirrelcup
+Current Branch: nicolas_python_core
+Total Commits: 12
+Last Commit: 2025-11-09 14:09:27 +0100
+
+================================================================================
+IMPORTANT FILES
+================================================================================
+  • README.md
+
+================================================================================
+CODE STATISTICS
+================================================================================
+Total Files: 34
+Total Lines of Code: 1930
+
+Breakdown by file type:
+  .py             →  33 files,   1640 lines
+  .md             →   1 files,    290 lines
+
+================================================================================
+PYTHON MODULES (Top 30)
+================================================================================
+  • analyze_repo.py
+  • mam_python/control/arm_controller.py
+  • mam_python/control/motion_controller.py
+  • mam_python/core/game_state.py
+  • mam_python/core/robot_state.py
+  • mam_python/decision/action_planner.py
+  • mam_python/decision/mission_manager.py
+  • mam_python/decision/strategy_engine.py
+  • mam_python/perception/map_builder.py
+  • mam_python/perception/object_manager.py
+  • mam_python/perception/target_selector.py
+  • mam_python/planning/collision_checker.py
+  • mam_python/planning/path_planner.py
+  • mam_python/planning/trajectory_generator.py
+  • mam_python/scoring/score_optimizer.py
+  • mam_python/scoring/score_predictor.py
+  • mam_python/scoring/score_tracker.py
+  • mam_python/setup.py
+  • mam_python/tests/test_planning.py
+  • mam_python/tests/test_scoring.py
+  • mam_python/tests/test_strategy.py
+  • mam_python/utils/geometry.py
+  • mam_python/utils/logger.py
+  • mam_python/utils/transforms.py
+
+================================================================================
+DIRECTORY STRUCTURE
+================================================================================
+├── README.md
+├── analyze_repo.py
+└── mam_python
+    ├── __init__.py
+    ├── control
+    │   ├── __init__.py
+    │   ├── arm_controller.py
+    │   └── motion_controller.py
+    ├── core
+    │   ├── __init__.py
+    │   ├── game_state.py
+    │   └── robot_state.py
+    ├── decision
+    │   ├── __init__.py
+    │   ├── action_planner.py
+    │   ├── mission_manager.py
+    │   └── strategy_engine.py
+    ├── perception
+    │   ├── __init__.py
+    │   ├── map_builder.py
+    │   ├── object_manager.py
+    │   └── target_selector.py
+    ├── planning
+    │   ├── __init__.py
+    │   ├── collision_checker.py
+    │   ├── path_planner.py
+    │   └── trajectory_generator.py
+    ├── scoring
+    │   ├── __init__.py
+    │   ├── score_optimizer.py
+    │   ├── score_predictor.py
+    │   └── score_tracker.py
+    ├── setup.py
+    ├── tests
+    │   ├── __init__.py
+    │   ├── test_planning.py
+    │   ├── test_scoring.py
+    │   └── test_strategy.py
+    └── utils
+        ├── __init__.py
+        ├── geometry.py
+        ├── logger.py
+        └── transforms.py
+
+================================================================================
+END OF ANALYSIS
+================================================================================
