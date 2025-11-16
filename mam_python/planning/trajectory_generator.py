@@ -56,4 +56,8 @@ class TrajectoryGenerator:
                 current.x, current.y, current.theta, v, w
             ))
         
+            # Check collision for waypoint
+            if hasattr(self, "collision_checker"):
+                if not self.collision_checker.check_path_collision([waypoint]):
+                    continue
         return trajectory

@@ -4,8 +4,8 @@ import unittest
 import sys
 sys.path.insert(0, '..')
 
-from planning.path_planner import PathPlanner
-from planning.collision_checker import CollisionChecker
+from mam_python.planning.path_planner import PathPlanner
+from mam_python.planning.collision_checker import CollisionChecker
 
 
 class TestPathPlanner(unittest.TestCase):

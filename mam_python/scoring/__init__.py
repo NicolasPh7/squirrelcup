@@ -1,7 +1,22 @@
-"""Système de scoring et évaluation."""
+"""Scoring and optimization modules"""
 
-from .score_tracker import ScoreTracker
-from .score_predictor import ScorePredictor
-from .score_optimizer import ScoreOptimizer
+try:
+    from .score_tracker import ScoreTracker, ScoringEvent
+except ImportError:
+    pass
 
-__all__ = ['ScoreTracker', 'ScorePredictor', 'ScoreOptimizer']
+try:
+    from .score_optimizer import ScoreOptimizer, CrateValue
+except ImportError:
+    pass
+
+try:
+    from .score_predictor import ScorePredictor
+except ImportError:
+    pass
+
+__all__ = [
+    'ScoreTracker', 'ScoringEvent',
+    'ScoreOptimizer', 'CrateValue',
+    'ScorePredictor'
+]

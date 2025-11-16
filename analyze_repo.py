@@ -6,7 +6,7 @@ Génère un fichier .txt avec la structure complète du projet
 
 import os
 import subprocess
-from pathlib import Path
+# from pathlib import Path  # Unused
 from datetime import datetime
 
 def get_repo_info(repo_path):

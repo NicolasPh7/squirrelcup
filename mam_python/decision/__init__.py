@@ -1,7 +1,22 @@
-"""Décision et stratégie du robot."""
+"""Decision making and strategy modules"""
 
-from .action_planner import ActionPlanner
-from .mission_manager import MissionManager
-from .strategy_engine import StrategyEngine
+try:
+    from .strategy_engine import StrategyEngine, StrategyMode, StrategyDecision
+except ImportError:
+    pass
 
-__all__ = ['ActionPlanner', 'MissionManager', 'StrategyEngine']
+try:
+    from .action_planner import ActionPlanner, Action, ActionType
+except ImportError:
+    pass
+
+try:
+    from .mission_manager import MissionManager, Mission, MissionState
+except ImportError:
+    pass
+
+__all__ = [
+    'StrategyEngine', 'StrategyMode', 'StrategyDecision',
+    'ActionPlanner', 'Action', 'ActionType',
+    'MissionManager', 'Mission', 'MissionState'
+]

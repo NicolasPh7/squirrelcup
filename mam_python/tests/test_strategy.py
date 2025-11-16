@@ -4,7 +4,7 @@ import unittest
 import sys
 sys.path.insert(0, '..')
 
-from decision.strategy_engine import StrategyEngine, StrategyMode
+from mam_python.decision.strategy_engine import StrategyEngine, StrategyMode
 
 
 class TestStrategyEngine(unittest.TestCase):

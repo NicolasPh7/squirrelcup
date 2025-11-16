@@ -4,8 +4,8 @@ import unittest
 import sys
 sys.path.insert(0, '..')
 
-from scoring.score_tracker import ScoreTracker
-from scoring.score_predictor import ScorePredictor
+from mam_python.scoring.score_tracker import ScoreTracker
+from mam_python.scoring.score_predictor import ScorePredictor
 
 
 class TestScoreTracker(unittest.TestCase):

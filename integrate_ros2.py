@@ -10,7 +10,7 @@ Complete ROS2 Integration Script
 import os
 import subprocess
 import sys
-from pathlib import Path
+# from pathlib import Path  # Unused
 
 class FullROS2Integration:
     def __init__(self, repo_path):

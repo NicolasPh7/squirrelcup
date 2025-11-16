@@ -1,7 +1,22 @@
-"""Utilitaires pour le système robotique Eurobot 2026."""
+"""Utility modules"""
 
-from .logger import Logger
-from .geometry import GeometryUtils
-from .transforms import TransformUtils
+try:
+    from .geometry import GeometryUtils, Point, Vector2D
+except ImportError:
+    pass
 
-__all__ = ['Logger', 'GeometryUtils', 'TransformUtils']
+try:
+    from .transforms import TransformUtils, Transform3D
+except ImportError:
+    pass
+
+try:
+    from .logger import Logger
+except ImportError:
+    pass
+
+__all__ = [
+    'GeometryUtils', 'Point', 'Vector2D',
+    'TransformUtils', 'Transform3D',
+    'Logger'
+]

@@ -1,6 +1,16 @@
-"""Cœur du système robotique - État du jeu et du robot."""
+"""Core robot and game state modules"""
 
-from .game_state import GameState
-from .robot_state import RobotState
+try:
+    from .robot_state import RobotState, RobotMode, RobotConfig, Position
+except ImportError:
+    pass
 
-__all__ = ['GameState', 'RobotState']
+try:
+    from .game_state import GameState, GamePhase, Crate
+except ImportError:
+    pass
+
+__all__ = [
+    'RobotState', 'RobotMode', 'RobotConfig', 'Position',
+    'GameState', 'GamePhase', 'Crate'
+]
