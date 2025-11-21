@@ -659,7 +659,7 @@
   </joint>
 
   <joint name="joint_gripper" type="fixed">
-    <origin xyz="0 0 0.07" rpy="0 0 0"/>
+    <origin xyz="0.015 -0.015 0.015" rpy="-1.571 -2.071 -3.141"/>
     <parent link="pre_link_5"/>
     <child link="gripper_base_link"/>
   </joint>
