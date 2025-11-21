@@ -9,13 +9,17 @@ from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
-
+    robot_v2_path = FindPackageShare('robot_v2')
 
     return LaunchDescription([
         SetEnvironmentVariable(
             'GZ_SIM_RESOURCE_PATH',
             pkg_path
         ),
+        # SetEnvironmentVariable(
+        #     'GAZEBO_MODEL_PATH',
+        #     value=PathJoinSubstitution([pkg_path, 'models'])
+        # ),
         SetEnvironmentVariable(
             'GZ_LOG_LEVEL',
             "debug"
@@ -74,7 +78,7 @@ def generate_launch_description():
         ExecuteProcess(
             cmd=[
                 "ros2", "run", "ros_gz_sim", "create",
-                "-file", "file://models/robot_v2",
+                "-file", PathJoinSubstitution([robot_v2_path, "model.urdf"]),
                 "-name", "robot_v2",
                 "-x", "2.7", "-y", "1.6", "-z", "0.06", "-Y", "3.1415",
                 "--ros-args", "--log-level", "debug"
@@ -177,12 +181,19 @@ def generate_launch_description():
             name='inertial_odometry',
             output='screen',
         ),
+        Node(
+            package='mam_eurobot_2026',
+            executable='aruco_localization',
+            name='aruco_localization',
+            output='screen',
+        ),
         # Node(
         #     package='mam_eurobot_2026',
-        #     executable='aruco_localization',
-        #     name='aruco_localization',
+        #     executable='arm_controller',
+        #     name='arm_controller',
         #     output='screen',
         # ),
+        
         # Node(
         #     package='mam_eurobot_2026',
         #     executable='nut_identifier',
