@@ -3,7 +3,7 @@
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
-  name="robot_v2">
+  name="robot_v3">
   <link
     name="base_link">
     <inertial>
@@ -26,7 +26,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/base_link.STL" />
+          filename="package://robot_v3/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -40,7 +40,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/base_link.STL" />
+          filename="package://robot_v3/meshes/base_link.STL" />
       </geometry>
     </collision>
 
@@ -141,7 +141,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/link_1.STL" />
+          filename="package://robot_v3/meshes/link_1.STL" />
       </geometry>
       <material
         name="">
@@ -155,7 +155,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/link_1.STL" />
+          filename="package://robot_v3/meshes/link_1.STL" />
       </geometry>
     </collision>
   </link>
@@ -202,7 +202,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/link_2.STL" />
+          filename="package://robot_v3/meshes/link_2.STL" />
       </geometry>
       <material
         name="">
@@ -216,7 +216,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/link_2.STL" />
+          filename="package://robot_v3/meshes/link_2.STL" />
       </geometry>
     </collision>
   </link>
@@ -263,7 +263,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/link_3.STL" />
+          filename="package://robot_v3/meshes/link_3.STL" />
       </geometry>
       <material
         name="">
@@ -277,7 +277,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/link_3.STL" />
+          filename="package://robot_v3/meshes/link_3.STL" />
       </geometry>
     </collision>
   </link>
@@ -324,7 +324,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/link_4.STL" />
+          filename="package://robot_v3/meshes/link_4.STL" />
       </geometry>
       <material
         name="">
@@ -338,7 +338,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/link_4.STL" />
+          filename="package://robot_v3/meshes/link_4.STL" />
       </geometry>
     </collision>
   </link>
@@ -385,7 +385,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/pre_link_5.STL" />
+          filename="package://robot_v3/meshes/pre_link_5.STL" />
       </geometry>
       <material
         name="">
@@ -399,7 +399,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/pre_link_5.STL" />
+          filename="package://robot_v3/meshes/pre_link_5.STL" />
       </geometry>
     </collision>
   </link>
@@ -447,7 +447,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/wheel_link_1.STL" />
+          filename="package://robot_v3/meshes/wheel_link_1.STL" />
       </geometry>
       <material
         name="">
@@ -461,7 +461,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/wheel_link_1.STL" />
+          filename="package://robot_v3/meshes/wheel_link_1.STL" />
       </geometry>
     </collision>
   </link>
@@ -505,7 +505,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/wheel_link_2.STL" />
+          filename="package://robot_v3/meshes/wheel_link_2.STL" />
       </geometry>
       <material
         name="">
@@ -519,7 +519,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/wheel_link_2.STL" />
+          filename="package://robot_v3/meshes/wheel_link_2.STL" />
       </geometry>
     </collision>
   </link>
@@ -563,7 +563,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/wheel_link_3.STL" />
+          filename="package://robot_v3/meshes/wheel_link_3.STL" />
       </geometry>
       <material
         name="">
@@ -577,7 +577,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/wheel_link_3.STL" />
+          filename="package://robot_v3/meshes/wheel_link_3.STL" />
       </geometry>
     </collision>
   </link>
@@ -621,7 +621,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/wheel_link_4.STL" />
+          filename="package://robot_v3/meshes/wheel_link_4.STL" />
       </geometry>
       <material
         name="">
@@ -635,7 +635,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v2/meshes/wheel_link_4.STL" />
+          filename="package://robot_v3/meshes/wheel_link_4.STL" />
       </geometry>
     </collision>
   </link>

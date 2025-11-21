@@ -9,7 +9,7 @@ from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
-    robot_v2_path = FindPackageShare('robot_v2')
+    robot_v3_path = FindPackageShare('robot_v3')
 
     return LaunchDescription([
         SetEnvironmentVariable(
@@ -78,8 +78,8 @@ def generate_launch_description():
         ExecuteProcess(
             cmd=[
                 "ros2", "run", "ros_gz_sim", "create",
-                "-file", PathJoinSubstitution([robot_v2_path, "model.urdf"]),
-                "-name", "robot_v2",
+                "-file", PathJoinSubstitution([robot_v3_path, "urdf", "model.urdf"]),
+                "-name", "robot_v3",
                 "-x", "2.7", "-y", "1.6", "-z", "0.06", "-Y", "3.1415",
                 "--ros-args", "--log-level", "debug"
             ],
@@ -162,7 +162,7 @@ def generate_launch_description():
             package='tf2_ros',
             executable='static_transform_publisher',
             name='lidar_tf',
-            arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'robot_v2/base_link/lidar_3d'],
+            arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'robot_v3/base_link/lidar_3d'],
             output='screen'
         ),
 

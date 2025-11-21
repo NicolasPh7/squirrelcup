@@ -8,6 +8,8 @@ find_package(ament_cmake REQUIRED)
 
 # find_package(roslaunch)
 
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
+
 foreach(dir config launch meshes urdf)
 	install(DIRECTORY ${dir} DESTINATION share/${PROJECT_NAME})
 endforeach(dir)

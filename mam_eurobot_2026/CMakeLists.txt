@@ -111,10 +111,6 @@ install(DIRECTORY worlds DESTINATION share/${PROJECT_NAME})
 # Install models files
 install(DIRECTORY models DESTINATION share/${PROJECT_NAME})
 
-# Install models files
-install(DIRECTORY models/gripper DESTINATION share/)
-install(DIRECTORY models/robot_v2 DESTINATION share/)
-
 install(DIRECTORY resource DESTINATION share/${PROJECT_NAME})
 
 # Install Python modules

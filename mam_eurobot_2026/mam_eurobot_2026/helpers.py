@@ -96,8 +96,9 @@ def load_balises_fixes(context):
 
 def start_robot_state_publisher_node(context):
     pkg_path = get_package_share_directory('mam_eurobot_2026')
+    robot_v3_path = get_package_share_directory('robot_v3')
 
-    with open(os.path.join(pkg_path, 'models', 'robot_v2', 'model.urdf'), 'r') as urdf_file:
+    with open(os.path.join(robot_v3_path, 'urdf', 'model.urdf'), 'r') as urdf_file:
         robot_description_content = urdf_file.read()
 
     return [
