@@ -2,7 +2,7 @@
 <!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
-<robot
+<robot 
   name="robot_v3">
   <link
     name="base_link">
@@ -44,79 +44,69 @@
       </geometry>
     </collision>
 
-    <gazebo reference="base_link">
-    <sensor name="camera_sensor" type="camera">
-        <pose>0.1 0 0.05 0 0 1.571</pose> 
-          <camera>
-            <image>
-              <width>1920</width>
-              <height>1080</height>
-              <format>R8G8B8</format>
-            </image>
-            <clip>
-              <near>0.1</near>
-              <far>100</far>
-            </clip>
-            <horizontal_fov>1.047</horizontal_fov>
-          </camera>
-          <always_on>1</always_on>
-          <update_rate>5</update_rate>
-          <visualize>true</visualize>
-        <topic>camera</topic>
-        </sensor>
-
-        <sensor name="lidar_3d" type="gpu_lidar">
-        <pose>0.1 0 0.08 0 0.0 1.571</pose> 
-        <lidar>
-          <scan>
-            <horizontal>
-              <samples>180</samples>
-              <resolution>1</resolution>
-              <min_angle>-1.5708</min_angle>
-              <max_angle>1.5708</max_angle>
-            </horizontal>
-            <vertical>
-              <samples>180</samples>
-              <resolution>1</resolution>
-              <min_angle>-0.5236</min_angle>
-              <max_angle>0.5236</max_angle>
-            </vertical>
-          </scan>
-          <range>
-            <min>0.02</min>
-            <max>20.0</max>
-            <resolution>0.01</resolution>
-          </range>
-        </lidar>
-        <always_on>1</always_on>
-        <update_rate>10</update_rate>
-        <visualize>true</visualize>
-        <topic>lidar_3d</topic>
-      </sensor>
-
     <visual name="marker_border">
       <origin xyz="0.0 -0.22 0.05" rpy="0 0 0"/>
       <geometry>
         <box size="0.12 0.12 0.0004"/>
       </geometry>
-      <material>
-        <ambient>1 1 1 1</ambient>
-        <diffuse>1 1 1 1</diffuse>
+      <material
+        name="">
+          <color
+            rgba="1 1 1 1" />
       </material>
     </visual>
 
-    <visual name="aruco_marker">
-      <origin xyz="0.0 -0.22 0.051" rpy="0 0 0"/>
+   <!-- <visual name="aruco_marker">
+    <origin xyz="0.0 -0.22 0.051" rpy="0 0 0"/>
+    <geometry>
+      <box size="0.1 0.1 0.001"/>
+    </geometry>
+    <material name="aruco_tag"/>
+  </visual> -->
+
+  </link>
+
+   <joint name="joint_aruco_tag" type="fixed">
+    <origin xyz="0.0 -0.22 0.051" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="aruco_link"/>
+  </joint>
+  <link name="aruco_link">
+    <inertial>
+      <origin
+        xyz="-1.2532E-07 -0.15107 0.020983"
+        rpy="0 0 0" />
+      <mass
+        value="8.1643" />
+      <inertia
+        ixx="0.017304"
+        ixy="2.0781E-06"
+        ixz="3.0206E-09"
+        iyy="0.0051864"
+        iyz="5.0122E-05"
+        izz="0.021588" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
       <geometry>
-        <box size="0.1 0.1 0.001"/>
+              <box size="0.1 0.1 0.001"/>
       </geometry>
-      <material>
-        <texture filename="package://simple_robot/aruco_0.png"/>
+      <material
+        name="">
+        <color
+          rgba="0.0 0.0 0.0 1" />
       </material>
     </visual>
-
-    </gazebo>
-
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+              <box size="0.1 0.1 0.001"/>
+      </geometry>
+    </collision>
   </link>
 
 <link
@@ -993,74 +983,177 @@
       effort="0"
       velocity="0" />
   </joint>
+ 
+ <gazebo reference="base_link">
+    <sensor name="camera_sensor" type="camera">
+      <pose>0.1 0 0.05 0 0 1.571</pose> 
+        <camera>
+          <image>
+            <width>1920</width>
+            <height>1080</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>100</far>
+          </clip>
+          <horizontal_fov>1.047</horizontal_fov>
+        </camera>
+        <always_on>1</always_on>
+        <update_rate>5</update_rate>
+        <visualize>true</visualize>
+        <topic>camera</topic>
+      </sensor>
+
+      <sensor name="lidar_3d" type="gpu_lidar">
+      <pose>0.1 0 0.08 0 0.0 1.571</pose> 
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>180</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.5708</min_angle>
+            <max_angle>1.5708</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>180</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.5236</min_angle>
+            <max_angle>0.5236</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.02</min>
+          <max>20.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </lidar>
+      <always_on>1</always_on>
+      <update_rate>10</update_rate>
+      <visualize>true</visualize>
+      <topic>lidar_3d</topic>
+    </sensor>
+  </gazebo>
+
+<gazebo reference="aruco_link">
+<visual name='aruco_marker'>
+      <pose relative_to='chassis'>0.0 -0.22 0.051 0 0 0</pose>
+    <geometry>
+      <plane>
+      <normal>0 0 1</normal> 
+      <size>0.1 0.1 0.001</size> 
+      </plane>
+    </geometry>
+    <material>
+      <diffuse>1 1 1 1</diffuse>
+      <pbr>
+        <metal>
+          <albedo_map>model://robot_v3/textures/aruco_0.png</albedo_map>
+          <metalness>0.0</metalness>
+          <roughness>0.8</roughness>
+        </metal>
+      </pbr>
+    </material>
+	</visual>
+</gazebo>
+
  <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <robotNamespace>/</robotNamespace>
+  <plugin
+      filename="libignition-gazebo-mecanum-drive-system.so"
+      name="ignition::gazebo::systems::MecanumDrive">
+      <front_right_joint>wheel_joint_1</front_right_joint>
+      <front_left_joint>wheel_joint_2</front_left_joint>
+      <back_left_joint>wheel_joint_3</back_left_joint>
+      <back_right_joint>wheel_joint_4</back_right_joint>
+
+      <wheelbase>0.207</wheelbase> <!-- dist wheel front to back -->
+      <wheel_separation>0.153</wheel_separation>  <!-- dist wheel left to right -->
+      <wheel_radius>0.04</wheel_radius>
+
+      <odom_publish_frequency>50</odom_publish_frequency>
+      <publish_odom>true</publish_odom>
+      <odom_topic>/odometry</odom_topic>
+      <tf_topic>/tf</tf_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_link</child_frame_id>
+
+      <topic>cmd_vel</topic>
     </plugin>
-  </gazebo>
 
-  <transmission name="$wheel_trans_${suffix}">
-    <type>transmission_interface/SimpleTransmission</type>
-    <actuator name="$wheel_motor_${suffix}">
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-    <joint name="$wheel_joint_${suffix}">
-      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-    </joint>
-  </transmission>
+    <plugin
+      filename="ignition-gazebo-sensors-system"
+      name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre</render_engine>
+    </plugin>
 
-  <gazebo reference="wheel_link_${suffix}">
-    <mu1 value="200.0"/>
-    <mu2 value="100.0"/>
-    <kp value="10000000.0" />
-    <kd value="1.0" />
-    <material>Gazebo/Grey</material>
-  </gazebo>
+    <plugin
+      filename="libignition-gazebo-joint-position-controller-system.so"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>joint_1</joint_name>
+      <topic>/joint_1/position_cmd</topic>
+      <p_gain>100</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>0.01</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
+    <plugin
+      filename="libignition-gazebo-joint-position-controller-system.so"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>joint_2</joint_name>
+      <topic>/joint_2/position_cmd</topic>
+      <p_gain>100</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>0.01</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
+    <plugin
+      filename="libignition-gazebo-joint-position-controller-system.so"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>joint_3</joint_name>
+      <topic>/joint_3/position_cmd</topic>
+      <p_gain>100</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>0.01</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
+    <plugin
+      filename="libignition-gazebo-joint-position-controller-system.so"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>joint_4</joint_name>
+      <topic>/joint_4/position_cmd</topic>
+      <p_gain>100</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>0.01</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
+    <plugin
+      filename="libignition-gazebo-joint-position-controller-system.so"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>joint_5</joint_name>
+      <topic>/joint_5/position_cmd</topic>
+      <p_gain>100</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>0.01</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
 
-
-  <transmission name="joint_1_trans">
-    <type>transmission_interface/SimpleTransmission</type>
-    <actuator name="$joint_1_motor">
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-    <joint name="joint_1">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-    </joint>
-  </transmission>
-  <transmission name="joint_2_trans">
-    <type>transmission_interface/SimpleTransmission</type>
-    <actuator name="$joint_2_motor">
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-    <joint name="joint_2">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-    </joint>
-  </transmission>
-  <transmission name="joint_3_trans">
-    <type>transmission_interface/SimpleTransmission</type>
-    <actuator name="$joint_3_motor">
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-    <joint name="joint_3">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-    </joint>
-  </transmission>
-  <transmission name="joint_4_trans">
-    <type>transmission_interface/SimpleTransmission</type>
-    <actuator name="$joint_4_motor">
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-    <joint name="joint_4">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-    </joint>
-  </transmission>
-  <transmission name="joint_5_trans">
-    <type>transmission_interface/SimpleTransmission</type>
-    <actuator name="$joint_5_motor">
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-    <joint name="joint_5">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-    </joint>
-  </transmission>
+    <plugin
+    name="ignition::gazebo::systems::JointStatePublisher"
+    filename="libignition-gazebo-joint-state-publisher-system.so"/>
+ </gazebo>
 </robot>

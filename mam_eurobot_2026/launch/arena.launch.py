@@ -16,10 +16,6 @@ def generate_launch_description():
             'GZ_SIM_RESOURCE_PATH',
             pkg_path
         ),
-        # SetEnvironmentVariable(
-        #     'GAZEBO_MODEL_PATH',
-        #     value=PathJoinSubstitution([pkg_path, 'models'])
-        # ),
         SetEnvironmentVariable(
             'GZ_LOG_LEVEL',
             "debug"
@@ -78,7 +74,9 @@ def generate_launch_description():
         ExecuteProcess(
             cmd=[
                 "ros2", "run", "ros_gz_sim", "create",
-                "-file", PathJoinSubstitution([robot_v3_path, "urdf", "model.urdf"]),
+                #Create the sdf with ign sdf -p robot_v3/urdf/model.urdf > robot_v3/urdf/model.sdf
+                # And missing elements
+                "-file", PathJoinSubstitution([robot_v3_path, "urdf", "model.urdf"]), 
                 "-name", "robot_v3",
                 "-x", "2.7", "-y", "1.6", "-z", "0.06", "-Y", "3.1415",
                 "--ros-args", "--log-level", "debug"
