@@ -10,7 +10,7 @@
     name="spawn_model"
     pkg="gazebo_ros"
     type="spawn_model"
-    args="-file $(find endeffector_v3)/urdf/endeffector_v3.urdf -urdf -model endeffector_v3"
+    args="-file $(find gripper)/urdf/gripper.urdf -urdf -model gripper"
     output="screen" />
   <node
     name="fake_joint_calibration"
