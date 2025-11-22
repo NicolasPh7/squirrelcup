@@ -23,6 +23,9 @@ find_package(cv_bridge REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common filters segmentation search)
 find_package(pcl_conversions REQUIRED)
 find_package(pcl_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(nut_identifier_msgs REQUIRED)
 
 
 if(BUILD_TESTING)
@@ -66,6 +69,10 @@ ament_target_dependencies(
   visualization_msgs
 )
 install(TARGETS nut_identifier DESTINATION lib/${PROJECT_NAME})
+
+add_executable(nut_identifier2 src/nut_identifier2.cpp)
+ament_target_dependencies(nut_identifier2 rclcpp sensor_msgs geometry_msgs cv_bridge nut_identifier_msgs OpenCV)
+install(TARGETS nut_identifier2 DESTINATION lib/${PROJECT_NAME})
 
 add_executable(teleop src/teleop.cpp)
 ament_target_dependencies(teleop rclcpp geometry_msgs)
@@ -115,10 +122,13 @@ ament_python_install_package(${PROJECT_NAME})
 # Install Python executables
 install(PROGRAMS ${PROJECT_NAME}/py_test.py DESTINATION lib/${PROJECT_NAME})
 
+ament_export_dependencies(rosidl_default_runtime)
+
 ament_package()
 
 if(BUILD_TESTING)
   # Register pytest tests
   ament_add_pytest_test(test_integration test/test_integration_odometry.py)
   ament_add_pytest_test(test_odometry test/test_odometry.py)
+  ament_add_pytest_test(test_nut_identifier2 test/test_nut_identifier2.py)
 endif()
