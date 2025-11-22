@@ -1,9 +1,15 @@
 """Construction et gestion de la carte de l'environnement."""
 
+import pdb
+
 from dataclasses import dataclass, field
 from typing import List, Tuple
 import numpy as np
+import math
 
+from visualization_msgs.msg import MarkerArray
+from geometry_msgs.msg import Point, Pose
+from nav_msgs.msg import Path, OccupancyGrid
 
 @dataclass
 class GridCell:
@@ -13,7 +19,7 @@ class GridCell:
     occupied: bool = False
     confidence: float = 0.0  # 0-1
 
-
+@dataclass
 class MapBuilder:
     """Construiseur de carte pour la navigation."""
     
@@ -32,7 +38,20 @@ class MapBuilder:
         self.grid_width = int(width / resolution)
         self.grid_height = int(height / resolution)
         self.grid = np.zeros((self.grid_height, self.grid_width))
-        
+    
+    def get_width(self): 
+        return self.width
+    def get_height(self): 
+        return self.height
+    def get_resolution(self): 
+        return self.resolution
+    def get_grid_width(self): 
+        return self.grid_width
+    def get_grid_height(self): 
+        return self.grid_height
+    def get_grid(self): 
+        return self.grid
+    
     def update_cell(self, x: float, y: float, occupied: bool = True, confidence: float = 1.0):
         """Met à jour une cellule de la grille.
         
@@ -50,6 +69,52 @@ class MapBuilder:
             else:
                 self.grid[gy, gx] = max(0.0, self.grid[gy, gx] - confidence)
     
+
+    def update_from_marker_array(self, marker_array: MarkerArray):
+        """
+        Met à jour la grille à partir d'un MarkerArray ROS 2.
+        Chaque Marker kann mehrere Zellen abdecken, basierend auf scale.x/scale.y.
+        """
+        
+        for marker in marker_array.markers:
+            if marker.action == marker.DELETEALL: 
+                self.clear()
+                return
+
+            # Mittelpunkt
+            cx = marker.pose.position.x
+            cy = marker.pose.position.y
+
+            # Ausdehnung (in Metern)
+            sx = marker.scale.x
+            sy = marker.scale.y
+
+            # Bestimme die Grenzen des Rechtecks
+            x_min = cx - sx / 2.0
+            x_max = cx + sx / 2.0
+            y_min = cy - sy / 2.0
+            y_max = cy + sy / 2.0
+
+            # Iteriere über alle Zellen im Rechteck
+            gx_min = int(x_min / self.resolution)
+            gx_max = int(x_max / self.resolution)
+            gy_min = int(y_min / self.resolution)
+            gy_max = int(y_max / self.resolution)
+
+            for gx in range(gx_min, gx_max + 1):
+                for gy in range(gy_min, gy_max + 1):
+                    if 0 <= gx < self.grid_width and 0 <= gy < self.grid_height:
+                        self.grid[gy, gx] = 1.0
+
+    def clear(self, value: float = 0.0):
+        """
+        Réinitialise toute la grille.
+        
+        Args:
+            value: Valeur initiale pour chaque cellule (par défaut 0.0 = libre)
+        """
+        self.grid[:, :] = value
+
     def is_occupied(self, x: float, y: float, threshold: float = 0.5) -> bool:
         """Vérifie si une position est occupée."""
         gx = int(x / self.resolution)
@@ -70,3 +135,43 @@ class MapBuilder:
                 if not self.is_occupied(nx, ny):
                     neighbors.append((nx, ny))
         return neighbors
+
+    def publish_occupancy_grid(self, stamp, occupancy_pub):
+        msg = OccupancyGrid()
+        msg.header.frame_id = "map"
+        msg.header.stamp = stamp
+
+        # Map info
+        msg.info.resolution = self.resolution
+        msg.info.width = self.grid_width
+        msg.info.height = self.grid_height
+
+        # pdb.set_trace()
+
+        # Ursprung der Karte (unten links)
+        origin = Pose()
+        # Quaternion aus yaw = 3.1415  from mam_eurobot_2026/worlds/arena_world.sdf:66
+        qz = math.sin(3.1415/2.0)
+        qw = math.cos(3.1415/2.0)
+
+        origin.position.x = 1.5 # from mam_eurobot_2026/worlds/arena_world.sdf:66
+        origin.position.y = 1.0 # from mam_eurobot_2026/worlds/arena_world.sdf:66
+        origin.position.z = 0.0
+        origin.orientation.z = qz
+        origin.orientation.w = qw
+        msg.info.origin = origin
+
+        # Grid in int8 konvertieren
+        data = []
+        for gy in range(self.grid_height):
+            for gx in range(self.grid_width):
+                val = self.grid[gy, gx]
+                if val <= 0.0:
+                    data.append(0)      # frei
+                elif val >= 1.0:
+                    data.append(100)    # sicher besetzt
+                else:
+                    data.append(int(val * 100))  # Wahrscheinlichkeit
+        msg.data = data
+
+        occupancy_pub.publish(msg)

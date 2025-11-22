@@ -28,19 +28,20 @@ class StrategyEngine:
         """Initialise le moteur."""
         self.mode = StrategyMode.BALANCED
         self.time_remaining = 90.0
+        self.total_time = 90.0
         
     def set_mode(self, mode: StrategyMode):
         """Change le mode stratégique."""
         self.mode = mode
     
-    def update_time(self, elapsed_time: float, total_time: float):
+    def update_time(self, elapsed_time: float):
         """Met à jour le temps restant."""
-        self.time_remaining = total_time - elapsed_time
+        self.time_remaining -= elapsed_time
         
         # Changement automatique de stratégie
         if self.time_remaining < 10:
             self.mode = StrategyMode.RETURN_HOME
-        elif self.time_remaining < total_time * 0.3:
+        elif self.time_remaining < self.total_time * 0.3:
             self.mode = StrategyMode.CONSERVATIVE
     
     def decide_next_action(self, robot_position: tuple, 

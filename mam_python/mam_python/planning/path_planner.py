@@ -3,7 +3,10 @@
 from typing import List, Tuple
 from dataclasses import dataclass
 import math
+import heapq
+import math
 
+from mam_python.perception import MapBuilder
 
 @dataclass
 class Waypoint:
@@ -70,6 +73,54 @@ class PathPlanner:
         
         self.path = waypoints
         return waypoints
+    
+
+    def plan_A_Star(self, start: tuple[float, float], goal: tuple[float, float], map: MapBuilder) -> list[tuple[float,float]] | None:
+        """Plan path using the A* algorithm"""
+        resolution = map.get_resolution()
+        grid_width = map.get_grid_width()
+        grid_height = map.get_grid_height()
+        grid = map.get_grid()
+
+        start_cell = (int(start[0] / resolution), int(start[1] / resolution))
+        goal_cell = (int(goal[0] / resolution), int(goal[1] / resolution))
+
+        def heuristic(a, b):
+            return math.hypot(a[0]-b[0], a[1]-b[1])
+
+        open_set: list[tuple[float, tuple[int,int]]] = [(0.0, start_cell)]
+        came_from = {}
+        g_score = {start_cell: 0}
+
+        while open_set:
+            _, current = heapq.heappop(open_set)
+            if current == goal_cell:
+                # Rekonstruiere Pfad
+                path = []
+                while current in came_from:
+                    x, y = current
+                    path.append((x * resolution, y * resolution))
+                    current = came_from[current]
+                path.reverse()
+                return path
+
+            cx, cy = current
+            for dx, dy in [(1,0), (-1,0), (0,1), (0,-1)]:
+                neighbor = (cx+dx, cy+dy)
+                nx, ny = neighbor
+                if not (0 <= nx < grid_width and 0 <= ny < grid_height):
+                    continue
+                if grid[ny, nx] > 0.0:  # besetzt
+                    continue
+
+                tentative_g = g_score[current] + 1
+                if tentative_g < g_score.get(neighbor, float("inf")):
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g
+                    f_score = float(tentative_g) + heuristic(neighbor, goal_cell)
+                    heapq.heappush(open_set, (f_score, neighbor))
+
+        return None  # kein Pfad gefunden
     
     def get_path(self) -> List[Waypoint]:
         """Retourne le chemin actuel."""

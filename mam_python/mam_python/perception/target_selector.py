@@ -19,7 +19,7 @@ class TargetSelector:
     """Sélectionne la meilleure cible."""
     
     @staticmethod
-    def distance_priority(targets: List[Target], robot_x: float, robot_y: float) -> Target or None:
+    def distance_priority(targets: List[Target], robot_x: float, robot_y: float) -> Target | None:
         """Sélectionne la cible la plus proche."""
         if not targets:
             return None
@@ -31,7 +31,7 @@ class TargetSelector:
         return nearest
     
     @staticmethod
-    def score_priority(targets: List[Target]) -> Target or None:
+    def score_priority(targets: List[Target]) -> Target | None:
         """Sélectionne la cible avec le meilleur score."""
         if not targets:
             return None
@@ -39,7 +39,7 @@ class TargetSelector:
         return max(targets, key=lambda t: t.score)
     
     @staticmethod
-    def time_priority(targets: List[Target], match_time: float, total_time: float) -> Target or None:
+    def time_priority(targets: List[Target], match_time: float, total_time: float) -> Target | None:
         """Sélectionne basé sur le temps restant."""
         if not targets:
             return None

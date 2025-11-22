@@ -1,7 +1,7 @@
 """Planification des actions du robot."""
 
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Callable
 
 
@@ -18,7 +18,7 @@ class ActionType(Enum):
 class Action:
     """Représente une action."""
     action_type: ActionType
-    parameters: dict = None
+    parameters: dict = field(default_factory=dict)
     priority: int = 0
     completed: bool = False
 
@@ -31,19 +31,22 @@ class ActionPlanner:
         self.actions: List[Action] = []
         self.current_action = None
         
-    def add_action(self, action_type: ActionType, parameters: dict = None, priority: int = 0):
+    def add_action(self, action_type: ActionType, parameters: dict = {}, priority: int = 0):
         """Ajoute une action à la queue."""
         action = Action(action_type, parameters or {}, priority, False)
         self.actions.append(action)
         self.actions.sort(key=lambda a: -a.priority)
         
-    def get_next_action(self) -> Action or None:
+    def get_next_action(self) -> Action | None:
         """Retourne la prochaine action à exécuter."""
         for action in self.actions:
             if not action.completed:
                 self.current_action = action
                 return action
         return None
+    
+    def get_all_actions(self) -> list[Action] | None:
+        return self.actions
     
     def complete_current_action(self):
         """Marque l'action actuelle comme complétée."""
