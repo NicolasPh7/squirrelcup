@@ -19,7 +19,6 @@ from mam_python.control import MotionController, ArmController
 from mam_python.perception import MapBuilder, ObjectManager, TargetSelector
 from mam_python.scoring import ScoreTracker, ScoreOptimizer, ScorePredictor
 from mam_python.core import RobotState, GameState
-from mam_python.utils import Logger
 
 
 class MAMRobotNode(Node):
@@ -27,7 +26,7 @@ class MAMRobotNode(Node):
     
     def __init__(self):
         super().__init__('mam_robot_node')
-        self.logger = Logger.get_logger('MAMRobotNode')
+        self.logger = self.get_logger()  # FIX: Use ROS2 native get_logger()
         
         # Initialize all robot modules
         self.robot_state = RobotState()
