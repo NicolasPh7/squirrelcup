@@ -44,7 +44,7 @@ private:
     double target_linear_ = 0.0, target_angular_ = 0.0;
     double control_linear_ = 0.0, control_angular_ = 0.0;
     const double LIN_STEP = 0.01, ANG_STEP = 0.1;
-    const double MAX_LIN = 0.26, MAX_ANG = 2.84;
+    const double MAX_LIN = 2.0, MAX_ANG = 2.84;
 
     void configureTerminal()
     {

@@ -75,13 +75,14 @@ class PathPlanner:
         return waypoints
     
 
-    def plan_A_Star(self, start: tuple[float, float], goal: tuple[float, float], map: MapBuilder) -> list[tuple[float,float]] | None:
-        """Plan path using the A* algorithm"""
+    def plan_A_Star(self, start: tuple[float, float], goal: tuple[float, float], map) -> list[tuple[float,float]] | None:
+        """Plan path using the A* algorithm with line-of-sight smoothing"""
         resolution = map.get_resolution()
         grid_width = map.get_grid_width()
         grid_height = map.get_grid_height()
         grid = map.get_grid()
 
+        # Start- und Zielzellen
         start_cell = (int(start[0] / resolution), int(start[1] / resolution))
         goal_cell = (int(goal[0] / resolution), int(goal[1] / resolution))
 
@@ -101,7 +102,9 @@ class PathPlanner:
                     x, y = current
                     path.append((x * resolution, y * resolution))
                     current = came_from[current]
+                # path.append((goal_cell[0] * resolution, goal_cell[1] * resolution))
                 path.reverse()
+                # path = self.line_of_sight(path, grid, resolution)
                 return path
 
             cx, cy = current
@@ -121,7 +124,45 @@ class PathPlanner:
                     heapq.heappush(open_set, (f_score, neighbor))
 
         return None  # kein Pfad gefunden
+
     
+    def line_of_sight(self, path, grid, resolution):
+        smoothed = [path[0]]
+        i = 0
+        while i < len(path)-1:
+            j = len(path)-1
+            while j > i+1:
+                if self.is_free_line(path[i], path[j], grid, resolution):
+                    break
+                j -= 1
+            smoothed.append(path[j])
+            i = j
+        return smoothed
+
+
+    def is_free_line(self, p1, p2, grid, resolution):
+        x1, y1 = int(p1[0] / resolution), int(p1[1] / resolution)
+        x2, y2 = int(p2[0] / resolution), int(p2[1] / resolution)
+
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        sx = 1 if x1 < x2 else -1
+        sy = 1 if y1 < y2 else -1
+        err = dx - dy
+
+        while True:
+            if grid[y1, x1] > 0.0:  # Hindernis
+                return False
+            if x1 == x2 and y1 == y2:
+                break
+            e2 = 2 * err
+            if e2 > -dy:
+                err -= dy
+                x1 += sx
+            if e2 < dx:
+                err += dx
+                y1 += sy
+        return True
     def get_path(self) -> List[Waypoint]:
         """Retourne le chemin actuel."""
         return self.path

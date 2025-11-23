@@ -7,6 +7,8 @@ Integrates all robot modules with ROS2 Humble and Gazebo
 import pdb
 
 import math
+import threading
+
 from typing import List
 
 import rclpy
@@ -60,6 +62,7 @@ class MAMRobotNode(Node):
         self.home_position = Target(id=0, x=2.8, y=1.8) #see https://www.eurobot.org/wp-content/uploads/2025/09/Eurobot_General_Rules_1.2_EN.pdf
         self.robot_state.update_position(self.home_position.x, self.home_position.y, -1.57079633)
         self.targets: List[Target] = []
+        self.current_target: Target | None = None
         self.aruco_map_markers = [
             Target(id=20, x=0.6, y=1.4),
             Target(id=21, x=2.4, y=1.4),
@@ -71,7 +74,7 @@ class MAMRobotNode(Node):
         self.score_optimizer = ScoreOptimizer()
         self.score_predictor = ScorePredictor()
 
-        self.tick_period = 0.1 
+        self.tick_period = 2
         
         # Create publishers
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -121,8 +124,9 @@ class MAMRobotNode(Node):
     def object_detector_callback(self, msg: MarkerArray):
         """Process LIDAR data"""
         try:
-            self.map_builder.update_from_marker_array(msg)
-            self.map_builder.publish_occupancy_grid(self.get_clock().now().to_msg(), self.grid_pub)
+            # pdb.set_trace()
+            if self.map_builder.update_from_marker_array(msg, self.robot_state.get_position()):
+                self.map_builder.publish_occupancy_grid(self.get_clock().now().to_msg(), self.grid_pub)
         except Exception as e:
             self.logger.error(f"LIDAR error: {e}")
     
@@ -149,6 +153,7 @@ class MAMRobotNode(Node):
 
             # Update robot state
             self.robot_state.update_position(x, y, theta)
+            self.get_logger().info(f"Updated robot position {self.robot_state.get_position()}")
 
         except Exception as e:
             self.logger.error(f"Odom error: {e}")
@@ -159,7 +164,7 @@ class MAMRobotNode(Node):
 
         for marker in msg.markers:
             if marker.action == marker.DELETEALL: 
-                return
+                continue
             
             # Extrahiere Basisdaten
             tid = marker.id
@@ -186,20 +191,28 @@ class MAMRobotNode(Node):
         actual_pos = self.robot_state.get_position()
         target = self.target_selector.distance_priority(targets, actual_pos.x, actual_pos.y)
 
-        if target is not None:
-            if self.target_reached(target):
-                self.stop_robot()
-                self.action_planner.complete_current_action()
-                self.logger.info(f"Target reached")
-                return None
-            else:
-                self.logger.info(f"Planned path to nearest target:{target}")
-                return self.path_planner.plan_A_Star(start=(actual_pos.x, actual_pos.y), goal=(target.x, target.y), map=self.map_builder)
+        if self.current_target is None: 
+            if target is None: 
+                return
+            self.current_target = target # If no current target, take the given target
+        else:
+            if target.id == self.current_target.id: #Update current target with updated position
+                self.current_target = target
+
+        if self.target_reached(self.current_target):
+            self.stop_robot()
+            self.action_planner.complete_current_action()
+            self.current_target = None
+            self.logger.info(f"Target reached")
+            return None
+        else:
+            self.logger.info(f"Planned path to nearest target:{self.current_target}")
+            return self.path_planner.plan_A_Star(start=(actual_pos.x, actual_pos.y), goal=(self.current_target.x, self.current_target.y), map=self.map_builder)
 
     def target_reached(self, target: Target):
         actual_pos = self.robot_state.get_position()
         dist = math.sqrt((target.x - actual_pos.x)**2 + (target.y - actual_pos.y)**2)
-        return dist < 0.1
+        return dist < 0.2
 
     def stop_robot(self):
         cmd = Twist()
@@ -208,7 +221,7 @@ class MAMRobotNode(Node):
         self.cmd_vel_pub.publish(cmd)
 
 
-    def follow_path_step(self, goal_x, goal_y, tolerance: float = 0.001):
+    def follow_path_step(self, goal_x, goal_y, tolerance: float = 0.05):
         """
         Folgt einem geplanten Pfad, indem nacheinander die Zielpunkte angefahren werden.
         
@@ -218,18 +231,22 @@ class MAMRobotNode(Node):
         """
         cmd = Twist()
 
-        # Aktuelle Pose
-        actual_pos = self.robot_state.get_position()
-        x = actual_pos.x
-        y = actual_pos.y
-        theta = actual_pos.theta
+        def analyze_target():
+            # Aktuelle Pose
+            actual_pos = self.robot_state.get_position()
+            x = actual_pos.x
+            y = actual_pos.y
+            theta = actual_pos.theta
 
-        # Fehler
-        dx = goal_x - x
-        dy = goal_y - y
-        distance = math.hypot(dx, dy)
-        target_angle = math.atan2(dy, dx)
-        angle_error = target_angle - theta
+            # Fehler
+            dx = goal_x - x
+            dy = goal_y - y
+            d = math.hypot(dx, dy)
+            target_angle = math.atan2(dy, dx)
+            a = target_angle - theta
+            return d, a
+
+        distance, angle_error = analyze_target()
 
         # Normalisiere Winkel
         while angle_error > math.pi:
@@ -239,12 +256,25 @@ class MAMRobotNode(Node):
 
         self.get_logger().info(f"Path Step: distance: {distance}, angle_error {angle_error}")
 
+        while abs(angle_error) > math.pi/36 and distance > tolerance:
+            self.get_logger().info(f"Path Step: adjusting drive angle: angle_error {angle_error}")
+            cmd.linear.x = 0.0
+            cmd.angular.z = angle_error 
+            self.cmd_vel_pub.publish(cmd)
+            
+
+            distance, angle_error = analyze_target()
+
         # Steuerung (einfacher P-Regler)
-        if distance > tolerance:
-            cmd.linear.x = 10 * min(0.05, distance)     # Geschwindigkeit begrenzen, factor depends on map resolution!!!
+        while distance > tolerance:
+            self.get_logger().info(f"Path Step: driving towards goal: distance: {distance}")
+            cmd.linear.x = 10 * distance    # Geschwindigkeit begrenzen, factor depends on map resolution!!!
+            cmd.angular.z = 0.0 
+            self.cmd_vel_pub.publish(cmd)
+
+            distance, angle_error = analyze_target()
             # cmd.linear.x = 0.5
             # cmd.angular.z = 0.5 * angle_error       # Drehen Richtung Ziel
-            cmd.angular.z = angle_error       # Drehen Richtung Ziel
         # else:
         #     cmd.linear.x = 0.0
         #     cmd.angular.z = 0.0
@@ -307,7 +337,14 @@ class MAMRobotNode(Node):
             if actual_path is not None and len(actual_path) >= 1: 
                 self.publish_path(actual_path)
                 step: tuple[float, float] = actual_path[0]
-                self.follow_path_step(step[0], step[1])
+                # self.follow_path_step(step[0], step[1])
+                t = threading.Thread(
+                    target=self.follow_path_step,
+                    args=(step[0], step[1])
+                )
+                t.start()
+            else:
+                self.logger.info("Skipping follow path step. No enough data")
 
         except Exception as e:
             self.logger.error(f"Control loop error: {e}")
@@ -320,8 +357,8 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    finally:
-        rclpy.shutdown()
+    # finally:
+    #     rclpy.shutdown()
 
 
 if __name__ == '__main__':

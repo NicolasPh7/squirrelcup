@@ -11,6 +11,8 @@ from visualization_msgs.msg import MarkerArray
 from geometry_msgs.msg import Point, Pose
 from nav_msgs.msg import Path, OccupancyGrid
 
+from mam_python.core import Position
+
 @dataclass
 class GridCell:
     """Cellule de la grille."""
@@ -70,32 +72,33 @@ class MapBuilder:
                 self.grid[gy, gx] = max(0.0, self.grid[gy, gx] - confidence)
     
 
-    def update_from_marker_array(self, marker_array: MarkerArray):
-        """
-        Met à jour la grille à partir d'un MarkerArray ROS 2.
-        Chaque Marker kann mehrere Zellen abdecken, basierend auf scale.x/scale.y.
-        """
-        
+    def update_from_marker_array(self, marker_array: MarkerArray, robot_pose: Position) -> bool:
         for marker in marker_array.markers:
-            if marker.action == marker.DELETEALL: 
+            if marker.action == marker.DELETEALL:
                 self.clear()
-                return
+                continue
 
-            # Mittelpunkt
-            cx = marker.pose.position.x
-            cy = marker.pose.position.y
+            # Marker-Koordinaten im base_link Frame
+            cx_bl = marker.pose.position.x
+            cy_bl = marker.pose.position.y
+
+            # Transformation: base_link → map
+            cos_t = math.cos(robot_pose.theta)
+            sin_t = math.sin(robot_pose.theta)
+
+            cx = robot_pose.x + cos_t * cx_bl - sin_t * cy_bl
+            cy = robot_pose.y + sin_t * cx_bl + cos_t * cy_bl
 
             # Ausdehnung (in Metern)
             sx = marker.scale.x
             sy = marker.scale.y
 
-            # Bestimme die Grenzen des Rechtecks
+            # Rechteckgrenzen im map-Frame
             x_min = cx - sx / 2.0
             x_max = cx + sx / 2.0
             y_min = cy - sy / 2.0
             y_max = cy + sy / 2.0
 
-            # Iteriere über alle Zellen im Rechteck
             gx_min = int(x_min / self.resolution)
             gx_max = int(x_max / self.resolution)
             gy_min = int(y_min / self.resolution)
@@ -106,6 +109,8 @@ class MapBuilder:
                     if 0 <= gx < self.grid_width and 0 <= gy < self.grid_height:
                         self.grid[gy, gx] = 1.0
 
+        return True
+    
     def clear(self, value: float = 0.0):
         """
         Réinitialise toute la grille.
@@ -154,8 +159,8 @@ class MapBuilder:
         qz = math.sin(3.1415/2.0)
         qw = math.cos(3.1415/2.0)
 
-        origin.position.x = 1.5 # from mam_eurobot_2026/worlds/arena_world.sdf:66
-        origin.position.y = 1.0 # from mam_eurobot_2026/worlds/arena_world.sdf:66
+        origin.position.x = 3.0 # from mam_eurobot_2026/worlds/arena_world.sdf:66
+        origin.position.y = 2.0 # from mam_eurobot_2026/worlds/arena_world.sdf:66
         origin.position.z = 0.0
         origin.orientation.z = qz
         origin.orientation.w = qw
@@ -173,5 +178,5 @@ class MapBuilder:
                 else:
                     data.append(int(val * 100))  # Wahrscheinlichkeit
         msg.data = data
-
+        # pdb.set_trace()
         occupancy_pub.publish(msg)
