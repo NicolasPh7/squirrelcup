@@ -1152,8 +1152,33 @@
       <cmd_min>-1000</cmd_min>
     </plugin>
 
+    <!-- <plugin
+      filename="libignition-gazebo-joint-trajectory-controller-system.so"
+      name="ignition::gazebo::systems::JointTrajectoryController">
+      <joint_name>joint_1</joint_name>
+      <joint_name>joint_2</joint_name>
+      <joint_name>joint_3</joint_name>
+      <joint_name>joint_4</joint_name>
+      <joint_name>joint_5</joint_name>
+      <topic>/arm_controller/joint_trajectory</topic>
+      <p_gain>100</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>0.01</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin> -->
+
     <plugin
     name="ignition::gazebo::systems::JointStatePublisher"
-    filename="libignition-gazebo-joint-state-publisher-system.so"/>
+    filename="libignition-gazebo-joint-state-publisher-system.so">
+      <joint_name>joint_1</joint_name>
+      <joint_name>joint_2</joint_name>
+      <joint_name>joint_3</joint_name>
+      <joint_name>joint_4</joint_name>
+      <joint_name>joint_5</joint_name>
+      <topic>/arm_controller/joint_states</topic>
+    </plugin>
  </gazebo>
 </robot>

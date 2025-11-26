@@ -115,18 +115,25 @@ def run_examples():
         fk_out = fk(q0)
         Jn = J_task_num(q0)
         rank = np.linalg.matrix_rank(Jn)
+        print (f"------------------- q0={q0} ------------------- ")
         print(f"q0={q0} FK: {fk_out}  rank(J_task)={rank}")
 
-        goal = [50.0, 10.0, 250.0, 0.2, -0.1]  # Zielpose
-        try:
-            q_sol = ik_nsolve(goal, q_init=q0)
-            print("IK (nsolve) q*:", q_sol)
-            print("FK(goal check):", fk(q_sol))
-        except Exception as e:
-            print("nsolve failed:", e)
-            q_sol = ik_least_squares(goal, q_init=q0)
-            print("IK (LS) q*:", q_sol)
-            print("FK(goal check):", fk(q_sol))
+        goals = [
+            [50.0, 10.0, 250.0, 0.2, -0.1],
+            [150, 150, 0, -0.6, 0.3],
+        ]
+
+        for goal in goals:
+            print (f"||||||||||||||||| goal={goal} ||||||||||||||||| ")
+            try:
+                q_sol = ik_nsolve(goal, q_init=q0)
+                print("IK (nsolve) q*:", q_sol)
+                print("FK(goal check):", fk(q_sol))
+            except Exception as e:
+                print("nsolve failed:", e)
+                q_sol = ik_least_squares(goal, q_init=q0)
+                print("IK (LS) q*:", q_sol)
+                print("FK(goal check):", fk(q_sol))
 
 # Only run examples if executed directly
 if __name__ == "__main__":
