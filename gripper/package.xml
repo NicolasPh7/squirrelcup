@@ -19,6 +19,7 @@ for gripper robot</p>
   <depend>gazebo</depend>
   <export>
     <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path = "~/eurobot_2026_ws/install/gripper/share/"/>
     <architecture_independent />
   </export>
 </package>

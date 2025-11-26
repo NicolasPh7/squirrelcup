@@ -27,7 +27,7 @@ def quaternion_to_yaw_roll(q):
     return yaw, roll
 
 
-class GazeboArmCommander(Node):
+class ArmCommander(Node):
     def __init__(self,
                  joint_names=["joint_1","joint_2","joint_3","joint_4","joint_5"],
                  topic_fmt="/{name}/position_cmd",
@@ -50,7 +50,7 @@ class GazeboArmCommander(Node):
         # Subscriber für /grab_nut Pose
         self.create_subscription(Pose, "/grab_nut", self._grab_nut_cb, 10)
 
-        self.get_logger().info("GazeboArmCommander ready")
+        self.get_logger().info("ArmCommander ready")
 
     def _joint_states_cb(self, msg: JointState):
         joint_state_dict = {j: p for j, p in zip(msg.name, msg.position)}
@@ -121,7 +121,7 @@ class GazeboArmCommander(Node):
 
 def main():
     rclpy.init()
-    commander = GazeboArmCommander()
+    commander = ArmCommander()
     try:
         rclpy.spin(commander)
     except KeyboardInterrupt:

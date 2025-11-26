@@ -13,8 +13,12 @@ def generate_launch_description():
 
     return LaunchDescription([
         SetEnvironmentVariable(
-            'GZ_SIM_RESOURCE_PATH',
-            pkg_path
+            name='GZ_SIM_RESOURCE_PATH',
+            value=[pkg_path, ':', robot_v3_path]
+        ),
+        SetEnvironmentVariable(
+            name='GAZEBO_MODEL_PATH',
+            value=[pkg_path, ':', robot_v3_path]
         ),
         SetEnvironmentVariable(
             'GZ_LOG_LEVEL',
@@ -165,6 +169,13 @@ def generate_launch_description():
         ),
 
         OpaqueFunction(function=start_robot_state_publisher_node),
+
+        # Node(
+        #     package='mam_eurobot_2026',
+        #     executable='arm_commander.py',
+        #     name='arm_commander',
+        #     output='screen',
+        # ),
 
         Node(
             package='rviz2',

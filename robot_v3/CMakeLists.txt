@@ -10,7 +10,7 @@ find_package(ament_cmake REQUIRED)
 
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
-foreach(dir config launch meshes urdf)
+foreach(dir config launch meshes urdf textures)
 	install(DIRECTORY ${dir} DESTINATION share/${PROJECT_NAME})
 endforeach(dir)
 

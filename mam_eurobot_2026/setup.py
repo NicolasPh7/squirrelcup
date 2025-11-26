@@ -13,8 +13,8 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Freddy Liendo',
-    maintainer_email='liendomf@univ-smb.fr',
+    maintainer='Joseph Loic Bisso-Bi-Ela',
+    maintainer_email='joseph-loic.bisso-bi-ela@univ-smb.fr',
     description=(
         'This is a template package for the Master Advanced Mechatronics '
         'teams preparing for the Eurobot 2026'
@@ -23,6 +23,7 @@ setup(
     entry_points={
         'console_scripts': [
             'py_test = mam_eurobot_2026.py_test:main',
+            'arm_commander = mam_eurobot_2026.mam.arm_commander:main'
         ],
     },
 )

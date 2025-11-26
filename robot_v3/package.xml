@@ -20,6 +20,7 @@ for robot_v3 robot</p>
   <depend>gazebo</depend>
   <export>
     <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path = "~/eurobot_2026_ws/install/robot_v3/share/"/>
     <architecture_independent />
   </export>
 </package>

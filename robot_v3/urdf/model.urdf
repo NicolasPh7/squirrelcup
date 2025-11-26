@@ -26,7 +26,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/base_link.STL" />
+          filename="file://meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -40,7 +40,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/base_link.STL" />
+          filename="file://meshes/base_link.STL" />
       </geometry>
     </collision>
 
@@ -131,7 +131,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/link_1.STL" />
+          filename="file://meshes/link_1.STL" />
       </geometry>
       <material
         name="">
@@ -145,7 +145,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/link_1.STL" />
+          filename="file://meshes/link_1.STL" />
       </geometry>
     </collision>
   </link>
@@ -192,7 +192,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/link_2.STL" />
+          filename="file://meshes/link_2.STL" />
       </geometry>
       <material
         name="">
@@ -206,7 +206,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/link_2.STL" />
+          filename="file://meshes/link_2.STL" />
       </geometry>
     </collision>
   </link>
@@ -215,7 +215,7 @@
     type="continuous">
     <origin
       xyz="0 -0.024358 0.0098714"
-      rpy="-3.1416 0 3.1416" />
+      rpy="-1.5708 0 3.1416" />
     <parent
       link="link_1" />
     <child
@@ -253,7 +253,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/link_3.STL" />
+          filename="file://meshes/link_3.STL" />
       </geometry>
       <material
         name="">
@@ -267,7 +267,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/link_3.STL" />
+          filename="file://meshes/link_3.STL" />
       </geometry>
     </collision>
   </link>
@@ -276,7 +276,7 @@
     type="continuous">
     <origin
       xyz="0 -0.13432 0"
-      rpy="-1.5708 0 0" />
+      rpy="3.1416 0 0" />
     <parent
       link="link_2" />
     <child
@@ -314,7 +314,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/link_4.STL" />
+          filename="file://meshes/link_4.STL" />
       </geometry>
       <material
         name="">
@@ -328,7 +328,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/link_4.STL" />
+          filename="file://meshes/link_4.STL" />
       </geometry>
     </collision>
   </link>
@@ -375,7 +375,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/pre_link_5.STL" />
+          filename="file://meshes/pre_link_5.STL" />
       </geometry>
       <material
         name="">
@@ -389,7 +389,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/pre_link_5.STL" />
+          filename="file://meshes/pre_link_5.STL" />
       </geometry>
     </collision>
   </link>
@@ -437,7 +437,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/wheel_link_1.STL" />
+          filename="file://meshes/wheel_link_1.STL" />
       </geometry>
       <material
         name="">
@@ -451,7 +451,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/wheel_link_1.STL" />
+          filename="file://meshes/wheel_link_1.STL" />
       </geometry>
     </collision>
   </link>
@@ -495,7 +495,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/wheel_link_2.STL" />
+          filename="file://meshes/wheel_link_2.STL" />
       </geometry>
       <material
         name="">
@@ -509,7 +509,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/wheel_link_2.STL" />
+          filename="file://meshes/wheel_link_2.STL" />
       </geometry>
     </collision>
   </link>
@@ -553,7 +553,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/wheel_link_3.STL" />
+          filename="file://meshes/wheel_link_3.STL" />
       </geometry>
       <material
         name="">
@@ -567,7 +567,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/wheel_link_3.STL" />
+          filename="file://meshes/wheel_link_3.STL" />
       </geometry>
     </collision>
   </link>
@@ -611,7 +611,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/wheel_link_4.STL" />
+          filename="file://meshes/wheel_link_4.STL" />
       </geometry>
       <material
         name="">
@@ -625,7 +625,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://robot_v3/meshes/wheel_link_4.STL" />
+          filename="file://meshes/wheel_link_4.STL" />
       </geometry>
     </collision>
   </link>
@@ -633,7 +633,7 @@
     name="wheel_joint_4"
     type="continuous">
     <origin
-      xyz="0.0765 -0.054318 0.0060186"
+      xyz="0.0765 -0.25731 -0.0032237"
       rpy="1.5708 1.179 1.5708" />
     <parent
       link="base_link" />
@@ -675,7 +675,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/base_link.STL" />
+          filename="file://meshes/gripper_base_link.STL" />
       </geometry>
       <material
         name="">
@@ -689,7 +689,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/base_link.STL" />
+          filename="file://meshes/gripper_base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -715,7 +715,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/shaft_1_link.STL" />
+          filename="file://meshes/shaft_1_link.STL" />
       </geometry>
       <material
         name="">
@@ -729,7 +729,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/shaft_1_link.STL" />
+          filename="file://meshes/shaft_1_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -773,7 +773,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/arm_1_link.STL" />
+          filename="file://meshes/arm_1_link.STL" />
       </geometry>
       <material
         name="">
@@ -787,7 +787,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/arm_1_link.STL" />
+          filename="file://meshes/arm_1_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -831,7 +831,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/shaft_2_link.STL" />
+          filename="file://meshes/shaft_2_link.STL" />
       </geometry>
       <material
         name="">
@@ -845,7 +845,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/shaft_2_link.STL" />
+          filename="file://meshes/shaft_2_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -889,7 +889,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/arm_2_link.STL" />
+          filename="file://meshes/arm_2_link.STL" />
       </geometry>
       <material
         name="">
@@ -903,7 +903,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/arm_2_link.STL" />
+          filename="file://meshes/arm_2_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -947,7 +947,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/actuactor_link.STL" />
+          filename="file://meshes/actuactor_link.STL" />
       </geometry>
       <material
         name="">
@@ -961,7 +961,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://gripper/meshes/actuactor_link.STL" />
+          filename="file://meshes/actuactor_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -1048,7 +1048,7 @@
       <diffuse>1 1 1 1</diffuse>
       <pbr>
         <metal>
-          <albedo_map>model://robot_v3/textures/aruco_0.png</albedo_map>
+          <albedo_map>file://textures/aruco_0.png</albedo_map>
           <metalness>0.0</metalness>
           <roughness>0.8</roughness>
         </metal>

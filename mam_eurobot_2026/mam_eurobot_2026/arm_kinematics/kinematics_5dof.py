@@ -35,7 +35,7 @@ def dh_A(a, alpha, d, theta):
 #     DHRow(a=sp.Float(0.0),     alpha=sp.pi/2,             d=sp.Float(0.0),     theta_offset=-sp.pi/2),
 # )
 DH_ROWS = (
-    DHRow(a=sp.Float(0.0),     alpha=sp.Float(0.0),       d=sp.Float(0.0),     theta_offset=sp.Float(0.0)),
+    DHRow(a=sp.Float(0.0),     alpha=sp.Float(0.0),       d=sp.Float(124.86),     theta_offset=sp.Float(0.0)),
     DHRow(a=sp.Float(4.5),     alpha=sp.pi/2,             d=sp.Float(9.871),   theta_offset=sp.Float(0.0)),
     DHRow(a=sp.Float(-134.32), alpha=sp.Float(0.0),       d=sp.Float(0.0),     theta_offset=0),
     DHRow(a=sp.Float(-87.74),  alpha=sp.Float(0.0),       d=sp.Float(0.0),     theta_offset=-sp.pi/2),
