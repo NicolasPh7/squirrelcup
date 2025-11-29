@@ -16,11 +16,16 @@ from mam_python.core import Position
 @dataclass
 class GridCell:
     """Cellule de la grille."""
-    x: int
-    y: int
+    gx_min: int
+    gx_max: int
+    gy_min: int
+    gy_max: int
     occupied: bool = False
     confidence: float = 0.0  # 0-1
 
+    def contains_point(self, gx: int, gy: int) -> bool:
+        return self.gx_min <= gx <= self.gx_max and self.gy_min <= gy <= self.gy_max
+    
 @dataclass
 class MapBuilder:
     """Construiseur de carte pour la navigation."""
@@ -40,7 +45,9 @@ class MapBuilder:
         self.grid_width = int(width / resolution)
         self.grid_height = int(height / resolution)
         self.grid = np.zeros((self.grid_height, self.grid_width))
-    
+
+        self.cells: List[GridCell] = []
+
     def get_width(self): 
         return self.width
     def get_height(self): 
@@ -71,37 +78,66 @@ class MapBuilder:
             else:
                 self.grid[gy, gx] = max(0.0, self.grid[gy, gx] - confidence)
     
+    def get_cells(self) -> List[GridCell]:
+        """Retourne toutes les cellules enregistrées."""
+        return self.cells
+    
+    def get_cluster_around(self, x: float, y: float) -> GridCell | None:
+        """
+        Ermittelt ein Cluster von Cells, die die Koordinate (x, y) enthalten
+        und gibt die zusammengefassten Grenzen als Cell zurück.
 
+        Args:
+            x, y: Koordinaten in Metern
+
+        Returns:
+            Cell mit den zusammengefassten Grenzen oder None, falls kein Cell passt
+        """
+        gx = int(x / self.resolution)
+        gy = int(y / self.resolution)
+
+        # Finde alle Cells, die (gx, gy) enthalten
+        matching_cells = [
+            cell for cell in self.cells
+            if cell.gx_min <= gx <= cell.gx_max and cell.gy_min <= gy <= cell.gy_max
+        ]
+
+        if not matching_cells:
+            return None
+
+        # Cluster bilden: min/max über alle passenden Cells
+        gx_min = min(cell.gx_min for cell in matching_cells)
+        gx_max = max(cell.gx_max for cell in matching_cells)
+        gy_min = min(cell.gy_min for cell in matching_cells)
+        gy_max = max(cell.gy_max for cell in matching_cells)
+
+        return GridCell(gx_min=gx_min, gx_max=gx_max, gy_min=gy_min, gy_max=gy_max)
+    
+    
     def update_from_marker_array(self, marker_array: MarkerArray, robot_pose: Position) -> bool:
+        # Leere zuerst die gespeicherten Zellen
+        self.cells.clear()
+
+        # Inflationsradius in Grid-Zellen
+        inflation_radius = int(0.05 / self.resolution)
+
         for marker in marker_array.markers:
             if marker.action == marker.DELETEALL:
                 self.clear()
                 continue
 
-            # print(f"robot_pose= {robot_pose}")
-            
-            # Marker-Koordinaten im base_link Frame
             cx_bl = marker.pose.position.x
             cy_bl = marker.pose.position.y
 
-            # print(f"marker.pose.position= {marker.pose.position}")
-
-
-            # Transformation: base_link → map
             cos_t = math.cos(robot_pose.theta)
             sin_t = math.sin(robot_pose.theta)
 
             cx = robot_pose.x + cos_t * cx_bl - sin_t * cy_bl
             cy = robot_pose.y + sin_t * cx_bl + cos_t * cy_bl
 
-            # print(f"Transformed marker.pose.position= {cx}, {cy}")
-
-
-            # Ausdehnung (in Metern)
             sx = marker.scale.x
             sy = marker.scale.y
 
-            # Rechteckgrenzen im map-Frame
             x_min = cx - sx / 2.0
             x_max = cx + sx / 2.0
             y_min = cy - sy / 2.0
@@ -112,13 +148,17 @@ class MapBuilder:
             gy_min = int(y_min / self.resolution)
             gy_max = int(y_max / self.resolution)
 
-            for gx in range(gx_min, gx_max + 1):
-                for gy in range(gy_min, gy_max + 1):
+            # Speichere die Grenzen als neue Cell
+            self.cells.append(GridCell(gx_min=gx_min, gx_max=gx_max, gy_min=gy_min, gy_max=gy_max))
+
+            # Belegte Zellen + Inflation
+            for gx in range(gx_min - inflation_radius, gx_max + inflation_radius + 1):
+                for gy in range(gy_min - inflation_radius, gy_max + inflation_radius + 1):
                     if 0 <= gx < self.grid_width and 0 <= gy < self.grid_height:
                         self.grid[gy, gx] = 1.0
 
         return True
-    
+        
     def clear(self, value: float = 0.0):
         """
         Réinitialise toute la grille.
@@ -127,6 +167,7 @@ class MapBuilder:
             value: Valeur initiale pour chaque cellule (par défaut 0.0 = libre)
         """
         self.grid[:, :] = value
+        self.cells.clear()
 
     def is_occupied(self, x: float, y: float, threshold: float = 0.5) -> bool:
         """Vérifie si une position est occupée."""

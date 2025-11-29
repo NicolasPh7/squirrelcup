@@ -193,22 +193,24 @@ private:
           // publishPoseWithCovariance(camera_pose, mean_variance);
 
           for (size_t i = 0; i < ids.size(); ++i) {
-            if (ids[i] == 0) {
+            int id = static_cast<int>(ids[i]);
+            if (id == 0) {
               geometry_msgs::msg::Pose raw_pose = transformTagToWorld(tvecs[i], rvecs[i], invertPose(camera_pose));
               publishPoseWithCovariance(raw_pose, mean_variance);
-            } else if (!(marker_map_.count(ids[i]))) {
+            } else if (!(marker_map_.count(id))) {
               geometry_msgs::msg::Pose raw_nut_pose = transformTagToWorld(tvecs[i], rvecs[i], invertPose(camera_pose));
-              prepareNuts(marker_array, raw_nut_pose, ids[i], ++marker_id);
+              prepareNuts(marker_array, raw_nut_pose, id, ++marker_id);
             }
           }
         }
 
       } else { // Robot view
           for (size_t i = 0; i < ids.size(); ++i) {
-            if (!(marker_map_.count(ids[i]))) {
+            int id = static_cast<int>(ids[i]);
+            if (!(marker_map_.count(id))) {
               geometry_msgs::msg::Pose raw_nut_pose = transformTagToWorld(tvecs[i], rvecs[i], invertPose(robot_pose_));
               RCLCPP_INFO(this->get_logger(), "Robot sees nuts");
-              prepareNuts(marker_array, raw_nut_pose, ids[i], ++marker_id);
+              prepareNuts(marker_array, raw_nut_pose, id, ++marker_id);
             }
           }
       }

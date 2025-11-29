@@ -128,7 +128,7 @@ private:
 
                 // Höhe berechnen (wie bisher)
                 auto height = std::abs(max_pt_OBB.z - floor_offset_);
-                if (height < 0.02 || height > 0.4) continue;
+                if (height < 0.03 || height > 0.4) continue;
                 if (min_pt_OBB.z >= 0 || position.z >= 0) continue;
 
                 // Länge und Breite aus OBB

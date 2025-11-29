@@ -82,6 +82,8 @@ class PathPlanner:
         grid_height = map.get_grid_height()
         grid = map.get_grid()
 
+        not_obstacles = map.get_cluster_around(goal[0], goal[1])
+
         # Start- und Zielzellen
         start_cell = (int(start[0] / resolution), int(start[1] / resolution))
         goal_cell = (int(goal[0] / resolution), int(goal[1] / resolution))
@@ -113,7 +115,7 @@ class PathPlanner:
                 nx, ny = neighbor
                 if not (0 <= nx < grid_width and 0 <= ny < grid_height):
                     continue
-                if grid[ny, nx] > 0.0:  # besetzt
+                if grid[ny, nx] > 0.0 and not not_obstacles.contains_point(nx, ny):  # besetzt and not the target
                     continue
 
                 tentative_g = g_score[current] + 1
