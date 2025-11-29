@@ -112,26 +112,26 @@ def generate_launch_description():
             ]
         ),
 
-        Node(
-            package='ros_gz_bridge',
-            executable='parameter_bridge',
-            name='trajectory_brigde',
-            arguments=[
-                '/arm_controller/joint_trajectory@trajectory_msgs/msg/JointTrajectory@ignition.msgs.JointTrajectory',
-                '/joint_states@sensor_msgs/msg/JointState@ignition.msgs.Model'
-            ],
-            output='screen'
-        ),
+        # Node(
+        #     package='ros_gz_bridge',
+        #     executable='parameter_bridge',
+        #     name='trajectory_brigde',
+        #     arguments=[
+        #         '/arm_controller/joint_trajectory@trajectory_msgs/msg/JointTrajectory@ignition.msgs.JointTrajectory',
+        #         '/joint_states@sensor_msgs/msg/JointState@ignition.msgs.Model'
+        #     ],
+        #     output='screen'
+        # ),
 
-        Node(
-            package='ros_gz_bridge',
-            executable='parameter_bridge',
-            name='joint_state_bridge',
-            output='screen',
-            arguments=[
-                '/joint_states@sensor_msgs/msg/JointState@ignition.msgs.Model'
-            ]
-        ),
+        # Node(
+        #     package='ros_gz_bridge',
+        #     executable='parameter_bridge',
+        #     name='joint_state_bridge',
+        #     output='screen',
+        #     arguments=[
+        #         '/joint_states@sensor_msgs/msg/JointState@ignition.msgs.Model'
+        #     ]
+        # ),
 
 
         # Node(

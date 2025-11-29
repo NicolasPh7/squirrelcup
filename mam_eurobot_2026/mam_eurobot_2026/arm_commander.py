@@ -7,9 +7,11 @@ from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Pose
 from rclpy.publisher import Publisher
 
+import pdb
+
 # Integration deiner Module
 from mam_eurobot_2026.arm_kinematics.trajectory_generators import quintic_trajectory
-from mam_eurobot_2026.arm_kinematics.kinematics_5dof import fk, J_task_num, ik_least_squares
+from mam_eurobot_2026.arm_kinematics.kinematics_5dof import fk, J_task_num, ik_least_squares, compute_best_q_for_goal
 
 
 def quaternion_to_yaw_roll(q):
@@ -54,6 +56,7 @@ class ArmCommander(Node):
     def _joint_states_cb(self, msg: JointState):
         joint_state_dict = {j: p for j, p in zip(msg.name, msg.position)}
         self._latest_positions = np.array([joint_state_dict.get(n, 0.0) for n in self.joint_names])
+        # self._latest_positions = [0.0, 1.57, 0.0, 0.0, 0.0]
 
     def get_current_joint_states(self):
         return self._latest_positions * self.sense
@@ -106,16 +109,21 @@ class ArmCommander(Node):
         z = msg.position.z * 1e3
         yaw, roll = quaternion_to_yaw_roll(msg.orientation)
 
-        goal_pose = [x, y, z, yaw, roll]
+        goal_pose = [x, y, z, roll, yaw]
         self.get_logger().info(f"Received nut pose: {goal_pose}")
 
+        # pdb.set_trace()
         # IK berechnen
         q_goal = self.ik_to_pose(goal_pose, q_init=self.get_current_joint_states())
+        # q_goal = compute_best_q_for_goal(goal=goal_pose)
+
         self.get_logger().info(f"IK solution for nut: {q_goal}")
         self.get_logger().info(f"FK(goal check): {fk(q_goal)}")
 
-        # Quintic Trajektorie fahren
-        self.follow_quintic_to(q_goal, t_f=3.0, n=5)
+
+        self.send_joint_positions(q_goal)
+        # # Quintic Trajektorie fahren
+        # self.follow_quintic_to(q_goal, t_f=3.0, n=5)
 
         self.get_logger().info(f"Done")
 

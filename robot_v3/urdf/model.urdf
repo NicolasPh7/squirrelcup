@@ -397,7 +397,7 @@
     name="joint_5"
     type="continuous">
     <origin
-      xyz="-0.0059717 -0.027674 0.056246"
+      xyz="-0.00060377 0.00065019 0.063746"
       rpy="-1.5708 0 0.59278" />
     <parent
       link="link_4" />
@@ -469,7 +469,7 @@
       xyz="0 0 1" />
     <limit
       lower="-1.79769E+308"
-      upper="-1.79769E+308"
+      upper="1.79769E+308"
       effort="100"
       velocity="10" />
   </joint>
@@ -527,7 +527,7 @@
       xyz="0 0 1" />
     <limit
       lower="-1.79769E+308"
-      upper="-1.79769E+308"
+      upper="1.79769E+308"
       effort="100"
       velocity="10" />
   </joint>
@@ -648,7 +648,7 @@
       velocity="10" />
   </joint>
 
-  <joint name="joint_gripper" type="fixed">
+  <!-- <joint name="joint_gripper" type="fixed">
     <origin xyz="0.015 -0.015 0.015" rpy="-1.571 -2.071 -3.141"/>
     <parent link="pre_link_5"/>
     <child link="gripper_base_link"/>
@@ -746,10 +746,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.1415"
+      upper="3.1415"
+      effort="100"
+      velocity="5" />
   </joint>
   <link
     name="gripper_arm_1_link">
@@ -804,10 +804,10 @@
     <axis
       xyz="0 0 0" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.1415"
+      upper="3.1415"
+      effort="100"
+      velocity="5" />
   </joint>
   <link
     name="gripper_shaft_2_link">
@@ -982,7 +982,7 @@
       upper="0"
       effort="0"
       velocity="0" />
-  </joint>
+  </joint> -->
  
  <gazebo reference="base_link">
     <sensor name="camera_sensor" type="camera">
@@ -1153,14 +1153,23 @@
     </plugin>
 
     <!-- <plugin
-      filename="libignition-gazebo-joint-trajectory-controller-system.so"
-      name="ignition::gazebo::systems::JointTrajectoryController">
-      <joint_name>joint_1</joint_name>
-      <joint_name>joint_2</joint_name>
-      <joint_name>joint_3</joint_name>
-      <joint_name>joint_4</joint_name>
-      <joint_name>joint_5</joint_name>
-      <topic>/arm_controller/joint_trajectory</topic>
+      filename="libignition-gazebo-joint-position-controller-system.so"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>arm_1_joint</joint_name>
+      <topic>/arm_1_joint/position_cmd</topic>
+      <p_gain>100</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>0.01</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>1000</cmd_max>
+      <cmd_min>-1000</cmd_min>
+    </plugin>
+    <plugin
+      filename="libignition-gazebo-joint-position-controller-system.so"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>arm_2_joint</joint_name>
+      <topic>/arm_2_joint/position_cmd</topic>
       <p_gain>100</p_gain>
       <i_gain>0.1</i_gain>
       <d_gain>0.01</d_gain>
@@ -1178,6 +1187,8 @@
       <joint_name>joint_3</joint_name>
       <joint_name>joint_4</joint_name>
       <joint_name>joint_5</joint_name>
+      <!-- <joint_name>arm_1_joint</joint_name>
+      <joint_name>arm_2_joint</joint_name> -->
       <topic>/arm_controller/joint_states</topic>
     </plugin>
  </gazebo>
