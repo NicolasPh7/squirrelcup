@@ -78,9 +78,14 @@ class MapBuilder:
                 self.clear()
                 continue
 
+            # print(f"robot_pose= {robot_pose}")
+            
             # Marker-Koordinaten im base_link Frame
             cx_bl = marker.pose.position.x
             cy_bl = marker.pose.position.y
+
+            # print(f"marker.pose.position= {marker.pose.position}")
+
 
             # Transformation: base_link → map
             cos_t = math.cos(robot_pose.theta)
@@ -88,6 +93,9 @@ class MapBuilder:
 
             cx = robot_pose.x + cos_t * cx_bl - sin_t * cy_bl
             cy = robot_pose.y + sin_t * cx_bl + cos_t * cy_bl
+
+            # print(f"Transformed marker.pose.position= {cx}, {cy}")
+
 
             # Ausdehnung (in Metern)
             sx = marker.scale.x
@@ -156,11 +164,11 @@ class MapBuilder:
         # Ursprung der Karte (unten links)
         origin = Pose()
         # Quaternion aus yaw = 3.1415  from mam_eurobot_2026/worlds/arena_world.sdf:66
-        qz = math.sin(3.1415/2.0)
-        qw = math.cos(3.1415/2.0)
+        qz = math.sin(-math.pi)
+        qw = math.cos(-math.pi)
 
-        origin.position.x = 3.0 # from mam_eurobot_2026/worlds/arena_world.sdf:66
-        origin.position.y = 2.0 # from mam_eurobot_2026/worlds/arena_world.sdf:66
+        origin.position.x = 0.0 # from mam_eurobot_2026/worlds/arena_world.sdf:66
+        origin.position.y = 0.0 # from mam_eurobot_2026/worlds/arena_world.sdf:66
         origin.position.z = 0.0
         origin.orientation.z = qz
         origin.orientation.w = qw
