@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mechanum_wheels</name>
+  <version>0.1.0</version>
+<description>The mechanum_wheels package</description>
+
+  <maintainer email="sudhanshupawar@rigebtellabs.com">Sudhanshu Pawar</maintainer>
+
+  <license>GPL-2.0</license>
+
+  <url type="website">https://www.linkedin.com/in/sudhanshu-pawar-21bb781b9/</url>
+
+  <author email="sudhanshupawar@rigebtellabs.com">Sudhanshu Pawar</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>robot_state_publisher</depend>
+  <depend>rviz</depend>
+  <depend>joint_state_publisher_gui</depend>
+  <depend>gazebo</depend>
+  <build_depend>rclpy</build_depend>
+  <exec_depend>rclpy</exec_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path = "~/eurobot_2026_ws/install/mechanum_wheels/share/"/>
+    <architecture_independent />
+  </export>
+
+</package>

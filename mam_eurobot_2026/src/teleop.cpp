@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <thread>
+#include <algorithm>
 
 class Teleop : public rclcpp::Node
 {
@@ -31,8 +32,10 @@ Moving around:
         w       u
     a   s  d    j
         x
+    h       l
 
-w/x : increase/decrease linear velocity
+w/x : increase/decrease forward velocity
+h/l : strafe left/right (mecanum lateral)
 a/d : increase/decrease angular velocity
 space or s : stop
 q/z : linear speed +/-
@@ -58,10 +61,10 @@ CTRL-C to quit
 private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
     std::thread teleop_thread_;
-    double target_linear_ = 0.0, target_angular_ = 0.0;
-    double control_linear_ = 0.0, control_angular_ = 0.0;
-    const double LIN_STEP = 0.05, ANG_STEP = 0.1;
-    const double MAX_LIN = 5.0, MAX_ANG = 2.84;
+    double target_linear_ = 0.0, target_lateral_ = 0.0, target_angular_ = 0.0;
+    double control_linear_ = 0.0, control_lateral_ = 0.0, control_angular_ = 0.0;
+    const double LIN_STEP = 0.05, LAT_STEP = 0.05, ANG_STEP = 0.1;
+    const double MAX_LIN = 5.0, MAX_LAT = 5.0, MAX_ANG = 2.84;
 
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr joint1_pub_, joint2_pub_, joint3_pub_, joint4_pub_, joint5_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr arm_1_pub_, arm_2_pub_;
@@ -88,6 +91,7 @@ private:
         while (rclcpp::ok()) {
             c = getchar();
             double prev_linear = target_linear_;
+            double prev_lateral = target_lateral_;
             double prev_angular = target_angular_;
             double prev_joint1_pos = target_joint1_pos_;
             double prev_joint2_pos = target_joint2_pos_;
@@ -99,10 +103,12 @@ private:
             switch (c) {
                 case 'w': target_linear_ += LIN_STEP; break;
                 case 'x': target_linear_ -= LIN_STEP; break;
+                case 'h': target_lateral_ += LAT_STEP; break;   // strafe left
+                case 'l': target_lateral_ -= LAT_STEP; break;   // strafe right
                 case 'a': target_angular_ += ANG_STEP; break;
                 case 'd': target_angular_ -= ANG_STEP; break;
                 case 's':
-                case ' ': target_linear_ = 0.0; target_angular_ = 0.0; break;
+                case ' ': target_linear_ = 0.0; target_lateral_ = 0.0; target_angular_ = 0.0; break;
                 case 'q': target_linear_ += 0.05; break;
                 case 'z': target_linear_ -= 0.05; break;
                 case 'e': target_angular_ += 0.05; break;
@@ -112,7 +118,7 @@ private:
                 case 'i': target_joint2_pos_ += JOINT_STEP; break;
                 case 'k': target_joint2_pos_ -= JOINT_STEP; break;
                 case 'o': target_joint3_pos_ += JOINT_STEP; break;
-                case 'l': target_joint3_pos_ -= JOINT_STEP; break;
+                case 'm': target_joint3_pos_ -= JOINT_STEP; break;
                 case 'p': target_joint4_pos_ += JOINT_STEP; break;
                 case ';': target_joint4_pos_ -= JOINT_STEP; break;
                 case 'r': target_joint5_pos_ += JOINT_STEP; break;
@@ -124,20 +130,21 @@ private:
                 default: continue;
             }
 
-            target_linear_ = std::clamp(target_linear_, -MAX_LIN, MAX_LIN);
+            target_linear_  = std::clamp(target_linear_,  -MAX_LIN, MAX_LIN);
+            target_lateral_ = std::clamp(target_lateral_, -MAX_LAT, MAX_LAT);
             target_angular_ = std::clamp(target_angular_, -MAX_ANG, MAX_ANG);
             target_joint1_pos_ = std::clamp(target_joint1_pos_, JOINT_MIN, JOINT_MAX);
             target_joint2_pos_ = std::clamp(target_joint2_pos_, JOINT_MIN, JOINT_MAX);
             target_joint3_pos_ = std::clamp(target_joint3_pos_, JOINT_MIN, JOINT_MAX);
             target_joint4_pos_ = std::clamp(target_joint4_pos_, JOINT_MIN, JOINT_MAX);
             target_joint5_pos_ = std::clamp(target_joint5_pos_, JOINT_MIN, JOINT_MAX);
-            target_arm_1_pos_ = std::clamp(target_arm_1_pos_, JOINT_MIN, JOINT_MAX);
-            target_arm_2_pos_ = std::clamp(target_arm_2_pos_, JOINT_MIN, JOINT_MAX);
+            target_arm_1_pos_  = std::clamp(target_arm_1_pos_, JOINT_MIN, JOINT_MAX);
+            target_arm_2_pos_  = std::clamp(target_arm_2_pos_, JOINT_MIN, JOINT_MAX);
 
-            if (target_linear_ != prev_linear || target_angular_ != prev_angular) {
+            if (target_linear_ != prev_linear || target_lateral_ != prev_lateral || target_angular_ != prev_angular) {
                 RCLCPP_INFO(this->get_logger(),
-                    "Target velocity updated → linear: %.2f m/s, angular: %.2f rad/s",
-                    target_linear_, target_angular_);
+                    "Target velocity updated → linear: %.2f m/s, lateral: %.2f m/s, angular: %.2f rad/s",
+                    target_linear_, target_lateral_, target_angular_);
             }
             if (target_joint1_pos_ != prev_joint1_pos || target_joint2_pos_ != prev_joint2_pos ||
                 target_joint3_pos_ != prev_joint3_pos || target_joint4_pos_ != prev_joint4_pos ||
@@ -148,18 +155,23 @@ private:
             }
             if (target_arm_1_pos_ != prev_arm_1_pos) {
                 RCLCPP_INFO(this->get_logger(),
-                    "Target gripper position updated → arm_1: %.2f, arm_2: %.2f",
-                    target_arm_1_pos_, target_arm_2_pos_);
+                    "Target gripper position updated → arm1: %.2f, arm2: %.2f",
+                                        target_arm_1_pos_, target_arm_2_pos_);
             }
 
-            control_linear_ += (target_linear_ - control_linear_) * 0.5;
+            // Smooth control update
+            control_linear_  += (target_linear_  - control_linear_)  * 0.5;
+            control_lateral_ += (target_lateral_ - control_lateral_) * 0.5;
             control_angular_ += (target_angular_ - control_angular_) * 0.5;
 
+            // Publish Twist
             geometry_msgs::msg::Twist twist;
             twist.linear.x = control_linear_;
+            twist.linear.y = control_lateral_;   // lateral movement for mecanum
             twist.angular.z = control_angular_;
             pub_->publish(twist);
 
+            // Publish joint positions
             std_msgs::msg::Float64 msg;
             msg.data = target_joint1_pos_; joint1_pub_->publish(msg);
             msg.data = target_joint2_pos_; joint2_pub_->publish(msg);
@@ -180,3 +192,5 @@ int main(int argc, char * argv[])
     rclcpp::shutdown();
     return 0;
 }
+
+                    
