@@ -5,16 +5,28 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Comm
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import OpaqueFunction
 
-from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_fixes, wait_for_clock
+from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_fixes, start_robot_state_publisher_node , wait_for_clock
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
-
+    robot_v3_path = FindPackageShare('robot_v3')
 
     return LaunchDescription([
         SetEnvironmentVariable(
-            'GZ_SIM_RESOURCE_PATH',
-            pkg_path
+            name='GZ_SIM_RESOURCE_PATH',
+            value=[pkg_path, ':', robot_v3_path]
+        ),
+        SetEnvironmentVariable(
+            name='GAZEBO_MODEL_PATH',
+            value=[pkg_path, ':', robot_v3_path]
+        ),
+        SetEnvironmentVariable(
+            'GZ_LOG_LEVEL',
+            "debug"
+        ),
+        SetEnvironmentVariable(
+            'IGN_LOG_LEVEL',
+            "trace"
         ),
         SetEnvironmentVariable('ROS_USE_SIM_TIME', 'true'),
         
@@ -81,9 +93,12 @@ def generate_launch_description():
         ExecuteProcess(
             cmd=[
                 "ros2", "run", "ros_gz_sim", "create",
-                "-file", "file://models/simple_robot",
-                "-name", "simple_robot",
-                "-x", "2.7", "-y", "1.8", "-z", "0.00", "-Y", "-1.57079633"
+                #Create the sdf with ign sdf -p robot_v3/urdf/model.urdf > robot_v3/urdf/model.sdf
+                # And missing elements
+                "-file", PathJoinSubstitution([robot_v3_path, "urdf", "model.urdf"]), 
+                "-name", "robot_v3",
+                "-x", "2.7", "-y", "1.6", "-z", "0.06", "-Y", "3.1415",
+                "--ros-args", "--log-level", "debug"
             ],
             output="screen"
         ),
@@ -100,11 +115,50 @@ def generate_launch_description():
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
-            name='odom_bridge',
+            name='arm_joint_bridge',
             output='screen',
             parameters=[{'use_sim_time': True}],
-            arguments=['/model/simple_robot/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
+            # arguments=['/model/simple_robot/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
+            arguments=[
+                '/joint_1/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
+                '/joint_2/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
+                '/joint_3/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
+                '/joint_4/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
+                '/joint_5/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
+                '/arm_1_joint/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double',
+                '/arm_2_joint/position_cmd@std_msgs/msg/Float64@ignition.msgs.Double'
+            ]
         ),
+
+        # Node(
+        #     package='ros_gz_bridge',
+        #     executable='parameter_bridge',
+        #     name='trajectory_brigde',
+        #     arguments=[
+        #         '/arm_controller/joint_trajectory@trajectory_msgs/msg/JointTrajectory@ignition.msgs.JointTrajectory',
+        #         '/joint_states@sensor_msgs/msg/JointState@ignition.msgs.Model'
+        #     ],
+        #     output='screen'
+        # ),
+
+        # Node(
+        #     package='ros_gz_bridge',
+        #     executable='parameter_bridge',
+        #     name='joint_state_bridge',
+        #     output='screen',
+        #     arguments=[
+        #         '/joint_states@sensor_msgs/msg/JointState@ignition.msgs.Model'
+        #     ]
+        # ),
+
+
+        # Node(
+        #     package='ros_gz_bridge',
+        #     executable='parameter_bridge',
+        #     name='odom_bridge',
+        #     output='screen',
+        #     arguments=['/model/robot_v1/odometry@gz.msgs.Odometry@nav_msgs/msg/Odometry']
+        # ),
 
 
         Node(
@@ -142,24 +196,17 @@ def generate_launch_description():
             package='tf2_ros',
             executable='static_transform_publisher',
             name='lidar_tf',
-            arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'simple_robot/chassis/lidar_3d'],
-            parameters=[{'use_sim_time': True}],
+            arguments=['0', '0', '0.12', '0', '0', '0', 'base_link', 'robot_v3/base_link/lidar_3d'],
             output='screen'
         ),
 
-        # Node(
-        #     package='robot_state_publisher',
-        #     executable='robot_state_publisher',
-        #     name='robot_state_publisher',
-        #     parameters=[{
-        #         'robot_description': Command(['cat', urdf_path])
-        #     }]
-        # ),
+        OpaqueFunction(function=start_robot_state_publisher_node),
 
         # Node(
-        #     package='joint_state_publisher_gui',
-        #     executable='joint_state_publisher_gui',
-        #     name='joint_state_publisher_gui'
+        #     package='mam_eurobot_2026',
+        #     executable='arm_commander.py',
+        #     name='arm_commander',
+        #     output='screen',
         # ),
 
         Node(
@@ -184,6 +231,13 @@ def generate_launch_description():
             parameters=[{'use_sim_time': True}],
             output='screen',
         ),
+        # Node(
+        #     package='mam_eurobot_2026',
+        #     executable='arm_controller',
+        #     name='arm_controller',
+        #     output='screen',
+        # ),
+        
         # Node(
         #     package='mam_eurobot_2026',
         #     executable='nut_identifier',

@@ -25,9 +25,11 @@ RUN sudo apt update && \
     sudo apt-get install -y ros-${ROS_DISTRO}-ros-gz
 
 # Install Tools    
-RUN sudo apt update && sudo apt install -y tmux xvfb ros-humble-gazebo-ros-pkgs
+RUN sudo apt update && sudo apt install -y tmux xvfb ros-humble-gazebo-ros-pkgs gdb ros-humble-gz-ros2-control
 RUN sudo apt update && sudo apt install -y ros-${ROS_DISTRO}-pcl-conversions ros-${ROS_DISTRO}-pcl-msgs
-RUN sudo apt-get install -y libxcb-xinerama0 libxcb-xinerama0-dev
+RUN sudo apt update && sudo apt install -y ros-${ROS_DISTRO}-ros2-control ros-${ROS_DISTRO}-ros2-controllers ros-${ROS_DISTRO}-ros-gz-sim
+RUN sudo apt-get install -y libxcb-xinerama0 libxcb-xinerama0-dev ros-humble-joint-state-publisher-gui
+
 
 # Create workspace so that user own this directory
 RUN mkdir -p /home/$USERNAME/eurobot_2026_ws/src
