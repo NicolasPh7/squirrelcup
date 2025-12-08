@@ -980,8 +980,8 @@
     name="mecanum_joint_2_1"
     type="continuous">
     <origin
-      xyz="0.021363 -0.17588 -0.011402"
-      rpy="0.77425 -0.5236 0.95532" />
+      xyz="-0.000217121321762817 -0.188799430199766 -0.0231684788371997"
+      rpy="2.57018773993724 0 0.785398163397447" />
     <parent
       link="wheel_link_2" />
     <child
@@ -1033,8 +1033,8 @@
     name="mecanum_joint_2_2"
     type="continuous">
     <origin
-      xyz="0.0151879353075897 -0.167731034854988 -0.0231684788372002"
-      rpy="-0.376585891854111 0 0.785398163397447" />
+      xyz="0.0172631017108847 -0.187337075147043 -0.0155020752802366"
+      rpy="-0.0695016648418689 -0.523598775598295 0.955316618124504" />
     <parent
       link="wheel_link_2" />
     <child
@@ -1086,8 +1086,8 @@
     name="mecanum_joint_2_3"
     type="continuous">
     <origin
-      xyz="-0.0040571 -0.16549 -0.028708"
-      rpy="0.30982 0.5236 0.95532" />
+      xyz="0.0231684788371991 -0.188799430199766 -0.000217121321762305"
+      rpy="-1.74486637658552 -0.78539816339745 1.57079632679489" />
     <parent
       link="wheel_link_2" />
     <child
@@ -1139,8 +1139,8 @@
     name="mecanum_joint_2_4"
     type="continuous">
     <origin
-      xyz="-0.023168 -0.16725 -0.015674"
-      rpy="0.51899 0.7854 1.5708" />
+      xyz="-0.028379233364908 -0.1716164910008 0.00438594362621422"
+      rpy="2.50619973205918 0.523598775598301 2.18627603546529" />
     <parent
       link="wheel_link_2" />
     <child
@@ -1192,8 +1192,8 @@
     name="mecanum_joint_2_5"
     type="continuous">
     <origin
-      xyz="-0.02392 0.010659 0.0088452"
-      rpy="-1.2312 0.5236 2.1863" />
+      xyz="0.0114865015184892 -0.181658196272472 0.0212786754726319"
+      rpy="-2.54970053621489 -0.523598775598301 2.18627603546528" />
     <parent
       link="wheel_link_2" />
     <child
@@ -1245,8 +1245,8 @@
     name="mecanum_joint_2_6"
     type="continuous">
     <origin
-      xyz="0.00021712 -0.18314 0.023168"
-      rpy="0.10747 0 2.3562" />
+      xyz="-0.0156486881360898 -0.172933620741915 0.0231684788371995"
+      rpy="-2.46220871219138 0 2.35619449019235" />
     <parent
       link="wheel_link_2" />
     <child
@@ -1298,8 +1298,8 @@
     name="mecanum_joint_2_7"
     type="continuous">
     <origin
-      xyz="0.015658 -0.18189 0.017108"
-      rpy="-0.15091 -0.5236 2.1863" />
+      xyz="-0.0231684788372004 -0.1741732316202 -0.014409077257804"
+      rpy="-1.44899159791202 0.785398163397451 1.57079632679491" />
     <parent
       link="wheel_link_2" />
     <child
@@ -1351,8 +1351,8 @@
     name="mecanum_joint_2_8"
     type="continuous">
     <origin
-      xyz="0.023168 -0.18314 -0.00021712"
-      rpy="0.037466 -0.7854 1.5708" />
+      xyz="-0.0114063522646582 -0.181544848110688 -0.0213588247264644"
+      rpy="-2.70059865420832 0.523598775598307 0.955316618124512" />
     <parent
       link="wheel_link_2" />
     <child
@@ -2394,22 +2394,28 @@
       name="ignition::gazebo::systems::MecanumDrive">
       <front_left_joint>wheel_joint_4</front_left_joint>
       <front_right_joint>wheel_joint_3</front_right_joint>
-      <back_right_joint>wheel_joint_2</back_right_joint>
-      <back_left_joint>wheel_joint_1</back_left_joint>
+      <back_left_joint>wheel_joint_2</back_left_joint>
+      <back_right_joint>wheel_joint_1</back_right_joint>
 
-      <wheelbase>0.207</wheelbase> <!-- dist wheel front to back -->
       <wheel_separation>0.153</wheel_separation>  <!-- dist wheel left to right -->
+      <wheelbase>0.207</wheelbase> <!-- dist wheel front to back -->
       <wheel_radius>0.04</wheel_radius>
 
       <odom_publish_frequency>50</odom_publish_frequency>
-      <publish_odom>true</publish_odom>
       <odom_topic>/odometry</odom_topic>
-      <tf_topic>/tf</tf_topic>
       <frame_id>odom</frame_id>
       <child_frame_id>base_link</child_frame_id>
+      <tf_topic>/tf</tf_topic>
 
       <topic>cmd_vel</topic>
-    </plugin>
+      <publish_odom>true</publish_odom>
+
+        <publishWheelTF>true</publishWheelTF>
+        <publishWheelJointState>true</publishWheelJointState>
+        <WheelTorque>1</WheelTorque>
+        <wheelAccel>5</wheelAccel>
+        <isRollerModel>true</isRollerModel>
+      </plugin>
 
     <plugin
       filename="ignition-gazebo-sensors-system"
@@ -2523,4 +2529,5 @@
       <topic>/arm_controller/joint_states</topic>
     </plugin>
  </gazebo>
+
 </robot>
