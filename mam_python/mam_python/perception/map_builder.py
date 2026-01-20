@@ -61,26 +61,41 @@ class MapBuilder:
     def get_grid(self): 
         return self.grid
     
-    def update_cell(self, x: float, y: float, occupied: bool = True, confidence: float = 1.0):
-        """Met à jour une cellule de la grille.
+    def update_cell(self, x: float, y: float, occupied: bool = True, confidence: float = 1.0, size: float = 0.0):
+        """Met à jour une cellule de la grille en tenant compte de la taille de l'objet.
         
         Args:
             x, y: Coordonnées en mètres
             occupied: Si la cellule est occupée
             confidence: Niveau de confiance (0-1)
+            size: Taille de l'objet en mètres (rayon approximatif)
         """
         gx = int(x / self.resolution)
         gy = int(y / self.resolution)
-        
-        if 0 <= gx < self.grid_width and 0 <= gy < self.grid_height:
-            if occupied:
-                self.grid[gy, gx] = min(1.0, self.grid[gy, gx] + confidence)
-            else:
-                self.grid[gy, gx] = max(0.0, self.grid[gy, gx] - confidence)
+        radius = int(size / self.resolution)   # rayon en nombre de cellules
+
+        self.cells.append(GridCell(gx_min=gx - radius, gx_max=gx + radius, gy_min=gy - radius, gy_max=gy + radius))
+
+
+        # Balayer toutes les cellules dans le carré autour du centre
+        for dx in range(-radius, radius + 1):
+            for dy in range(-radius, radius + 1):
+                cx = gx + dx
+                cy = gy + dy
+
+                if 0 <= cx < self.grid_width and 0 <= cy < self.grid_height:
+                    # Optionnel: filtrer par distance pour un vrai cercle
+                    if (dx**2 + dy**2) <= radius**2:
+                        if occupied:
+                            self.grid[cy, cx] = min(1.0, self.grid[cy, cx] + confidence)
+                        else:
+                            self.grid[cy, cx] = max(0.0, self.grid[cy, cx] - confidence)
+
     
     def get_cells(self) -> List[GridCell]:
         """Retourne toutes les cellules enregistrées."""
         return self.cells
+    
     
     def get_cluster_around(self, x: float, y: float) -> GridCell | None:
         """
@@ -118,9 +133,6 @@ class MapBuilder:
         # Leere zuerst die gespeicherten Zellen
         self.cells.clear()
 
-        # Inflationsradius in Grid-Zellen
-        inflation_radius = int(0.05 / self.resolution)
-
         for marker in marker_array.markers:
             if marker.action == marker.DELETEALL:
                 self.clear()
@@ -152,8 +164,8 @@ class MapBuilder:
             self.cells.append(GridCell(gx_min=gx_min, gx_max=gx_max, gy_min=gy_min, gy_max=gy_max))
 
             # Belegte Zellen + Inflation
-            for gx in range(gx_min - inflation_radius, gx_max + inflation_radius + 1):
-                for gy in range(gy_min - inflation_radius, gy_max + inflation_radius + 1):
+            for gx in range(gx_min, gx_max + 1):
+                for gy in range(gy_min, gy_max + 1):
                     if 0 <= gx < self.grid_width and 0 <= gy < self.grid_height:
                         self.grid[gy, gx] = 1.0
 

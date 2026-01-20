@@ -8,6 +8,7 @@ import pdb
 
 import math
 import threading
+import time
 
 from typing import List
 
@@ -52,7 +53,8 @@ class MAMRobotNode(Node):
         self.path_planner = PathPlanner()
         self.collision_checker = CollisionChecker()
         self.trajectory_generator = TrajectoryGenerator()
-        
+        self.path : list[tuple[float, float]]  | None = None
+
         self.motion_controller = MotionController()
         self.arm_controller = ArmController()
         
@@ -74,9 +76,10 @@ class MAMRobotNode(Node):
         self.score_optimizer = ScoreOptimizer()
         self.score_predictor = ScorePredictor()
 
-        self.tick_period = 2
+        self.tick_period = 0.2
         
         # Create publishers
+        # self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel_intent', 10)
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.path_pub = self.create_publisher(Path, '/planned_path', 10)
         self.grid_pub = self.create_publisher(OccupancyGrid, "/occupancy_grid", 10)
@@ -90,10 +93,14 @@ class MAMRobotNode(Node):
         self.nuts_sub = self.create_subscription(MarkerArray,"/nuts",self.nuts_callback,10)
         # self.camera_sub = self.create_subscription(Image, '/camera/image', self.camera_callback, 10)
         
-        self.timer = self.create_timer(self.tick_period, self.control_loop)
-        self.path_thread: threading.Thread | None = None
-        
+        # self.timer = self.create_timer(self.tick_period, self.control_loop)
+        self.trajectory_follower_thread : threading.Thread | None = None
+        self.control_loop_thread : threading.Thread | None = None
+        self.exploring = False
+
         self.logger.info("MAM Robot Node initialized!")
+
+        self.start_control_loop()
     
     def publish_path(self, path_points: list[tuple[float, float]]):
         """
@@ -127,6 +134,9 @@ class MAMRobotNode(Node):
         try:
             # pdb.set_trace()
             if self.map_builder.update_from_marker_array(msg, self.robot_state.get_position()):
+                for m in self.aruco_map_markers:
+                    self.map_builder.update_cell(x=m.x, y=m.y, size=0.1) # Add Arcuco Markers as obstacle
+
                 self.map_builder.publish_occupancy_grid(self.get_clock().now().to_msg(), self.grid_pub)
         except Exception as e:
             self.logger.error(f"LIDAR error: {e}")
@@ -154,7 +164,7 @@ class MAMRobotNode(Node):
 
             # Update robot state
             self.robot_state.update_position(x, y, theta)
-            self.get_logger().info(f"Updated robot position {self.robot_state.get_position()}")
+            # self.get_logger().info(f"Updated robot position {self.robot_state.get_position()}")
 
         except Exception as e:
             self.logger.error(f"Odom error: {e}")
@@ -183,37 +193,68 @@ class MAMRobotNode(Node):
                 score=score
             ))
 
+        if len(updated_targets) == 0:
+            return
         # Ersetze die alte Liste durch die neue
         self.targets = updated_targets
-        self.get_logger().info(f"Targets updated: {len(self.targets)} items")
+        # self.get_logger().info(f"Targets updated: {len(self.targets)} items")
+
     
-    def prepare_movement(self,  targets: list[Target]) -> list[tuple[float, float]] | None:
-        # pdb.set_trace()
+    def prepare_movement(self, targets: list[Target]) -> list[tuple[float, float]] | None:
+        """
+        Selects a target based on distance priority, updates current target,
+        checks if reached, and plans a path using A*.
+        """
+
         actual_pos = self.robot_state.get_position()
         target = self.target_selector.distance_priority(targets, actual_pos.x, actual_pos.y)
 
-        if self.current_target is None: 
-            if target is None: 
-                return
-            self.current_target = target # If no current target, take the given target
-        else:
-            if target.id == self.current_target.id: #Update current target with updated position
-                self.current_target = target
+        # --- Target selection / update ---
+        if self.current_target is None:
+            if target is None:
+                self.get_logger().info("prepare_movement: No available target")
+                return None
+            self.current_target = target
+        elif target:
+            self.get_logger().info(
+                    f"prepare_movement: Updating current target coordinates"
+                )
+            self.current_target = target
 
+        if not self.current_target:
+            return None
+
+        self.get_logger().info(f"prepare_movement: Current target {self.current_target}")
+
+        # --- Check if target reached ---
         if self.target_reached(self.current_target):
             self.stop_robot()
             self.action_planner.complete_current_action()
             self.current_target = None
-            self.logger.info(f"Target reached")
+            self.get_logger().info("prepare_movement: Target reached")
             return None
-        else:
-            self.logger.info(f"Planned path to nearest target:{self.current_target}")
-            return self.path_planner.plan_A_Star(start=(actual_pos.x, actual_pos.y), goal=(self.current_target.x, self.current_target.y), map=self.map_builder)
+
+        # --- Path planning ---
+        self.get_logger().info(f"prepare_movement: Planning path to {self.current_target}")
+        raw_path = self.path_planner.plan_A_Star(
+            start=(actual_pos.x, actual_pos.y),
+            goal=(self.current_target.x, self.current_target.y),
+            map=self.map_builder
+        )
+
+        if raw_path is None:
+            self.get_logger().warn("prepare_movement: No path found")
+            return None
+
+        # Optional smoothing
+        self.path = self.path_planner.smooth_with_catmull_rom(raw_path, samples_per_seg=8, kappa_max=0.3)
+        self.path_planner.path = self.path_planner.to_waypoints_with_theta(self.path)
+        return self.path
 
     def target_reached(self, target: Target):
         actual_pos = self.robot_state.get_position()
         dist = math.sqrt((target.x - actual_pos.x)**2 + (target.y - actual_pos.y)**2)
-        return dist < 0.2
+        return dist <= 0.2
 
     def stop_robot(self):
         cmd = Twist()
@@ -221,15 +262,16 @@ class MAMRobotNode(Node):
         cmd.angular.z = 0.0
         self.cmd_vel_pub.publish(cmd)
 
-
-    def follow_pure_pursuit_step(self, path, look_ahead_dist=0.3, max_vel=0.5):
+    def follow_path_step(self, goal_x, goal_y, tolerance: float = 0.005,
+                         max_speed: float = 2.0, allow_reverse: bool = False):
         """
-        Pure Pursuit controller for a holonomic robot.
-        
+        Follow a planned path by driving towards successive goal points.
+
         Args:
-            path: List of (x, y) tuples representing the global path.
-            look_ahead_dist: How far ahead the robot looks (tuning parameter).
-            max_vel: Maximum linear velocity.
+            goal_x, goal_y: Goal coordinates in world frame
+            tolerance: Distance threshold to consider the goal reached
+            max_speed: Maximum linear velocity
+            allow_reverse: Allow reverse driving if the goal lies behind the robot
         """
         actual_pos = self.robot_state.get_position()
         robot_x, robot_y = actual_pos.x, actual_pos.y
@@ -248,53 +290,108 @@ class MAMRobotNode(Node):
         if target_point is None:
             target_point = path[-1]
 
-        # 2. Calculate Global Error Vector
-        dx_global = target_point[0] - robot_x
-        dy_global = target_point[1] - robot_y
-        distance_to_target = math.hypot(dx_global, dy_global)
+        def angle_between(u, v):
+            """Return signed angle between 2D vectors u and v."""
+            dot = u[0]*v[0] + u[1]*v[1]
+            det = u[0]*v[1] - u[1]*v[0]   # 2D cross product (determinant)
+            return math.atan2(det, dot)
 
-        # 3. Transform to Local Robot Frame
-        # (So the robot knows how much to move forward vs sideways)
-        local_x = dx_global * math.cos(theta) + dy_global * math.sin(theta)
-        local_y = -dx_global * math.sin(theta) + dy_global * math.cos(theta)
+        def analyze_target():
+            # Current pose
+            actual_pos = self.robot_state.get_position()
+            x = actual_pos.x
+            y = actual_pos.y
+            theta = actual_pos.theta
 
-        # 4. Generate Twist Command
-        cmd = Twist()
-        
-        # Stop condition: if we are close to the final point
-        final_dist = math.hypot(path[-1][0] - robot_x, path[-1][1] - robot_y)
-        if final_dist < 0.05:
+            # Goal vector
+            dx = goal_x - x
+            dy = goal_y - y
+            distance = math.hypot(dx, dy)
+
+            # Robot orientation vector
+            R_star = (math.cos(theta), math.sin(theta))
+            # Goal direction vector
+            RZ = (dx, dy)
+
+            # Angle error between robot orientation and goal direction
+            angle_error = angle_between(R_star, RZ)
+
+
+            print(f"analyze_target:: theta={theta:.3f}, "
+                  f"dx={dx:.3f}, dy={dy:.3f}, "
+                  f"angle_error={angle_error:.3f}, "
+                  f"ALIGN? {'YES' if abs(angle_error) < 0.785398 else 'NO'}")
+
+            
+            pdb.set_trace()
+            
+            return distance, angle_error, behind
+
+        distance, angle_error, behind = analyze_target()
+
+        self.get_logger().info(f"Path Step: distance: {distance:.3f}, angle_error {angle_error:.3f}")
+
+        K_angular_factor = 2.0
+        K_linear_factor = 5.0
+
+        # --- Control logic ---
+        if distance > tolerance:
+            # Prioritize rotation: align first, then move
+            if abs(angle_error) >= 0.785398:  # threshold for "rotate first"
+
+                self.get_logger().info(f"Path Step: Rotate first, angle_error {angle_error:.3f}")
+                cmd.linear.x = 0.0
+                cmd.angular.z = K_angular_factor * angle_error
+            else:
+                self.get_logger().info(f"Path Step: Drive to goal, distance {distance:.3f}")
+                speed = min(K_linear_factor * distance, max_speed)
+
+                # Reverse option: if goal is behind robot
+                if allow_reverse and abs(angle_error) > math.pi/2:
+                    self.get_logger().info("Path Step: Driving backwards")
+                    cmd.linear.x = -speed
+                else:
+                    cmd.linear.x = speed
+
+                cmd.angular.z = K_angular_factor/2 * angle_error
+        else:
+            # Goal reached
+            self.get_logger().info("Path Step: Goal reached")
             cmd.linear.x = 0.0
-            cmd.linear.y = 0.0
-            self.cmd_vel_pub.publish(cmd)
-            return True # Path finished
+            cmd.angular.z = 0.0
 
-        # Normalize the local vector and scale by max velocity
-        # This keeps the robot moving at a constant speed along the path
-        look_ahead_norm = math.hypot(local_x, local_y)
-        cmd.linear.x = (local_x / look_ahead_norm) * max_vel
-        cmd.linear.y = (local_y / look_ahead_norm) * max_vel
-
-        # 5. Optional: Keep robot facing the direction of travel
-        target_angle = math.atan2(dy_global, dx_global)
-        angle_error = target_angle - theta
-        angle_error = math.atan2(math.sin(angle_error), math.cos(angle_error))
-        cmd.angular.z = 1.5 * angle_error # P-gain for rotation
-
+        # Publish command
+        self.get_logger().info(f"Path Step: cmd vel: {cmd}")
         self.cmd_vel_pub.publish(cmd)
-        return False
+        # # Stop am Ende
+        # cmd.linear.x = 0.0
+        # cmd.angular.z = 0.0
+        # self.cmd_vel_pub.publish(cmd)
+        # self.get_logger().info("Path Step completed")
 
-    def control_loop(self):
+    def start_control_loop(self):
+        def loop():
+            while rclpy.ok():   # solange ROS läuft
+                self.__control_loop()
+                time.sleep(self.tick_period)  # gleiche Periode wie dein Timer
+
+        t = threading.Thread(target=loop, daemon=True)
+        t.start()
+        self.control_loop_thread = t
+
+    def __control_loop(self):
         """Main robot control loop"""
         try:
-            self.strategy_engine.update_time(elapsed_time=self.tick_period)
+            # self.strategy_engine.update_time(elapsed_time=self.tick_period)
             actual_pos = self.robot_state.get_position()
+            print(f"control_loop. len(self.targets)={len(self.targets)}")
             main_strategie = self.strategy_engine.decide_next_action(robot_position=(actual_pos.x, actual_pos.y), nearby_targets=self.targets, battery_level=100)
             status_msg = String(data=f"Strategy: {main_strategie}")
             # self.status_pub.publish(status_msg)
             actual_path : list[tuple[float, float]] | None  = []
 
             if main_strategie.action == "return_home":
+                self.logger.info(f"control_loop:: main stragie: return_home")
                 actual_path = self.path_planner.plan_A_Star(start=(actual_pos.x, actual_pos.y), goal=(self.home_position.x, self.home_position.y), map=self.map_builder)
         
             else:
@@ -304,6 +401,7 @@ class MAMRobotNode(Node):
                     pass
                 elif action.action_type == ActionType.MOVE_TO:
                     targets: list[Target] = []
+                    # pdb.set_trace()
 
                     if main_strategie.action == "grab_nearest":
                         self.logger.info(f"Moving to the nearest nut")
@@ -311,12 +409,16 @@ class MAMRobotNode(Node):
                     elif main_strategie.action == "explore":
                         self.logger.info(f"Exploring")
                         targets = self.aruco_map_markers
+                        self.exploring = True
                         
                     actual_path = self.prepare_movement(targets=targets)
                             
                 elif action.action_type == ActionType.GRAB:
                     self.action_planner.complete_current_action()
+                    cmd = Twist(); cmd.linear.x = -3.0;cmd.angular.z = 3.14; self.cmd_vel_pub.publish(cmd) # Backup
+
                 elif action.action_type == ActionType.RETURN:
+                    self.stop_robot()
                     actual_path = self.prepare_movement(targets=[self.home_position])
                 elif action.action_type == ActionType.RELEASE:
                     self.action_planner.complete_current_action()
@@ -329,19 +431,25 @@ class MAMRobotNode(Node):
                     self.action_planner.add_action(ActionType.RELEASE)
                     self.action_planner.add_action(ActionType.WAIT)
                         
-            if self.path_thread is not None and self.path_thread.is_alive():
-                self.logger.debug("Follow path thread running")
-                return
+            # if self.path_thread is not None and self.path_thread.is_alive():
+            #     self.logger.debug("Follow path thread running")
+            #     return
             
             if actual_path is not None and len(actual_path) >= 1: 
                 self.publish_path(actual_path)
-                step: tuple[float, float] = actual_path[0]
-                # self.follow_path_step(step[0], step[1])
-                # t = threading.Thread(
-                #     target=self.follow_pure_pursuit_step,
-                #     args=(actual_path)
-                # )
-                # t.start()
+                print(f"control_loop: len(actual_path)={len(actual_path)}")             
+                if self.trajectory_follower_thread is None or not self.trajectory_follower_thread.is_alive():
+                    step = min(
+                        actual_path,
+                        key=lambda p: math.hypot(p[0] - actual_pos.x, p[1] - actual_pos.y)
+                    )   
+                    print(f"control_loop: Trying to reach step point {step}")
+                    # self.trajectory_follower_thread = threading.Thread(
+                    #     target=self.follow_path_step,
+                    #     args=(step[0], step[1])
+                    # )
+                    # self.trajectory_follower_thread.start()
+
             else:
                 self.logger.info("Skipping follow path step. No enough data")
 
@@ -353,7 +461,9 @@ def main(args=None):
     rclpy.init(args=args)
     node = MAMRobotNode()
     try:
-        rclpy.spin(node)
+        executor = rclpy.executors.MultiThreadedExecutor()
+        executor.add_node(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
     # finally:

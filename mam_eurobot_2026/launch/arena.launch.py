@@ -251,6 +251,14 @@ def generate_launch_description():
             parameters=[{'use_sim_time': True}],
             output='screen',
         ),
+
+        # Node(
+        #     package='mam_eurobot_2026',
+        #     executable='collision_avoidance',
+        #     name='collision_avoidance',
+        #     parameters=[{'use_sim_time': True}],
+        #     output='screen',
+        # ),
         # Node(
         #     package='tf2_ros',
         #     executable='static_transform_publisher',
