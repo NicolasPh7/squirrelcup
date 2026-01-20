@@ -10,6 +10,7 @@ Panels:
         - /PoseWithCovariance1/Covariance1
         - /Path1
         - /Map1
+        - /Map1/Status1
       Splitter Ratio: 0.5
     Tree Height: 703
   - Class: rviz_common/Selection
@@ -29,7 +30,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Visualization Manager:
   Class: ""
   Displays:
@@ -69,86 +70,176 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        aruco_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        gripper_actuactor_link:
+        roller_10_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        gripper_arm_1_link:
+        roller_11_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        gripper_arm_2_link:
+        roller_12_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        gripper_base_link:
+        roller_13_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        gripper_shaft_1_link:
+        roller_14_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        gripper_shaft_2_link:
+        roller_15_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        link_1:
+        roller_16_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        link_2:
+        roller_17_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        link_3:
+        roller_18_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        link_4:
+        roller_19_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        pre_link_5:
+        roller_1_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        wheel_link_1:
+        roller_20_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        wheel_link_2:
+        roller_21_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        wheel_link_3:
+        roller_22_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        wheel_link_4:
+        roller_23_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
+        roller_24_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_25_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_26_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_27_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_28_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_29_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_2_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_30_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_31_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_32_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_33_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_34_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_35_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_36_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_3_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_4_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_5_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_6_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_7_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_8_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        roller_9_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wheel_frame_BL_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wheel_frame_BR_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wheel_frame_FL_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wheel_frame_FR_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Mass Properties:
         Inertia: false
         Mass: false
@@ -241,7 +332,10 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        {}
+        box_mittel: true
+        box_ssweit: true
+        box_sweit: true
+        box_weit: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -329,21 +423,21 @@ Visualization Manager:
       Class: rviz_default_plugins/Path
       Color: 25; 255; 0
       Enabled: true
-      Head Diameter: 0.30000001192092896
-      Head Length: 0.20000000298023224
+      Head Diameter: 0.029999999329447746
+      Head Length: 0.019999999552965164
       Length: 0.30000001192092896
       Line Style: Billboards
-      Line Width: 0.029999999329447746
+      Line Width: 0.05000000074505806
       Name: Path
       Offset:
         X: 0
         Y: 0
         Z: 0
       Pose Color: 255; 85; 255
-      Pose Style: None
+      Pose Style: Arrows
       Radius: 0.029999999329447746
-      Shaft Diameter: 0.10000000149011612
-      Shaft Length: 0.10000000149011612
+      Shaft Diameter: 0.009999999776482582
+      Shaft Length: 0.009999999776482582
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -355,7 +449,7 @@ Visualization Manager:
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
       Color Scheme: map
-      Draw Behind: false
+      Draw Behind: true
       Enabled: true
       Name: Map
       Topic:
@@ -419,25 +513,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 9.319135665893555
+      Distance: 5.061479568481445
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.9127354025840759
-        Y: -0.27651703357696533
-        Z: 1.1363041400909424
+        X: 2.0873842239379883
+        Y: 1.1274585723876953
+        Z: 1.854408621788025
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.3197954893112183
+      Pitch: 1.2847964763641357
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.445439100265503
+      Yaw: 3.175440549850464
     Saved: ~
 Window Geometry:
   Displays:
@@ -457,5 +551,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 948
-  X: 795
-  Y: -31
+  X: 974
+  Y: -33

@@ -91,6 +91,7 @@ class MAMRobotNode(Node):
         # self.camera_sub = self.create_subscription(Image, '/camera/image', self.camera_callback, 10)
         
         self.timer = self.create_timer(self.tick_period, self.control_loop)
+        self.path_thread: threading.Thread | None = None
         
         self.logger.info("MAM Robot Node initialized!")
     
@@ -221,73 +222,67 @@ class MAMRobotNode(Node):
         self.cmd_vel_pub.publish(cmd)
 
 
-    def follow_path_step(self, goal_x, goal_y, tolerance: float = 0.05):
+    def follow_pure_pursuit_step(self, path, look_ahead_dist=0.3, max_vel=0.5):
         """
-        Folgt einem geplanten Pfad, indem nacheinander die Zielpunkte angefahren werden.
+        Pure Pursuit controller for a holonomic robot.
         
         Args:
-            path_points: Liste von (x, y) Koordinaten in Weltkoordinaten
-            tolerance: Abstand, ab dem ein Punkt als erreicht gilt
+            path: List of (x, y) tuples representing the global path.
+            look_ahead_dist: How far ahead the robot looks (tuning parameter).
+            max_vel: Maximum linear velocity.
         """
+        actual_pos = self.robot_state.get_position()
+        robot_x, robot_y = actual_pos.x, actual_pos.y
+        theta = actual_pos.theta
+
+        # 1. Find the look-ahead point
+        # We look for the first point in the path that is further than look_ahead_dist
+        target_point = None
+        for i in range(len(path)):
+            dist = math.hypot(path[i][0] - robot_x, path[i][1] - robot_y)
+            if dist > look_ahead_dist:
+                target_point = path[i]
+                break
+        
+        # If no point is far enough, aim for the final destination
+        if target_point is None:
+            target_point = path[-1]
+
+        # 2. Calculate Global Error Vector
+        dx_global = target_point[0] - robot_x
+        dy_global = target_point[1] - robot_y
+        distance_to_target = math.hypot(dx_global, dy_global)
+
+        # 3. Transform to Local Robot Frame
+        # (So the robot knows how much to move forward vs sideways)
+        local_x = dx_global * math.cos(theta) + dy_global * math.sin(theta)
+        local_y = -dx_global * math.sin(theta) + dy_global * math.cos(theta)
+
+        # 4. Generate Twist Command
         cmd = Twist()
-
-        def analyze_target():
-            # Aktuelle Pose
-            actual_pos = self.robot_state.get_position()
-            x = actual_pos.x
-            y = actual_pos.y
-            theta = actual_pos.theta
-
-            # Fehler
-            dx = goal_x - x
-            dy = goal_y - y
-            d = math.hypot(dx, dy)
-            target_angle = math.atan2(dy, dx)
-            a = target_angle - theta
-            return d, a
-
-        distance, angle_error = analyze_target()
-
-        # Normalisiere Winkel
-        while angle_error > math.pi:
-            angle_error -= 2*math.pi
-        while angle_error < -math.pi:
-            angle_error += 2*math.pi
-
-        self.get_logger().info(f"Path Step: distance: {distance}, angle_error {angle_error}")
-
-        while abs(angle_error) > math.pi/36 and distance > tolerance:
-            self.get_logger().info(f"Path Step: adjusting drive angle: angle_error {angle_error}")
+        
+        # Stop condition: if we are close to the final point
+        final_dist = math.hypot(path[-1][0] - robot_x, path[-1][1] - robot_y)
+        if final_dist < 0.05:
             cmd.linear.x = 0.0
-            cmd.angular.z = angle_error 
+            cmd.linear.y = 0.0
             self.cmd_vel_pub.publish(cmd)
-            
+            return True # Path finished
 
-            distance, angle_error = analyze_target()
+        # Normalize the local vector and scale by max velocity
+        # This keeps the robot moving at a constant speed along the path
+        look_ahead_norm = math.hypot(local_x, local_y)
+        cmd.linear.x = (local_x / look_ahead_norm) * max_vel
+        cmd.linear.y = (local_y / look_ahead_norm) * max_vel
 
-        # Steuerung (einfacher P-Regler)
-        while distance > tolerance:
-            self.get_logger().info(f"Path Step: driving towards goal: distance: {distance}")
-            cmd.linear.x = 10 * distance    # Geschwindigkeit begrenzen, factor depends on map resolution!!!
-            cmd.angular.z = 0.0 
-            self.cmd_vel_pub.publish(cmd)
+        # 5. Optional: Keep robot facing the direction of travel
+        target_angle = math.atan2(dy_global, dx_global)
+        angle_error = target_angle - theta
+        angle_error = math.atan2(math.sin(angle_error), math.cos(angle_error))
+        cmd.angular.z = 1.5 * angle_error # P-gain for rotation
 
-            distance, angle_error = analyze_target()
-            # cmd.linear.x = 0.5
-            # cmd.angular.z = 0.5 * angle_error       # Drehen Richtung Ziel
-        # else:
-        #     cmd.linear.x = 0.0
-        #     cmd.angular.z = 0.0
-
-        # Publiziere Steuerkommando
         self.cmd_vel_pub.publish(cmd)
-            
-
-        # # Stop am Ende
-        # cmd.linear.x = 0.0
-        # cmd.angular.z = 0.0
-        # self.cmd_vel_pub.publish(cmd)
-        # self.get_logger().info("Path Step completed")
+        return False
 
     def control_loop(self):
         """Main robot control loop"""
@@ -334,15 +329,19 @@ class MAMRobotNode(Node):
                     self.action_planner.add_action(ActionType.RELEASE)
                     self.action_planner.add_action(ActionType.WAIT)
                         
+            if self.path_thread is not None and self.path_thread.is_alive():
+                self.logger.debug("Follow path thread running")
+                return
+            
             if actual_path is not None and len(actual_path) >= 1: 
                 self.publish_path(actual_path)
                 step: tuple[float, float] = actual_path[0]
                 # self.follow_path_step(step[0], step[1])
-                t = threading.Thread(
-                    target=self.follow_path_step,
-                    args=(step[0], step[1])
-                )
-                t.start()
+                # t = threading.Thread(
+                #     target=self.follow_pure_pursuit_step,
+                #     args=(actual_path)
+                # )
+                # t.start()
             else:
                 self.logger.info("Skipping follow path step. No enough data")
 

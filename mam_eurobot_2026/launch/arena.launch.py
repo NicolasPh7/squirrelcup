@@ -5,7 +5,7 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Comm
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import OpaqueFunction
 
-from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_fixes, start_robot_state_publisher_node , wait_for_clock
+from mam_eurobot_2026.helpers import load_aruco_tags, load_crates, load_balises_fixes, start_robot_state_publisher_node , wait_for_clock, initial_joint_positions
 
 def generate_launch_description():
     pkg_path = FindPackageShare('mam_eurobot_2026')
@@ -260,4 +260,5 @@ def generate_launch_description():
         #     output='screen'
         # )
 
+        # OpaqueFunction(function=initial_joint_positions)
     ])

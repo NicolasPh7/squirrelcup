@@ -115,7 +115,8 @@ class PathPlanner:
                 nx, ny = neighbor
                 if not (0 <= nx < grid_width and 0 <= ny < grid_height):
                     continue
-                if grid[ny, nx] > 0.0 and not not_obstacles.contains_point(nx, ny):  # besetzt and not the target
+                if grid[ny, nx] > 0.0:  # besetzt and not the target
+                    # if not_obstacles is not None and not not_obstacles.contains_point(nx, ny):
                     continue
 
                 tentative_g = g_score[current] + 1

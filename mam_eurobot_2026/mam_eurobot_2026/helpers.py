@@ -152,3 +152,26 @@ def start_robot_state_publisher_node(context):
             parameters=[{'robot_description': robot_description_content}]
         )
     ]
+
+def initial_joint_positions(context):
+    joint_cmds = [
+        ("/joint_1/position_cmd", 3.14),
+        ("/joint_2/position_cmd", 0.00),
+        ("/joint_3/position_cmd", 0.00),
+        ("/joint_4/position_cmd", -1.57),
+        ("/joint_5/position_cmd", 0.00),
+    ]
+
+    actions = []
+
+    print("[Launch] initial joints.")
+    for topic, val in joint_cmds:
+        print(['ros2', 'topic', 'pub', '--once', topic, 'std_msgs/msg/Float64', "'{data: "+ str(val) +"}'"])
+        actions.append(
+            ExecuteProcess(
+                cmd=['ros2', 'topic', 'pub', '--once', topic, 'std_msgs/msg/Float64', "'{data: "+ str(val) +"}'"],
+                output='screen'
+            )
+        )
+    
+    return actions

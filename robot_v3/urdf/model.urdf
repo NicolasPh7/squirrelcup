@@ -45,7 +45,7 @@
     </collision>
 
     <visual name="marker_border">
-      <origin xyz="0.0 -0.22 0.05" rpy="0 0 0"/>
+      <origin xyz="0.0 -0.22 0.1" rpy="0 0 0"/>
       <geometry>
         <box size="0.12 0.12 0.0004"/>
       </geometry>
@@ -58,7 +58,7 @@
   </link>
 
    <joint name="joint_aruco_tag" type="fixed">
-    <origin xyz="0.0 -0.22 0.051" rpy="0 0 0"/>
+    <origin xyz="0.0 -0.22 0.101" rpy="0 0 3.1415"/>
     <parent link="base_link"/>
     <child link="aruco_link"/>
   </joint>
@@ -100,7 +100,7 @@
     </collision>
   </link>
 
-  <link
+  <!-- <link
     name="link_1">
     <inertial>
       <origin
@@ -404,7 +404,7 @@
     <dynamics
       damping="0.1"
       friction="0.01" />
-  </joint>
+  </joint> -->
   
   <joint
     name="wheel_joint_1"
@@ -1576,7 +1576,8 @@
 
 <gazebo reference="base_link">
     <sensor name="camera_sensor" type="camera">
-      <pose>0.1 0 0.05 0 0 1.571</pose> 
+      <!-- <pose>0.1 0 0.05 0 0 1.571</pose>  -->
+      <pose relative_to='base_link'>0.0 0 0.05 0 0 1.571</pose>
         <camera>
           <image>
             <width>1920</width>
@@ -1596,7 +1597,8 @@
       </sensor>
 
       <sensor name="lidar_3d" type="gpu_lidar">
-      <pose>0.1 0 0.08 0 0.0 1.571</pose> 
+      <!-- <pose>0.1 0 0.08 0 0.0 1.571</pose>  -->
+      <pose relative_to='base_link'>0.0 0 0.08 0 0 1.571</pose>
       <lidar>
         <scan>
           <horizontal>
@@ -1627,7 +1629,7 @@
 
 <gazebo reference="aruco_link">
 <visual name='aruco_marker'>
-      <pose relative_to='chassis'>0.0 -0.22 0.051 0 0 0</pose>
+      <pose relative_to='chassis'>0.0 -0.22 0.051 0 0 0.0</pose>
     <geometry>
       <plane>
       <normal>0 0 1</normal> 
@@ -1934,7 +1936,7 @@
       <render_engine>ogre</render_engine>
     </plugin>
 
-    <plugin
+    <!-- <plugin
       filename="libignition-gazebo-joint-position-controller-system.so"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>joint_1</joint_name>
@@ -1998,7 +2000,7 @@
       <i_min>-1</i_min>
       <cmd_max>1000</cmd_max>
       <cmd_min>-1000</cmd_min>
-    </plugin>
+    </plugin> -->
 
     <!-- <plugin
       filename="libignition-gazebo-joint-position-controller-system.so"
@@ -2027,18 +2029,7 @@
       <cmd_min>-1000</cmd_min>
     </plugin> -->
 
-    <plugin
-    name="ignition::gazebo::systems::JointStatePublisher"
-    filename="libignition-gazebo-joint-state-publisher-system.so">
-      <joint_name>joint_1</joint_name>
-      <joint_name>joint_2</joint_name>
-      <joint_name>joint_3</joint_name>
-      <joint_name>joint_4</joint_name>
-      <joint_name>joint_5</joint_name>
-      <!-- <joint_name>arm_1_joint</joint_name>
-      <joint_name>arm_2_joint</joint_name> -->
-      <topic>/arm_controller/joint_states</topic>
-    </plugin>
+    
  </gazebo>
 
 </robot>
