@@ -98,10 +98,10 @@ ament_target_dependencies(object_detector rclcpp sensor_msgs geometry_msgs visua
 target_link_libraries(object_detector ${PCL_LIBRARIES})
 install(TARGETS object_detector DESTINATION lib/${PROJECT_NAME})
 
-add_executable(collision_avoidance src/collision_avoidance.cpp)
-ament_target_dependencies(collision_avoidance rclcpp geometry_msgs visualization_msgs)
-target_link_libraries(collision_avoidance ${PCL_LIBRARIES})
-install(TARGETS collision_avoidance DESTINATION lib/${PROJECT_NAME})
+# add_executable(collision_avoidance src/collision_avoidance.cpp)
+# ament_target_dependencies(collision_avoidance rclcpp geometry_msgs visualization_msgs)
+# target_link_libraries(collision_avoidance ${PCL_LIBRARIES})
+# install(TARGETS collision_avoidance DESTINATION lib/${PROJECT_NAME})
 
 add_executable(aruco_localization src/aruco_localization.cpp)
 ament_target_dependencies(aruco_localization rclcpp sensor_msgs geometry_msgs visualization_msgs cv_bridge OpenCV tf2 tf2_geometry_msgs cv_bridge OpenCV)
