@@ -129,45 +129,56 @@ class MapBuilder:
         return GridCell(gx_min=gx_min, gx_max=gx_max, gy_min=gy_min, gy_max=gy_max)
     
     
-    def update_from_marker_array(self, marker_array: MarkerArray, robot_pose: Position) -> bool:
-        # Leere zuerst die gespeicherten Zellen
+    def update_from_marker_array(self, marker_array: MarkerArray, robot_pose: Position, oversize = 0.00) -> bool:
+        # 1. Clear previous state
         self.cells.clear()
+        self.grid.fill(0.0) # Assuming self.grid is a numpy array
+
+        # Convert oversize meters to cell count (inflation radius)
+        inflation_cells = int(math.ceil(oversize / self.resolution))
 
         for marker in marker_array.markers:
             if marker.action == marker.DELETEALL:
                 self.clear()
                 continue
 
+            # 2. Transform marker center from Robot Base Link to Global Map
             cx_bl = marker.pose.position.x
             cy_bl = marker.pose.position.y
-
+            
             cos_t = math.cos(robot_pose.theta)
             sin_t = math.sin(robot_pose.theta)
 
             cx = robot_pose.x + cos_t * cx_bl - sin_t * cy_bl
             cy = robot_pose.y + sin_t * cx_bl + cos_t * cy_bl
 
+            # 3. Calculate marker dimensions in cells
             sx = marker.scale.x
             sy = marker.scale.y
 
-            x_min = cx - sx / 2.0
-            x_max = cx + sx / 2.0
-            y_min = cy - sy / 2.0
-            y_max = cy + sy / 2.0
+            # Define basic bounds in world coordinates
+            x_min, x_max = cx - sx / 2.0, cx + sx / 2.0
+            y_min, y_max = cy - sy / 2.0, cy + sy / 2.0
 
-            gx_min = int(x_min / self.resolution)
-            gx_max = int(x_max / self.resolution)
-            gy_min = int(y_min / self.resolution)
-            gy_max = int(y_max / self.resolution)
+            # 4. Convert to Grid Indices and include Inflation (oversize)
+            # Using floor/ceil ensures we don't lose partial cells
+            gx_min = int(x_min / self.resolution) - inflation_cells
+            gx_max = int(math.ceil(x_max / self.resolution)) + inflation_cells
+            gy_min = int(y_min / self.resolution) - inflation_cells
+            gy_max = int(math.ceil(y_max / self.resolution)) + inflation_cells
 
-            # Speichere die Grenzen als neue Cell
+            # Store for reference
             self.cells.append(GridCell(gx_min=gx_min, gx_max=gx_max, gy_min=gy_min, gy_max=gy_max))
 
-            # Belegte Zellen + Inflation
-            for gx in range(gx_min, gx_max + 1):
-                for gy in range(gy_min, gy_max + 1):
-                    if 0 <= gx < self.grid_width and 0 <= gy < self.grid_height:
-                        self.grid[gy, gx] = 1.0
+            # 5. Populate the Grid with Boundary Protection
+            # We clip the ranges to the grid size to prevent index errors
+            safe_gx_start = max(0, gx_min)
+            safe_gx_end   = min(self.grid_width, gx_max + 1)
+            safe_gy_start = max(0, gy_min)
+            safe_gy_end   = min(self.grid_height, gy_max + 1)
+
+            # Vectorized update (if using numpy, this is MUCH faster than nested loops)
+            self.grid[safe_gy_start:safe_gy_end, safe_gx_start:safe_gx_end] = 1.0
 
         return True
         

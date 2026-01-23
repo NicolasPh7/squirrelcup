@@ -95,7 +95,7 @@
     </collision>
   </link>
 
-  <!-- <link
+  <link
     name="link_1">
     <inertial>
       <origin
@@ -399,7 +399,7 @@
     <dynamics
       damping="0.1"
       friction="0.1" />
-  </joint> -->
+  </joint>
   
   <joint
     name="wheel_joint_1"
@@ -1622,7 +1622,7 @@
           <horizontal_fov>1.047</horizontal_fov>
         </camera>
         <always_on>1</always_on>
-        <update_rate>5</update_rate>
+        <update_rate>24</update_rate>
         <visualize>true</visualize>
         <topic>camera</topic>
       </sensor>
@@ -1652,7 +1652,7 @@
         </range>
       </lidar>
       <always_on>1</always_on>
-      <update_rate>10</update_rate>
+      <update_rate>24</update_rate>
       <visualize>true</visualize>
       <topic>lidar_3d</topic>
     </sensor>
@@ -2008,7 +2008,7 @@
       <render_engine>ogre</render_engine>
     </plugin>
 
-    <!-- <plugin
+    <plugin
       filename="libignition-gazebo-joint-position-controller-system.so"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>joint_1</joint_name>
@@ -2072,7 +2072,7 @@
       <i_min>-1</i_min>
       <cmd_max>1000</cmd_max>
       <cmd_min>-1000</cmd_min>
-    </plugin> -->
+    </plugin>
 
     <!-- <plugin
       filename="libignition-gazebo-joint-position-controller-system.so"

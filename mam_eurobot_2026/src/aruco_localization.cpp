@@ -342,6 +342,7 @@ private:
 
     udpateBaseLinkTF(position);
     pose_with_cov_pub_->publish(pose);
+    robot_pose_ = position;
 
     RCLCPP_INFO(this->get_logger(),
         "Published PoseWithCovariance x=%.3f, y=%.3f, z=%.3f | cov=%.4f",
